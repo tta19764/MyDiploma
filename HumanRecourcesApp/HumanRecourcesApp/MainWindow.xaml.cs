@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Net.Sockets;
+using System.Net;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,6 +21,19 @@ namespace HumanRecourcesApp
         public MainWindow()
         {
             InitializeComponent();
+        }   
+
+        public string GetLocalIPAddress()
+        {
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {   
+                    return ip.ToString();
+                }
+            }
+            return "No IP address found";
         }
     }
 }

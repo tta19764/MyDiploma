@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+
+namespace HumanRecourcesApp.Models;
+
+public partial class Department
+{
+    public int DepartmentId { get; set; }
+
+    public string DepartmentName { get; set; } = null!;
+
+    public string? Description { get; set; }
+
+    public int? ManagerId { get; set; }
+
+    public DateTime? CreatedAt { get; set; }
+
+    public virtual Employee? Manager { get; set; }
+
+    public virtual ICollection<Position> Positions { get; set; } = new List<Position>();
+}
