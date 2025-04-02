@@ -10,6 +10,15 @@ namespace HumanRecourcesApp.DBClasses
     internal class HumanResourcesDB
     {
         private HumanResourcesDbContext _context;
+        public HumanResourcesDB()
+        {
+            _context = new HumanResourcesDbContext();
+        }
 
+        public void AddUser(User user)
+        {
+            _context.Users.Add(user);
+            _context.SaveChanges();
+        }
     }
 }
