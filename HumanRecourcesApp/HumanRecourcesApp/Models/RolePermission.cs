@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HumanRecourcesApp.Models;
+namespace HumanResourcesApp.Models;
 
 public partial class RolePermission
 {

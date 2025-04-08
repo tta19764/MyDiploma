@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace HumanRecourcesApp.Models;
+namespace HumanResourcesApp.Models;
 
 public partial class User
 {
@@ -28,6 +28,8 @@ public partial class User
     public virtual Employee? Employee { get; set; }
 
     public virtual ICollection<EmployeePayroll> EmployeePayrolls { get; set; } = new List<EmployeePayroll>();
+
+    public virtual Role Role { get; set; } = null!;
 
     public virtual ICollection<SystemLog> SystemLogs { get; set; } = new List<SystemLog>();
 }

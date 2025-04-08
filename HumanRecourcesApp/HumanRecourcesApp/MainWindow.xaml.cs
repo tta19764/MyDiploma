@@ -10,30 +10,44 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using HumanResourcesApp.Models;
+using HumanResourcesApp.DBClasses;
+using HumanRecourcesApp.ViewModels;
 
-namespace HumanRecourcesApp
+namespace HumanResourcesApp
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        private HumanResourcesDB _db;
+        private readonly User _currentUser;
+
+        public MainWindow(User user)
         {
             InitializeComponent();
-        }   
 
-        public string GetLocalIPAddress()
+            if (user == null) throw new ArgumentNullException(nameof(user), "User cannot be null");
+
+            _db = new HumanResourcesDB();
+            _currentUser = user;
+
+            DataContext = new MainWindowViewModel(user);
+            UpdateUserLastLogin(user.UserId);
+
+        }
+
+        private void UpdateUserLastLogin(int userId)
         {
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
+            try
             {
-                if (ip.AddressFamily == AddressFamily.InterNetwork)
-                {   
-                    return ip.ToString();
-                }
+                _db.UpdateLastLogin(userId);
             }
-            return "No IP address found";
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to update last login: {ex.Message}", "Database Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
     }
 }

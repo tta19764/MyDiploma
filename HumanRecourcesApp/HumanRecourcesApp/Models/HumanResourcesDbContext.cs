@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using Microsoft.EntityFrameworkCore;
 
-namespace HumanRecourcesApp.Models;
+namespace HumanResourcesApp.Models;
 
 public partial class HumanResourcesDbContext : DbContext
 {
@@ -56,8 +56,17 @@ public partial class HumanResourcesDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var connectionString = ConfigurationManager.ConnectionStrings["HumanResourcesDB"].ConnectionString;
-        optionsBuilder.UseNpgsql(connectionString);
+        if (!optionsBuilder.IsConfigured)
+        {
+            var connectionString = ConfigurationManager.ConnectionStrings["HumanResourcesDb"]?.ConnectionString;
+
+            if (string.IsNullOrEmpty(connectionString))
+                throw new InvalidOperationException("Connection string 'HumanResourcesDb' not found.");
+
+            optionsBuilder
+                .UseLazyLoadingProxies()
+                .UseNpgsql(connectionString);
+        }
     }
 
 
@@ -719,6 +728,15 @@ public partial class HumanResourcesDbContext : DbContext
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .HasColumnName("username");
+
+            entity.Property(e => e.RoleId)
+                .IsRequired()
+                .HasColumnName("role_id");
+
+            entity.HasOne(d => d.Role).WithMany(p => p.Users)
+                .HasForeignKey(d => d.RoleId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_users_roles_role_id");
         });
 
         OnModelCreatingPartial(modelBuilder);

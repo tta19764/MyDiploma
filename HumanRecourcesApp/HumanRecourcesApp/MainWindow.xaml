@@ -1,12 +1,247 @@
-﻿<Window x:Class="HumanRecourcesApp.MainWindow"
+﻿<Window x:Class="HumanResourcesApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:HumanRecourcesApp"
+        xmlns:local="clr-namespace:HumanResourcesApp"
+        xmlns:controls="clr-namespace:HumanResourcesApp.Controls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        Title="HR Management System" 
+        Height="768" 
+        Width="1280"
+        WindowStartupLocation="CenterScreen">
 
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Sidebar Navigation -->
+        <Grid Background="#34495e">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- App Logo and Title -->
+            <StackPanel Grid.Row="0" Margin="15,25,15,30">
+                <TextBlock Text="HR MANAGEMENT" 
+                           Foreground="White" 
+                           FontSize="18" 
+                           FontWeight="Bold"/>
+                <TextBlock Text="Admin Dashboard" 
+                           Foreground="#BBBBBB" 
+                           FontSize="12" 
+                           Margin="0,5,0,0"/>
+            </StackPanel>
+
+            <!-- Navigation Menu -->
+            <ScrollViewer Grid.Row="1" 
+                          VerticalScrollBarVisibility="Auto" 
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <!-- Dashboard -->
+                    <controls:NavButton Text="Dashboard"
+                                        IsActive="True"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="Dashboard"/>
+
+                    <!-- Employees Section -->
+                    <TextBlock Text="EMPLOYEE MANAGEMENT" 
+                               Foreground="#999999" 
+                               FontSize="11" 
+                               FontWeight="SemiBold" 
+                               Margin="15,20,15,5"/>
+
+                    <controls:NavButton Text="Employees"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="Employees"/>
+
+                    <controls:NavButton Text="Departments"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="Departments"/>
+
+                    <controls:NavButton Text="Positions"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="Positions"/>
+
+                    <!-- Time Management Section -->
+                    <TextBlock Text="TIME MANAGEMENT" 
+                               Foreground="#999999" 
+                               FontSize="11" 
+                               FontWeight="SemiBold" 
+                               Margin="15,20,15,5"/>
+
+                    <controls:NavButton Text="Attendance"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="Attendance"/>
+
+                    <controls:NavButton Text="Time Off Requests"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="TimeOffRequests"/>
+
+                    <controls:NavButton Text="Time Off Types"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="TimeOffTypes"/>
+
+                    <!-- Performance Section -->
+                    <TextBlock Text="PERFORMANCE" 
+                               Foreground="#999999" 
+                               FontSize="11" 
+                               FontWeight="SemiBold" 
+                               Margin="15,20,15,5"/>
+
+                    <controls:NavButton Text="Reviews"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="PerformanceReviews"/>
+
+                    <controls:NavButton Text="Criteria"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="PerformanceCriteria"/>
+
+                    <!-- Payroll Section -->
+                    <TextBlock Text="PAYROLL" 
+                               Foreground="#999999" 
+                               FontSize="11" 
+                               FontWeight="SemiBold" 
+                               Margin="15,20,15,5"/>
+
+                    <controls:NavButton Text="Pay Periods"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="PayPeriods"/>
+
+                    <controls:NavButton Text="Process Payroll"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="ProcessPayroll"/>
+
+                    <controls:NavButton Text="Payroll Items"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="PayrollItems"/>
+
+                    <!-- System Section -->
+                    <TextBlock Text="SYSTEM" 
+                               Foreground="#999999" 
+                               FontSize="11" 
+                               FontWeight="SemiBold" 
+                               Margin="15,20,15,5"/>
+
+                    <controls:NavButton Text="Users"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="Users"/>
+
+                    <controls:NavButton Text="Roles"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="Roles"/>
+
+                    <controls:NavButton Text="System Logs"
+                                        Command="{Binding NavigateCommand}" 
+                                        CommandParameter="SystemLogs"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- User Info/Logout Section -->
+            <Border Grid.Row="2" 
+                    BorderThickness="0,1,0,0" 
+                    BorderBrush="#2c3e50" 
+                    Padding="15,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- User Avatar -->
+                    <Border Width="32" 
+                            Height="32" 
+                            Background="#3498db" 
+                            CornerRadius="16">
+                        <TextBlock Text="{Binding UserInitials}" 
+                                   Foreground="White" 
+                                   HorizontalAlignment="Center" 
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"/>
+                    </Border>
+
+                    <!-- User Name and Role -->
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                        <TextBlock Text="{Binding UserFullName}" 
+                                   Foreground="White" 
+                                   FontWeight="Medium"/>
+                        <TextBlock Text="{Binding UserRole}" 
+                                   Foreground="#BBBBBB" 
+                                   FontSize="11"/>
+                    </StackPanel>
+
+                    <!-- Logout Button -->
+                    <Button Grid.Column="2" 
+                            Content="Logout" 
+                            Command="{Binding LogoutCommand}"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#ff6b6b"
+                            Cursor="Hand"/>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1" Background="#F0F2F5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Top Bar -->
+            <Border Background="White" 
+                    BorderThickness="0,0,0,1" 
+                    BorderBrush="#EEEEEE" 
+                    Padding="20,10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Page Title -->
+                    <TextBlock Text="{Binding CurrentPageTitle}" 
+                               FontSize="18" 
+                               FontWeight="SemiBold" 
+                               VerticalAlignment="Center"/>
+
+                    <!-- Top Bar Right Items -->
+                    <StackPanel Grid.Column="1" 
+                                Orientation="Horizontal">
+                        <!-- Notification Button -->
+                        <Button Margin="5,0" 
+                                Padding="8"
+                                Background="Transparent" 
+                                BorderThickness="0"
+                                ToolTip="Notifications">
+                            <!-- Replace with actual notification icon -->
+                            <TextBlock Text="🔔" FontSize="16" />
+                        </Button>
+
+                        <!-- Settings Button -->
+                        <Button Margin="5,0" 
+                                Padding="8"
+                                Background="Transparent" 
+                                BorderThickness="0"
+                                ToolTip="Settings">
+                            <!-- Replace with actual settings icon -->
+                            <TextBlock Text="⚙️" FontSize="16" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Content Frame -->
+            <Frame Grid.Row="1" 
+                   x:Name="MainFrame" 
+                   NavigationUIVisibility="Hidden" 
+                   Content="{Binding CurrentPage}"/>
+        </Grid>
     </Grid>
 </Window>
