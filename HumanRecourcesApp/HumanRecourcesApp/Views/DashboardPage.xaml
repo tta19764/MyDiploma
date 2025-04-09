@@ -8,9 +8,14 @@
       mc:Ignorable="d" 
       d:DesignHeight="650" d:DesignWidth="1060"
       Title="Dashboard">
+    
+    <Page.Resources>
+        <classes:PercentageColorConverter x:Key="PercentageColorConverter"/>
+    </Page.Resources>
+
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Margin="20">
+        <Grid Margin="20" MinWidth="600">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

@@ -7,13 +7,16 @@ using CommunityToolkit.Mvvm;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesApp.Views;
+using HumanResourcesApp;
+using System.Windows;
 
 namespace HumanRecourcesApp.ViewModels
 {
     public class MainWindowViewModel : ObservableObject
     {
         private string _userFullName = string.Empty;
-        private string _userRole = string.Empty;
+        private string _userRoleName = string.Empty;
+        private Role _userRole;
 
         public string UserFullName
         {
@@ -28,15 +31,15 @@ namespace HumanRecourcesApp.ViewModels
             }
         }
 
-        public string UserRole
+        public string UserRoleName
         {
-            get => _userRole;
+            get => _userRoleName;
             set
             {
-                if (_userRole != value)
+                if (_userRoleName != value)
                 {
-                    _userRole = value;
-                    OnPropertyChanged(nameof(UserRole));
+                    _userRoleName = value;
+                    OnPropertyChanged(nameof(UserRoleName));
                 }
             }
         }
@@ -48,15 +51,28 @@ namespace HumanRecourcesApp.ViewModels
             set => SetProperty(ref _currentPage, value);
         }
 
+        private string _currentPageTitle;
+        public string CurrentPageTitle
+        {
+            get => _currentPageTitle;
+            set => SetProperty(ref _currentPageTitle, value);
+        }
+
         public ICommand NavigateCommand { get; }
+
+        public ICommand LogoutCommand { get; }
 
         public MainWindowViewModel(User user)
         {
             if (user != null)
             {
                 NavigateCommand = new RelayCommand<object>(ExecuteNavigate);
+                LogoutCommand = new RelayCommand(ExecuteLogOut);
                 UserFullName = $"{user.FirstName} {user.LastName}";
-                UserRole = user.Role?.RoleName ?? "Unknown";
+                _userRole = user.Role;
+                UserRoleName = user.Role?.RoleName ?? "Unknown";
+                CurrentPage = new DashboardPage(UserFullName);
+                CurrentPageTitle = "Dashboard";
             }
         }
 
@@ -68,11 +84,21 @@ namespace HumanRecourcesApp.ViewModels
             {
                 case "Dashboard":
                     CurrentPage = new DashboardPage(UserFullName);
+                    CurrentPageTitle = "Dashboard";
                     break;
                 default:
                     CurrentPage = null;
                     break;
             }
+        }
+
+        private void ExecuteLogOut()
+        {
+            var loginWindow = new LoginView();
+            loginWindow.Show();
+
+            // Close the login window
+            Application.Current.Windows[0].Close();
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

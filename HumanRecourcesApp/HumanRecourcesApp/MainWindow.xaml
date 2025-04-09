@@ -170,7 +170,7 @@
                         <TextBlock Text="{Binding UserFullName}" 
                                    Foreground="White" 
                                    FontWeight="Medium"/>
-                        <TextBlock Text="{Binding UserRole}" 
+                        <TextBlock Text="{Binding UserRoleName}" 
                                    Foreground="#BBBBBB" 
                                    FontSize="11"/>
                     </StackPanel>

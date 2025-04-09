@@ -40,9 +40,6 @@ namespace HumanResourcesApp.ViewModels
         protected void OnPropertyChanged(string propertyName) =>
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
-        // Collection for upcoming events
-        public ObservableCollection<EventItem> UpcomingEvents { get; set; }
-
         // Commands for quick actions
         public ICommand AddEmployeeCommand { get; private set; }
         public ICommand ApproveTimeOffCommand { get; private set; }
