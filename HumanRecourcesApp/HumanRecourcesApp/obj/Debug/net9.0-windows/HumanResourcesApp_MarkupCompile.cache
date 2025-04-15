@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET9_0;NETCOREAPP
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\App.xaml
-4217323965
+92070099549
 
-341450200858
+49-1218070532
 218-1920395493
-Controls\NavButton.xaml;MainWindow.xaml;Views\DashboardPage.xaml;Views\LoginView.xaml;
+Controls\NavButton.xaml;MainWindow.xaml;Views\DashboardPage.xaml;Views\DepartmentFormWindow.xaml;Views\DepartmentPage.xaml;Views\EmployeeFormWindow.xaml;Views\EmployeePage.xaml;Views\LoginView.xaml;Views\PositionPage.xaml;
 
 False
 

@@ -14,21 +14,6 @@ namespace HumanResourcesApp.ViewModels
     public class DashboardViewModel : INotifyPropertyChanged
     {
         // Properties for summary cards
-
-        private string _userFullName = string.Empty;
-        public string UserFullName
-        {
-            get => _userFullName;
-            set
-            {
-                if (_userFullName != value)
-                {
-                    _userFullName = value;
-                    OnPropertyChanged(nameof(UserFullName));
-                }
-            }
-        }
-
         public int TotalEmployeesCount { get; set; }
         public double EmployeeChangePercentage { get; set; }
         public double AttendancePercentage { get; set; }
@@ -48,11 +33,6 @@ namespace HumanResourcesApp.ViewModels
 
         public DashboardViewModel(string _userName)
         {
-            if (_userName != string.Empty)
-            {
-                UserFullName = _userName;
-            }
-
             // Initialize commands
             AddEmployeeCommand = new RelayCommand(ExecuteAddEmployee);
             ApproveTimeOffCommand = new RelayCommand(ExecuteApproveTimeOff);

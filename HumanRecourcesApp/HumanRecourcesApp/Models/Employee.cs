@@ -23,8 +23,6 @@ public partial class Employee
 
     public string? City { get; set; }
 
-    public string? State { get; set; }
-
     public string? Country { get; set; }
 
     public string? Phone { get; set; }
@@ -35,15 +33,19 @@ public partial class Employee
 
     public DateOnly? TerminationDate { get; set; }
 
-    public int? PositionId { get; set; }
+    public int PositionId { get; set; }
 
-    public decimal? Salary { get; set; }
+    public decimal Salary { get; set; }
 
     public bool? IsActive { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
+    public int DepartmentId { get; set; }
+
     public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
+
+    public virtual Department Department { get; set; } = null!;
 
     public virtual ICollection<Department> Departments { get; set; } = new List<Department>();
 
@@ -53,7 +55,7 @@ public partial class Employee
 
     public virtual ICollection<PerformanceReview> PerformanceReviewReviewers { get; set; } = new List<PerformanceReview>();
 
-    public virtual Position? Position { get; set; }
+    public virtual Position Position { get; set; } = null!;
 
     public virtual ICollection<TimeOffBalance> TimeOffBalances { get; set; } = new List<TimeOffBalance>();
 

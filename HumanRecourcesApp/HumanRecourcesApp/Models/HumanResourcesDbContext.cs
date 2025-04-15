@@ -58,17 +58,18 @@ public partial class HumanResourcesDbContext : DbContext
     {
         if (!optionsBuilder.IsConfigured)
         {
-            var connectionString = ConfigurationManager.ConnectionStrings["HumanResourcesDb"]?.ConnectionString;
+            var connectionString = ConfigurationManager.ConnectionStrings["HumanResourcesDb"].ConnectionString;
 
-            if (string.IsNullOrEmpty(connectionString))
+            if(string.IsNullOrEmpty(connectionString))
+            {
                 throw new InvalidOperationException("Connection string 'HumanResourcesDb' not found.");
+            }
 
             optionsBuilder
                 .UseLazyLoadingProxies()
                 .UseNpgsql(connectionString);
         }
     }
-
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -159,6 +160,7 @@ public partial class HumanResourcesDbContext : DbContext
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
             entity.Property(e => e.DateOfBirth).HasColumnName("date_of_birth");
+            entity.Property(e => e.DepartmentId).HasColumnName("department_id");
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .HasColumnName("email");
@@ -187,14 +189,17 @@ public partial class HumanResourcesDbContext : DbContext
             entity.Property(e => e.Salary)
                 .HasPrecision(10, 2)
                 .HasColumnName("salary");
-            entity.Property(e => e.State)
-                .HasMaxLength(50)
-                .HasColumnName("state");
             entity.Property(e => e.TerminationDate).HasColumnName("termination_date");
             entity.Property(e => e.UserId).HasColumnName("user_id");
 
+            entity.HasOne(d => d.Department).WithMany(p => p.Employees)
+                .HasForeignKey(d => d.DepartmentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("employees_department_id_fkey");
+
             entity.HasOne(d => d.Position).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.PositionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("employees_position_id_fkey");
 
             entity.HasOne(d => d.User).WithOne(p => p.Employee)
@@ -473,17 +478,12 @@ public partial class HumanResourcesDbContext : DbContext
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp without time zone")
                 .HasColumnName("created_at");
-            entity.Property(e => e.DepartmentId).HasColumnName("department_id");
             entity.Property(e => e.Description)
                 .HasMaxLength(255)
                 .HasColumnName("description");
             entity.Property(e => e.PositionTitle)
                 .HasMaxLength(100)
                 .HasColumnName("position_title");
-
-            entity.HasOne(d => d.Department).WithMany(p => p.Positions)
-                .HasForeignKey(d => d.DepartmentId)
-                .HasConstraintName("positions_department_id_fkey");
         });
 
         modelBuilder.Entity<Role>(entity =>
@@ -728,10 +728,6 @@ public partial class HumanResourcesDbContext : DbContext
             entity.Property(e => e.Username)
                 .HasMaxLength(50)
                 .HasColumnName("username");
-
-            entity.Property(e => e.RoleId)
-                .IsRequired()
-                .HasColumnName("role_id");
 
             entity.HasOne(d => d.Role).WithMany(p => p.Users)
                 .HasForeignKey(d => d.RoleId)

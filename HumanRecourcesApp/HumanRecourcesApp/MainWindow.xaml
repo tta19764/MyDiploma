@@ -194,49 +194,6 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Top Bar -->
-            <Border Background="White" 
-                    BorderThickness="0,0,0,1" 
-                    BorderBrush="#EEEEEE" 
-                    Padding="20,10">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- Page Title -->
-                    <TextBlock Text="{Binding CurrentPageTitle}" 
-                               FontSize="18" 
-                               FontWeight="SemiBold" 
-                               VerticalAlignment="Center"/>
-
-                    <!-- Top Bar Right Items -->
-                    <StackPanel Grid.Column="1" 
-                                Orientation="Horizontal">
-                        <!-- Notification Button -->
-                        <Button Margin="5,0" 
-                                Padding="8"
-                                Background="Transparent" 
-                                BorderThickness="0"
-                                ToolTip="Notifications">
-                            <!-- Replace with actual notification icon -->
-                            <TextBlock Text="🔔" FontSize="16" />
-                        </Button>
-
-                        <!-- Settings Button -->
-                        <Button Margin="5,0" 
-                                Padding="8"
-                                Background="Transparent" 
-                                BorderThickness="0"
-                                ToolTip="Settings">
-                            <!-- Replace with actual settings icon -->
-                            <TextBlock Text="⚙️" FontSize="16" />
-                        </Button>
-                    </StackPanel>
-                </Grid>
-            </Border>
-
             <!-- Content Frame -->
             <Frame Grid.Row="1" 
                    x:Name="MainFrame" 

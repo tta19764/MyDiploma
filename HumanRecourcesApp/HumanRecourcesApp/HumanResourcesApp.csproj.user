@@ -13,6 +13,21 @@
     <Compile Update="Views\DashboardPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\DepartmentFormWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\DepartmentPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\EmployeeFormWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\EmployeePage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\PositionPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\NavButton.xaml">
@@ -24,7 +39,22 @@
     <Page Update="Views\DashboardPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Views\DepartmentFormWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\DepartmentPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\EmployeeFormWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\EmployeePage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\LoginView.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PositionPage.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

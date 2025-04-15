@@ -15,7 +15,7 @@ public partial class Department
 
     public DateTime? CreatedAt { get; set; }
 
-    public virtual Employee? Manager { get; set; }
+    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 
-    public virtual ICollection<Position> Positions { get; set; } = new List<Position>();
+    public virtual Employee? Manager { get; set; }
 }

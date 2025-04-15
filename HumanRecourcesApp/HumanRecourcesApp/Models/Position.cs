@@ -11,11 +11,7 @@ public partial class Position
 
     public string? Description { get; set; }
 
-    public int? DepartmentId { get; set; }
-
     public DateTime? CreatedAt { get; set; }
-
-    public virtual Department? Department { get; set; }
 
     public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

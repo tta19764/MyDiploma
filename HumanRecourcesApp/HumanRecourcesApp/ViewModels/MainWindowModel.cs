@@ -16,32 +16,19 @@ namespace HumanRecourcesApp.ViewModels
     {
         private string _userFullName = string.Empty;
         private string _userRoleName = string.Empty;
+        private string _userInitials = string.Empty;
         private Role _userRole;
 
         public string UserFullName
         {
             get => _userFullName;
-            set
-            {
-                if (_userFullName != value)
-                {
-                    _userFullName = value;
-                    OnPropertyChanged(nameof(UserFullName));
-                }
-            }
+            set => SetProperty(ref _userFullName, value);
         }
 
         public string UserRoleName
         {
             get => _userRoleName;
-            set
-            {
-                if (_userRoleName != value)
-                {
-                    _userRoleName = value;
-                    OnPropertyChanged(nameof(UserRoleName));
-                }
-            }
+            set => SetProperty(ref _userRoleName, value);
         }
 
         private Page _currentPage;
@@ -51,11 +38,10 @@ namespace HumanRecourcesApp.ViewModels
             set => SetProperty(ref _currentPage, value);
         }
 
-        private string _currentPageTitle;
-        public string CurrentPageTitle
+        public string UserInitials
         {
-            get => _currentPageTitle;
-            set => SetProperty(ref _currentPageTitle, value);
+            get => _userInitials;
+            set => SetProperty(ref _userInitials, value);
         }
 
         public ICommand NavigateCommand { get; }
@@ -72,7 +58,7 @@ namespace HumanRecourcesApp.ViewModels
                 _userRole = user.Role;
                 UserRoleName = user.Role?.RoleName ?? "Unknown";
                 CurrentPage = new DashboardPage(UserFullName);
-                CurrentPageTitle = "Dashboard";
+                UserInitials = $"{user.FirstName[0]}{user.LastName[0]}".ToUpper();
             }
         }
 
@@ -84,7 +70,15 @@ namespace HumanRecourcesApp.ViewModels
             {
                 case "Dashboard":
                     CurrentPage = new DashboardPage(UserFullName);
-                    CurrentPageTitle = "Dashboard";
+                    break;
+                case "Departments":
+                    CurrentPage = new DepartmentPage();
+                    break;
+                case "Positions":
+                    CurrentPage = new PositionPage();
+                    break;
+                case "Employees":
+                    CurrentPage = new EmployeePage();
                     break;
                 default:
                     CurrentPage = null;
@@ -100,9 +94,5 @@ namespace HumanRecourcesApp.ViewModels
             // Close the login window
             Application.Current.Windows[0].Close();
         }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected void OnPropertyChanged(string propertyName) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
