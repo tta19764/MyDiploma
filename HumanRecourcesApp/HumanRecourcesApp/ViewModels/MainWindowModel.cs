@@ -12,57 +12,33 @@ using System.Windows;
 
 namespace HumanRecourcesApp.ViewModels
 {
-    public class MainWindowViewModel : ObservableObject
+    public partial class MainWindowViewModel : ObservableObject
     {
-        private string _userFullName = string.Empty;
-        private string _userRoleName = string.Empty;
-        private string _userInitials = string.Empty;
-        private Role _userRole;
-
-        public string UserFullName
-        {
-            get => _userFullName;
-            set => SetProperty(ref _userFullName, value);
-        }
-
-        public string UserRoleName
-        {
-            get => _userRoleName;
-            set => SetProperty(ref _userRoleName, value);
-        }
-
-        private Page _currentPage;
-        public Page CurrentPage
-        {
-            get => _currentPage;
-            set => SetProperty(ref _currentPage, value);
-        }
-
-        public string UserInitials
-        {
-            get => _userInitials;
-            set => SetProperty(ref _userInitials, value);
-        }
-
-        public ICommand NavigateCommand { get; }
-
-        public ICommand LogoutCommand { get; }
+        [ObservableProperty]
+        private string userFullName = string.Empty;
+        [ObservableProperty]
+        private string userRoleName = string.Empty;
+        [ObservableProperty]
+        private string userInitials = string.Empty;
+        [ObservableProperty]
+        private Role userRole;
+        [ObservableProperty]
+        private Page currentPage;
 
         public MainWindowViewModel(User user)
         {
             if (user != null)
             {
-                NavigateCommand = new RelayCommand<object>(ExecuteNavigate);
-                LogoutCommand = new RelayCommand(ExecuteLogOut);
                 UserFullName = $"{user.FirstName} {user.LastName}";
-                _userRole = user.Role;
+                UserRole = user.Role;
                 UserRoleName = user.Role?.RoleName ?? "Unknown";
                 CurrentPage = new DashboardPage(UserFullName);
                 UserInitials = $"{user.FirstName[0]}{user.LastName[0]}".ToUpper();
             }
         }
 
-        private void ExecuteNavigate(object? parameter)
+        [RelayCommand]
+        private void Navigate(object? parameter)
         {
             string pageName = parameter as string;
 
@@ -92,7 +68,8 @@ namespace HumanRecourcesApp.ViewModels
             }
         }
 
-        private void ExecuteLogOut()
+        [RelayCommand]
+        private void LogOut()
         {
             var loginWindow = new LoginView();
             loginWindow.Show();

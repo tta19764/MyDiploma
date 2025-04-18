@@ -178,7 +178,7 @@
                     <!-- Logout Button -->
                     <Button Grid.Column="2" 
                             Content="Logout" 
-                            Command="{Binding LogoutCommand}"
+                            Command="{Binding LogOutCommand}"
                             Background="Transparent"
                             BorderThickness="0"
                             Foreground="#ff6b6b"
