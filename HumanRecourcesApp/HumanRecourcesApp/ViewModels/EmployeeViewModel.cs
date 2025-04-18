@@ -32,7 +32,7 @@ namespace HumanResourcesApp.ViewModels
         {
             try
             {
-                var employeeList = _context.GetAllEmployees();
+                var employeeList = _context.GetAllEmplyees();
                 Employees = new ObservableCollection<Employee>(employeeList);
             }
             catch (Exception ex)

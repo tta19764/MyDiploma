@@ -139,3 +139,7 @@ E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\n
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\EmployeePage.baml
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\EmployeeFormWindow.g.cs
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\EmployeeFormWindow.baml
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\AttendancePage.g.cs
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\TimeOffTypesPage.g.cs
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\AttendancePage.baml
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\TimeOffTypesPage.baml

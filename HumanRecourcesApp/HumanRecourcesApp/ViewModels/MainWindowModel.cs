@@ -80,6 +80,12 @@ namespace HumanRecourcesApp.ViewModels
                 case "Employees":
                     CurrentPage = new EmployeePage();
                     break;
+                case "Attendance":
+                    CurrentPage = new AttendancePage();
+                    break;
+                case "TimeOffTypes":
+                    CurrentPage = new TimeOffTypesPage();
+                    break;
                 default:
                     CurrentPage = null;
                     break;

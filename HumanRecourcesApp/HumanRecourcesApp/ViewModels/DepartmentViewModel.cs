@@ -16,75 +16,68 @@ using HumanResourcesApp.Views;
 
 namespace HumanRecourcesApp.ViewModels
 {
-    public class DepartmentViewModel : ObservableObject
+    public partial class DepartmentViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
-        private ObservableCollection<Department> _departments;
-        private Department _selectedDepartment;
-        private string _statusMessage;
-        private int _totalCount;
-
-        public ObservableCollection<Department> Departments
-        {
-            get => _departments;
-            set => SetProperty(ref _departments, value);
-        }
+        [ObservableProperty]
+        private ObservableCollection<DepartmentDisplayModel> departments;
+        private Department selectedDepartment;
+        [ObservableProperty]
+        private string statusMessage;
+        [ObservableProperty]
+        private int totalCount;
 
         public Department SelectedDepartment
         {
-            get => _selectedDepartment;
+            get => selectedDepartment;
             set
             {
-                if (SetProperty(ref _selectedDepartment, value) && value != null)
+                if (SetProperty(ref selectedDepartment, value) && value != null)
                 {
                     StatusMessage = $"Selected: {value.DepartmentName}";
                 }
             }
         }
 
-        public string StatusMessage
-        {
-            get => _statusMessage;
-            set => SetProperty(ref _statusMessage, value);
-        }
-
-        public int TotalCount
-        {
-            get => _totalCount;
-            set => SetProperty(ref _totalCount, value);
-        }
-
         // Commands
-        public ICommand AddDepartmentCommand { get; }
-        public ICommand EditDepartmentCommand { get; }
-        public ICommand DeleteDepartmentCommand { get; }
         public ICommand RefreshCommand { get; }
 
         public DepartmentViewModel()
         {
             _context = new HumanResourcesDB();
-            Departments = new ObservableCollection<Department>();
+            Departments = new ObservableCollection<DepartmentDisplayModel>();
 
-            // Initialize commands
-            AddDepartmentCommand = new RelayCommand(AddDepartment);
-            EditDepartmentCommand = new RelayCommand<Department>(EditDepartment);
-            DeleteDepartmentCommand = new RelayCommand<Department>(DeleteDepartment);
-            RefreshCommand = new RelayCommand(LoadDepartmentsAsync);
+            RefreshCommand = new RelayCommand(LoadDepartments);
 
             // Load data
-            LoadDepartmentsAsync();
+            LoadDepartments();
         }
 
-        public async void LoadDepartmentsAsync()
+        public async void LoadDepartments()
         {
             try
             {
                 StatusMessage = "Loading departments...";
 
                 // Load departments with related manager data
-                var departments = await _context.GetAllDepartmentsAsync();
+                var departments = _context.GetAllDepartments();
 
-                Departments = new ObservableCollection<Department>(departments);
+                Departments = new ObservableCollection<DepartmentDisplayModel>();
+                foreach (var department in departments)
+                {
+                    var manager =  _context.GetAllEmplyees()
+                        .FirstOrDefault(e => e.EmployeeId == department.ManagerId);
+                    Departments.Add(new DepartmentDisplayModel
+                    {
+                        DepartmentId = department.DepartmentId,
+                        DepartmentName = department.DepartmentName,
+                        Description = department.Description,
+                        ManagerId = department.ManagerId,
+                        CreatedAt = department.CreatedAt,
+                        Employees = department.Employees,
+                        ManagerFullName = manager != null ? $"{manager.FirstName} {manager.LastName}" : "No Manager"
+                    });
+                }
                 TotalCount = Departments.Count;
                 StatusMessage = "Departments loaded successfully";
             }
@@ -96,32 +89,35 @@ namespace HumanRecourcesApp.ViewModels
             }
         }
 
+        [RelayCommand]
         private void AddDepartment()
         {
             var window = new DepartmentFormWindow();
 
             if (window.ShowDialog() == true)
             {
-                LoadDepartmentsAsync();
+                LoadDepartments();
                 StatusMessage = "New department added successfully";
             }
         }
 
-        private void EditDepartment(Department department)
+        [RelayCommand]
+        private void EditDepartment(DepartmentDisplayModel department)
         {
             if (department != null)
             {
-                var window = new DepartmentFormWindow(department);
+                var window = new DepartmentFormWindow(_context.GetDepartmentById(department.DepartmentId));
 
                 if (window.ShowDialog() == true)
                 {
-                    LoadDepartmentsAsync();
+                    LoadDepartments();
                     StatusMessage = $"Department '{department.DepartmentName}' updated successfully";
                 }
             }
         }
 
-        private async void DeleteDepartment(Department department)
+        [RelayCommand]
+        private async void DeleteDepartment(DepartmentDisplayModel department)
         {
             if (department == null) return;
 
@@ -149,10 +145,10 @@ namespace HumanRecourcesApp.ViewModels
                 try
                 {
                     string departmentName = department.DepartmentName;
-                    _context.DeleteDepartment(department);
+                    _context.DeleteDepartment(_context.GetDepartmentById(department.DepartmentId));
 
                     // Refresh the grid
-                    LoadDepartmentsAsync();
+                    LoadDepartments();
                     StatusMessage = $"Department '{departmentName}' deleted successfully";
                 }
                 catch (Exception ex)
