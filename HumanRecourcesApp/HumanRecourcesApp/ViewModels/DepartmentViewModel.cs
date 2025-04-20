@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesApp.Models;
-//using HumanResourcesApp.Windows;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using HumanResourcesApp.DBClasses;
@@ -23,7 +22,7 @@ namespace HumanRecourcesApp.ViewModels
         private ObservableCollection<DepartmentDisplayModel> departments;
         private Department selectedDepartment;
         [ObservableProperty]
-        private string statusMessage;
+        private string statusMessage = string.Empty;
         [ObservableProperty]
         private int totalCount;
 
@@ -39,21 +38,22 @@ namespace HumanRecourcesApp.ViewModels
             }
         }
 
-        // Commands
-        public ICommand RefreshCommand { get; }
 
         public DepartmentViewModel()
         {
             _context = new HumanResourcesDB();
             Departments = new ObservableCollection<DepartmentDisplayModel>();
 
-            RefreshCommand = new RelayCommand(LoadDepartments);
-
             // Load data
             LoadDepartments();
         }
+        [RelayCommand]
+        public void Refresh()
+        {
+            LoadDepartments();
+        }
 
-        public async void LoadDepartments()
+        public void LoadDepartments()
         {
             try
             {
@@ -117,7 +117,7 @@ namespace HumanRecourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private async void DeleteDepartment(DepartmentDisplayModel department)
+        private void DeleteDepartment(DepartmentDisplayModel department)
         {
             if (department == null) return;
 

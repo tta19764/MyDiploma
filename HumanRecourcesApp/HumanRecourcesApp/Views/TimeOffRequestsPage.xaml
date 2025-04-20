@@ -1,0 +1,218 @@
+﻿<Page x:Class="HumanResourcesApp.Views.TimeOffRequestsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:HumanResourcesApp.Views"
+      xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
+      mc:Ignorable="d"
+      d:DesignHeight="600" d:DesignWidth="900"
+      Title="Attendance Management"
+      Background="#F5F7FA">
+
+    <Page.Resources>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="MinWidth" Value="75"/>
+            <Setter Property="Background" Value="#2E86DE"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1D75C0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#166ABD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="ReviewButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#4CAF50"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#43A047"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#388E3C"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="DeleteButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#FF5252"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E03E3E"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#C13333"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </Page.Resources>
+        <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Border Background="#2E75B6" Padding="15" Grid.Row="0">
+            <DockPanel>
+                <TextBlock Grid.Column="0" Text="Time Off Requests"
+                    FontSize="24"
+                    FontWeight="Bold"
+                    Foreground="White"
+                    VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                        HorizontalAlignment="Right" DockPanel.Dock="Right">
+                    <Button Content="New Request" 
+                    Command="{Binding CreateCommand}" 
+                    Padding="12,8" 
+                    Background="#41A5EE"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Margin="0 0 15 0"/>
+                    <Button Content="Refresh" 
+                    Command="{Binding RefreshCommand}" 
+                    Padding="12,8" 
+                    Background="#41A5EE"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Margin="0 0 10 0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <ScrollViewer Grid.Row="1">
+            <StackPanel Background="#F7F7F7">
+
+                <!-- Page Header -->
+
+
+                <!-- Request Cards -->
+                <ItemsControl ItemsSource="{Binding TimeOffRequests}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="#DDD"
+                BorderThickness="1"
+                CornerRadius="8"
+                Margin="15,15,15,0"
+                Padding="16"
+                Background="White">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Header: Employee + Type -->
+                                    <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal">
+                                        <TextBlock Text="{Binding EmployeeName}" FontSize="18" FontWeight="Bold" Foreground="#333"/>
+                                        <TextBlock Text=" – " FontSize="18" Margin="4,0"/>
+                                        <TextBlock Text="{Binding TimeOffTypeName}" FontSize="18" FontWeight="Bold" Foreground="#2E86DE"/>
+                                    </StackPanel>
+
+                                    <!-- Date & Duration -->
+                                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,8,0,0">
+                                        <TextBlock>
+                        <Run Text="Period: "/>
+                        <Run Text="{Binding StartDate}" FontWeight="SemiBold"/>
+                        <Run Text=" – "/>
+                        <Run Text="{Binding EndDate}" FontWeight="SemiBold"/>
+                        <Run Text=" ("/>
+                        <Run Text="{Binding TotalDays}"/>
+                        <Run Text=" days)"/>
+                                        </TextBlock>
+
+                                        <TextBlock Text="{Binding Reason}" FontStyle="Italic" Foreground="#666" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
+
+                                    <!-- Status -->
+                                    <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0,10,0,0">
+                                        <TextBlock>
+                        <Run Text="Status: " FontWeight="SemiBold"/>
+                        <Run Text="{Binding Status}" Foreground="#444"/>
+                                        </TextBlock>
+                                        <TextBlock Text=" | " Margin="6,0"/>
+                                        <TextBlock>
+                        <Run Text="Reviewed by: "/>
+                        <Run Text="{Binding ApprovedByName}" FontWeight="SemiBold"/>
+                                        </TextBlock>
+                                        <TextBlock Text=" | " Margin="6,0"/>
+                                        <TextBlock>
+                        <Run Text="Review Date: "/>
+                        <Run Text="{Binding ApprovalDate}" FontWeight="SemiBold"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <!-- Buttons -->
+                                    <StackPanel Grid.RowSpan="3" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0">
+                                        <Button Content="Edit"
+                                            Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                            CommandParameter="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="Review"
+                                            Command="{Binding DataContext.ReviewCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                            CommandParameter="{Binding}">
+                                            <Button.Style>
+                                                <Style TargetType="Button" BasedOn="{StaticResource ReviewButton}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Button.Style>
+                                        </Button>
+                                        <Button Content="Delete"
+                            Style="{StaticResource DeleteButton}"
+                            Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                            CommandParameter="{Binding}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+    
+</Page>

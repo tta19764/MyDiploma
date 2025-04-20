@@ -12,7 +12,9 @@ namespace HumanResourcesApp.Models
         public int TimeOffTypeId { get; set; }
 
         [ObservableProperty]
-        private bool isEdditing; 
+        private bool isEdditing;
+
+        public string DefaultPeriod { get; set; } = null!;
 
         public string TimeOffTypeName { get; set; } = null!;
 

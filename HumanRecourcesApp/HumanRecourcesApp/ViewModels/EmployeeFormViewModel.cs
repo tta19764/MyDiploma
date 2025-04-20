@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -74,6 +75,10 @@ namespace HumanResourcesApp.ViewModels
 
         // Event used to communicate with the view
         public event EventHandler<bool> RequestClose;
+
+        private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
+        private static readonly Regex PhoneRegex = new(@"^\+?[0-9\s\-]{7,15}$", RegexOptions.Compiled);
+
 
         public EmployeeFormViewModel()
         {
@@ -192,9 +197,15 @@ namespace HumanResourcesApp.ViewModels
                 return false;
             }
 
-            if (string.IsNullOrWhiteSpace(Employee.Email))
+            if (!string.IsNullOrWhiteSpace(Employee.Email) && !EmailRegex.IsMatch(Employee.Email))
             {
-                MessageBox.Show("Email is required.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Email format is invalid.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(Employee.Phone) && !PhoneRegex.IsMatch(Employee.Phone))
+            {
+                MessageBox.Show("Phone number format is invalid.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
 

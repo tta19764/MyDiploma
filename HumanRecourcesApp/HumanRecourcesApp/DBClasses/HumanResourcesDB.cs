@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace HumanResourcesApp.DBClasses
 {
@@ -30,7 +31,7 @@ namespace HumanResourcesApp.DBClasses
 
         public User? GetUserByLogin(string username, string password)
         {
-            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+            var user = _context.Users.AsNoTracking().FirstOrDefault(u => u.Username == username);
 
             if (user != null && Login.VerifyPassword(password, user.PasswordHash))
             {
@@ -66,7 +67,7 @@ namespace HumanResourcesApp.DBClasses
 
         public bool IsUniqueDepartmentName(Department department)
         {
-            if (_context.Departments.Count() == 0)
+            if (_context.Departments.AsNoTracking().Count() == 0)
             {
                 return true;
             }
@@ -124,7 +125,7 @@ namespace HumanResourcesApp.DBClasses
 
         public bool IsUniquePositionTitle(Position position)
         {
-            if (_context.Positions.Count() == 0)
+            if (_context.Positions.AsNoTracking().Count() == 0)
             {
                 return true;
             }
@@ -189,7 +190,7 @@ namespace HumanResourcesApp.DBClasses
 
         public bool IsUniqueTimeOffTypeName(TimeOffType timeOffType)
         {
-            if (_context.TimeOffTypes.Count() == 0)
+            if (_context.TimeOffTypes.AsNoTracking().Count() == 0)
             {
                 return true;
             }
@@ -207,6 +208,50 @@ namespace HumanResourcesApp.DBClasses
         {
             return _context.TimeOffRequests.AsNoTracking().Any(d => d.TimeOffTypeId == timeOffType.TimeOffTypeId);
         }
+
+        public List<TimeOffType> GetAllActiveTimeOffTypes()
+        {
+            return _context.TimeOffTypes.AsNoTracking().Where(t => t.IsActive == true).ToList();
+        }
+
+        // TimeOffRequests Read Operations
+        public List<TimeOffRequest> GetAllTimeOffRequests()
+        {
+            return _context.TimeOffRequests.AsNoTracking().ToList();
+        }
+
+        public TimeOffRequest? GetTimeOffRequestById(int id)
+        {
+            return _context.TimeOffRequests.AsNoTracking().FirstOrDefault(s => s.TimeOffRequestId == id);
+        }
+
+        // TimeOffBalance Read Operations
+
+        public List<TimeOffBalance> GetAllTimeOffBalances()
+        {
+            return _context.TimeOffBalances.AsNoTracking().ToList();
+        }
+
+        public TimeOffBalance? GetTimeOffBalance(int employeeId, int timeOffTypeId)
+        {
+            TimeOffBalance? timeOffBalance = _context.TimeOffBalances
+                .AsNoTracking()
+                .FirstOrDefault(t => t.EmployeeId == employeeId && t.TimeOffTypeId == timeOffTypeId);
+
+            if(timeOffBalance == null)
+            {
+                timeOffBalance = new TimeOffBalance
+                {
+                    EmployeeId = employeeId,
+                    TimeOffTypeId = timeOffTypeId,
+                    TotalDays = 0,
+                    UsedDays = 0,
+                    RemainingDays = 0
+                };
+            }
+            return timeOffBalance;
+        }
+
 
         // =====================================
         // CREATE OPERATIONS
@@ -229,9 +274,46 @@ namespace HumanResourcesApp.DBClasses
         // Employee Create Operations
         public void AddEmployee(Employee employee)
         {
-            _context.Employees.Add(employee);
-            _context.SaveChanges();
+            try
+            {
+                using var context = new HumanResourcesDbContext();
+                using var transaction = context.Database.BeginTransaction();
+
+                // Add the new employee
+                context.Employees.Add(employee);
+                context.SaveChanges(); // Required to get the generated EmployeeId
+
+                // Fetch active time off types
+                var allTypes = GetAllTimeOffTypes();
+
+                var now = DateTime.Now;
+
+                // Create balance entries for each time off type
+                foreach (var type in allTypes)
+                {
+                    var period = (context.TimeOffBalances.FirstOrDefault(s => s.TimeOffTypeId == type.TimeOffTypeId).Period) ?? "Yearly";
+
+                    context.TimeOffBalances.Add(new TimeOffBalance
+                    {
+                        EmployeeId = employee.EmployeeId,
+                        TimeOffTypeId = type.TimeOffTypeId,
+                        Period = period,
+                        TotalDays = type.DefaultDays ?? 0,
+                        UsedDays = 0,
+                        RemainingDays = type.DefaultDays ?? 0,
+                        CreatedAt = now
+                    });
+                }
+
+                context.SaveChanges();
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding employee: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
 
         // Position Create Operations
         public void AddPosition(Position position)
@@ -251,6 +333,33 @@ namespace HumanResourcesApp.DBClasses
         public void AddTimeOffType(TimeOffType timeOffType)
         {
             _context.TimeOffTypes.Add(timeOffType);
+            _context.SaveChanges();
+        }
+
+        // TimeOffRequests Create Operations
+        public void AddTimeOffRequest(TimeOffRequest timeOffRequest)
+        {
+            _context.TimeOffRequests.Add(timeOffRequest);
+            _context.SaveChanges();
+        }
+
+        // TimeOffBalance Create Operations
+        public void CreateTimeOffBalanceByTimeOffType(TimeOffType timeOffType, string period)
+        {
+            var employees = _context.Employees.AsNoTracking().ToList();
+            foreach (var employee in employees)
+            {
+                var timeOffBalance = new TimeOffBalance
+                {
+                    EmployeeId = employee.EmployeeId,
+                    TimeOffTypeId = timeOffType.TimeOffTypeId,
+                    Period = period,
+                    TotalDays = timeOffType.DefaultDays ?? 0,
+                    UsedDays = 0,
+                    RemainingDays = timeOffType.DefaultDays ?? 0
+                };
+                _context.TimeOffBalances.Add(timeOffBalance);
+            }
             _context.SaveChanges();
         }
 
@@ -368,6 +477,91 @@ namespace HumanResourcesApp.DBClasses
             }
         }
 
+        // TimeOffRequests Update Operations
+
+        public void UpdateTimeOffRequest(TimeOffRequest timeOffRequest)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<TimeOffRequest>()
+                        .Local
+                        .FirstOrDefault(e => e.TimeOffRequestId == timeOffRequest.TimeOffRequestId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(timeOffRequest).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating TimeOffRequest: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // TimeOffBalance Update Operations
+
+        public void UpdateTimeOffBalance(TimeOffBalance timeOffBalance)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<TimeOffBalance>()
+                        .Local
+                        .FirstOrDefault(e => e.TimeOffBalanceId == timeOffBalance.TimeOffBalanceId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(timeOffBalance).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show($"Error updating TimeOffBalance: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            
+        }
+
+        public void UpdateTimeOffBalancePeriod(TimeOffType type, string period)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    var balances = context.TimeOffBalances
+                        .Where(b => b.TimeOffTypeId == type.TimeOffTypeId)
+                        .ToList();
+
+                    foreach (var balance in balances)
+                    {
+                        balance.Period = period;
+                        context.TimeOffBalances.Update(balance);
+                    }
+
+                    context.SaveChanges();
+                    transaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating TimeOffBalance period: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // =====================================
         // DELETE OPERATIONS
         // =====================================
@@ -423,6 +617,17 @@ namespace HumanResourcesApp.DBClasses
             if (existingTimeOffType != null)
             {
                 _context.TimeOffTypes.Remove(existingTimeOffType);
+                _context.SaveChanges();
+            }
+        }
+
+        // TimeOffRequests Delete Operations
+        public void DeleteTimeOffRequest(TimeOffRequest timeOffRequest)
+        {
+            var existingTimeOffRequest = _context.TimeOffRequests.Find(timeOffRequest.TimeOffRequestId);
+            if (existingTimeOffRequest != null)
+            {
+                _context.TimeOffRequests.Remove(existingTimeOffRequest);
                 _context.SaveChanges();
             }
         }

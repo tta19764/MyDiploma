@@ -28,7 +28,7 @@ namespace HumanResourcesApp.ViewModels
             LoadEmployees();
         }
 
-        private async void LoadEmployees()
+        private void LoadEmployees()
         {
             try
             {
@@ -84,7 +84,7 @@ namespace HumanResourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private async Task DeleteEmployee(Employee employee)
+        private void DeleteEmployee(Employee employee)
         {
             if (employee == null) return;
 

@@ -23,7 +23,15 @@ namespace HumanResourcesApp.ViewModels
         private bool isAddingNew;
 
         [ObservableProperty]
-        private TimeOffTypeDisplayModel newTimeOffType;
+        private TimeOffTypeDisplayModel? newTimeOffType;
+
+        public ObservableCollection<string> PeriodOptions { get; } = new()
+        {
+            "Yearly",
+            "SemiAnnual",
+            "Quarterly",
+            "Monthly"
+        };
 
         public TimeOffTypesViewModel()
         {
@@ -55,7 +63,8 @@ namespace HumanResourcesApp.ViewModels
                             DefaultDays = type.DefaultDays,
                             IsActive = type.IsActive,
                             CreatedAt = type.CreatedAt,
-                            IsEdditing = false
+                            IsEdditing = false,
+                            DefaultPeriod = type.TimeOffBalances.FirstOrDefault()?.Period ?? string.Empty
                         }
                         );
                 }
@@ -80,7 +89,8 @@ namespace HumanResourcesApp.ViewModels
                 DefaultDays = 0,
                 IsActive = true,
                 CreatedAt = DateTime.Now,
-                IsEdditing = false
+                IsEdditing = false,
+                DefaultPeriod = PeriodOptions[0] // Default to the first option
             };
             IsAddingNew = true;
         }
@@ -124,8 +134,10 @@ namespace HumanResourcesApp.ViewModels
                     }
 
                     _context.AddTimeOffType(newTimeOffType);
+                    _context.CreateTimeOffBalanceByTimeOffType(newTimeOffType, NewTimeOffType.DefaultPeriod);
 
                     // Add to collection
+                    NewTimeOffType.TimeOffTypeId = newTimeOffType.TimeOffTypeId;
                     TimeOffTypes.Add(NewTimeOffType);
 
                     IsAddingNew = false;
@@ -148,13 +160,17 @@ namespace HumanResourcesApp.ViewModels
                         existingType.DefaultDays = SelectedTimeOffType.DefaultDays;
                         existingType.IsActive = SelectedTimeOffType.IsActive;
 
+
                         if (!_context.IsUniqueTimeOffTypeName(existingType))
                         {
                             MessageBox.Show("Time Off Type Name must be unique.");
                             return;
                         }
 
+                        var period = SelectedTimeOffType.DefaultPeriod;
+
                         _context.UpdateTimeOffType(existingType);
+                        _context.UpdateTimeOffBalancePeriod(existingType, SelectedTimeOffType.DefaultPeriod);
 
                         // Update in collection
                         var index = TimeOffTypes.IndexOf(TimeOffTypes.FirstOrDefault(t => t.TimeOffTypeId == existingType.TimeOffTypeId));
@@ -168,14 +184,13 @@ namespace HumanResourcesApp.ViewModels
                                 DefaultDays = existingType.DefaultDays,
                                 IsActive = existingType.IsActive,
                                 CreatedAt = existingType.CreatedAt,
-                                IsEdditing = false
+                                IsEdditing = false,
+                                DefaultPeriod = period
                             };
                         }
                     }
                 }
-                
-                NewTimeOffType = null;
-                SelectedTimeOffType = null; // Clear selection
+                SelectedTimeOffType = new TimeOffTypeDisplayModel();
             }
             catch (Exception ex)
             {
@@ -201,6 +216,7 @@ namespace HumanResourcesApp.ViewModels
                 var originalTimeOffType = _context.GetTimeOffTypeById(SelectedTimeOffType.TimeOffTypeId);
                 if (originalTimeOffType != null)
                 {
+                    string period = originalTimeOffType.TimeOffBalances.FirstOrDefault()?.Period ?? string.Empty;
                     // Restore original values
                     int index = TimeOffTypes.IndexOf(SelectedTimeOffType);
                     TimeOffTypes[index] = new TimeOffTypeDisplayModel() { 
@@ -209,7 +225,8 @@ namespace HumanResourcesApp.ViewModels
                         Description = originalTimeOffType.Description,
                         TimeOffTypeName = originalTimeOffType.TimeOffTypeName,
                         IsActive = originalTimeOffType.IsActive,
-                        CreatedAt = originalTimeOffType.CreatedAt
+                        CreatedAt = originalTimeOffType.CreatedAt,
+                        DefaultPeriod = period
                     };
                     SelectedTimeOffType = TimeOffTypes[index];
                 }
@@ -248,7 +265,7 @@ namespace HumanResourcesApp.ViewModels
                     // Clear selection if deleted item was selected
                     if (SelectedTimeOffType == timeOffType)
                     {
-                        SelectedTimeOffType = null;
+                        SelectedTimeOffType = new TimeOffTypeDisplayModel();
                     }
                 }
             }

@@ -28,6 +28,15 @@
     <Compile Update="Views\PositionPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\TimeOffRequestFormWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\TimeOffRequestReviewFormWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\TimeOffRequestsPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Controls\NavButton.xaml">
@@ -55,6 +64,15 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\PositionPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\TimeOffRequestFormWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\TimeOffRequestReviewFormWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\TimeOffRequestsPage.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

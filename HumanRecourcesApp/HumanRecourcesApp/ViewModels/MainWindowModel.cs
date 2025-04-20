@@ -62,6 +62,9 @@ namespace HumanRecourcesApp.ViewModels
                 case "TimeOffTypes":
                     CurrentPage = new TimeOffTypesPage();
                     break;
+                case "TimeOffRequests":
+                    CurrentPage = new TimeOffRequestsPage();
+                    break;
                 default:
                     CurrentPage = null;
                     break;
