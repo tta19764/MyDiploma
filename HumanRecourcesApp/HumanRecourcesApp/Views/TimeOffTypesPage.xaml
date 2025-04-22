@@ -126,7 +126,7 @@
             <Border Grid.Row="0" Background="#2E75B6" Padding="15">
                 <TextBlock Text="Time Off Types" 
                    FontSize="22" 
-                   FontWeight="SemiBold"
+                   FontWeight="Bold"
                    Foreground="White" Grid.ColumnSpan="2"/>
             </Border>
 

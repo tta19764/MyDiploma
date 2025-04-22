@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:HumanResourcesApp.Views"
       xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
+      xmlns:controls="clr-namespace:HumanResourcesApp.Controls"
       mc:Ignorable="d"
       d:DesignHeight="600" d:DesignWidth="900"
       Title="Attendance Management"
@@ -106,17 +107,15 @@
             
             <TextBlock Text="Attendances" 
                 FontSize="22" 
-                FontWeight="SemiBold"
+                FontWeight="Bold"
                 Foreground="White" Grid.ColumnSpan="2"/>
 
-                <Button Grid.Column="1"
-                        Padding="12,8" 
-                        Background="#41A5EE"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Content="Add Attendance" 
-                        Command="{Binding AddAttendanceCommand}" 
-                        DockPanel.Dock="Right"/>
+                <controls:ActionButtonControl
+                        Grid.Column="1"
+                        DockPanel.Dock="Right"
+                        ButtonContent="Add Attendance"
+                        ButtonCommand="{Binding AddAttendanceCommand}"
+                        ButtonPadding="12,8"/>
             </Grid>
         </Border>
         

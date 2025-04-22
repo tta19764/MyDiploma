@@ -149,3 +149,5 @@ E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\n
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\TimeOffRequestsPage.baml
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\TimeOffRequestReviewFormWindow.g.cs
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\TimeOffRequestReviewFormWindow.baml
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Controls\ActionButtonControl.g.cs
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Controls\ActionButtonControl.baml

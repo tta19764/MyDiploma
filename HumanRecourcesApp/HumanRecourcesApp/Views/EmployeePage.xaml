@@ -1,11 +1,12 @@
 ﻿<Page x:Class="HumanResourcesApp.Views.EmployeePage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"    
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:HumanResourcesApp.Views"
       xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
       xmlns:vm="clr-namespace:HumanResourcesApp.ViewModels"
+      xmlns:controls="clr-namespace:HumanResourcesApp.Controls"
       mc:Ignorable="d" 
       d:DesignHeight="600" d:DesignWidth="900"
       Title="Employee Management"
@@ -100,16 +101,15 @@
 
                     <TextBlock Text="Employees" 
                    FontSize="22" 
-                   FontWeight="SemiBold"
+                   FontWeight="Bold"
                    Foreground="White"/>
 
-                    <Button Grid.Column="1" 
-                Content="Add New Employee" 
-                Padding="12,8" 
-                Background="#41A5EE"
-                Foreground="White"
-                BorderThickness="0"
-                Command="{Binding AddEmployeeCommand}"/>
+                    <controls:ActionButtonControl
+                        Grid.Column="1"
+                        DockPanel.Dock="Right"
+                        ButtonContent="Add New Employee"
+                        ButtonCommand="{Binding AddEmployeeCommand}"
+                        ButtonPadding="12,8"/>
                 </Grid>
             </Border>
 

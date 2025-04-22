@@ -68,7 +68,7 @@
             <StackPanel VerticalAlignment="Center" Margin="30,0">
                 <TextBlock Text="HR Management System" 
                            FontSize="24" 
-                           FontWeight="SemiBold" 
+                           FontWeight="Bold" 
                            Foreground="White"/>
                 <TextBlock Text="Sign in to your account" 
                            FontSize="14" 

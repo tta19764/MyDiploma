@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:HumanResourcesApp.Views"
       xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
+        xmlns:controls="clr-namespace:HumanResourcesApp.Controls"
       mc:Ignorable="d"
       d:DesignHeight="600" d:DesignWidth="900"
       Title="Attendance Management"
@@ -81,26 +82,25 @@
         <Border Background="#2E75B6" Padding="15" Grid.Row="0">
             <DockPanel>
                 <TextBlock Grid.Column="0" Text="Time Off Requests"
-                    FontSize="24"
+                    FontSize="22"
                     FontWeight="Bold"
                     Foreground="White"
                     VerticalAlignment="Center"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal"
                         HorizontalAlignment="Right" DockPanel.Dock="Right">
-                    <Button Content="New Request" 
-                    Command="{Binding CreateCommand}" 
-                    Padding="12,8" 
-                    Background="#41A5EE"
-                    Foreground="White"
-                    BorderThickness="0"
-                    Margin="0 0 15 0"/>
-                    <Button Content="Refresh" 
-                    Command="{Binding RefreshCommand}" 
-                    Padding="12,8" 
-                    Background="#41A5EE"
-                    Foreground="White"
-                    BorderThickness="0"
-                    Margin="0 0 10 0"/>
+                    <controls:ActionButtonControl
+                        DockPanel.Dock="Right"
+                        ButtonContent="New Request"
+                        ButtonCommand="{Binding CreateCommand}"
+                        ButtonPadding="12,8"
+                        Margin="0 0 15 0"/>
+
+                    <controls:ActionButtonControl
+                        DockPanel.Dock="Right"
+                        ButtonContent="Refresh"
+                        ButtonCommand="{Binding RefreshCommand}"
+                        ButtonPadding="12,8"
+                        Margin="0 0 10 0"/>
                 </StackPanel>
             </DockPanel>
         </Border>
