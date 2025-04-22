@@ -151,3 +151,9 @@ E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\n
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\TimeOffRequestReviewFormWindow.baml
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Controls\ActionButtonControl.g.cs
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Controls\ActionButtonControl.baml
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\RoleFormWindow.g.cs
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\RolesPage.g.cs
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\RoleFormWindow.baml
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\RolesPage.baml
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\UsersPage.g.cs
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\UsersPage.baml

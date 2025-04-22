@@ -31,6 +31,12 @@
     <Compile Update="Views\PositionPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\RoleFormWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\RolesPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\TimeOffRequestFormWindow.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -38,6 +44,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\TimeOffRequestsPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\UsersPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -72,6 +81,12 @@
     <Page Update="Views\PositionPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Views\RoleFormWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\RolesPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\TimeOffRequestFormWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -79,6 +94,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\TimeOffRequestsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\UsersPage.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

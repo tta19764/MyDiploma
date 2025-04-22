@@ -29,11 +29,19 @@ namespace HumanRecourcesApp.ViewModels
         {
             if (user != null)
             {
-                UserFullName = $"{user.FirstName} {user.LastName}";
                 UserRole = user.Role;
                 UserRoleName = user.Role?.RoleName ?? "Unknown";
                 CurrentPage = new DashboardPage(UserFullName);
-                UserInitials = $"{user.FirstName[0]}{user.LastName[0]}".ToUpper();
+                if(user.Employee != null)
+                {
+                    UserFullName = $"{user.Employee.FirstName} {user.Employee.LastName}";
+                    UserInitials = $"{user.Employee.FirstName[0]}{user.Employee.LastName[0]}".ToUpper();
+                }
+                else
+                {
+                    UserFullName = "Unknown User";
+                    UserInitials = "??";
+                }
             }
         }
 
@@ -64,6 +72,9 @@ namespace HumanRecourcesApp.ViewModels
                     break;
                 case "TimeOffRequests":
                     CurrentPage = new TimeOffRequestsPage();
+                    break;
+                case "Roles":
+                    CurrentPage = new RolesPage();
                     break;
                 default:
                     CurrentPage = null;

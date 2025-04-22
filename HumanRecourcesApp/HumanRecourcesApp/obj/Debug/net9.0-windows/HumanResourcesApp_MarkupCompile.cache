@@ -10,11 +10,11 @@ none
 false
 TRACE;DEBUG;NET;NET9_0;NETCOREAPP
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\App.xaml
-151944131037
+18-1701818567
 
-661623141944
+74103697715
 218-1920395493
-Controls\ActionButtonControl.xaml;Controls\NavButton.xaml;MainWindow.xaml;Views\AttendancePage.xaml;Views\DashboardPage.xaml;Views\DepartmentFormWindow.xaml;Views\DepartmentPage.xaml;Views\EmployeeFormWindow.xaml;Views\EmployeePage.xaml;Views\LoginView.xaml;Views\PositionPage.xaml;Views\TimeOffRequestFormWindow.xaml;Views\TimeOffRequestReviewFormWindow.xaml;Views\TimeOffRequestsPage.xaml;Views\TimeOffTypesPage.xaml;
+Controls\ActionButtonControl.xaml;Controls\NavButton.xaml;MainWindow.xaml;Views\AttendancePage.xaml;Views\DashboardPage.xaml;Views\DepartmentFormWindow.xaml;Views\DepartmentPage.xaml;Views\EmployeeFormWindow.xaml;Views\EmployeePage.xaml;Views\LoginView.xaml;Views\PositionPage.xaml;Views\RoleFormWindow.xaml;Views\RolesPage.xaml;Views\TimeOffRequestFormWindow.xaml;Views\TimeOffRequestReviewFormWindow.xaml;Views\TimeOffRequestsPage.xaml;Views\TimeOffTypesPage.xaml;Views\UsersPage.xaml;
 
 False
 

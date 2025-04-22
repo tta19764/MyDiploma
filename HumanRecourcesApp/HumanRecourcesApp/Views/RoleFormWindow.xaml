@@ -1,0 +1,162 @@
+﻿<Window x:Class="HumanResourcesApp.Views.RoleFormWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:HumanResourcesApp.Views"
+        mc:Ignorable="d"
+        Title="{Binding WindowTitle}"
+        Height="550" Width="600"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        Background="#F5F7FA">
+
+    <Window.Resources>
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Height" Value="35"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Setter Property="Background" Value="#2E86DE"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1D75C0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#166ABD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="CancelButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#6C757D"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#5A6268"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#4E555B"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="FormLabel" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#444"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <Style x:Key="FormTextBox" TargetType="TextBox">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#DDD"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+        </Style>
+
+        <Style x:Key="FormSectionHeader" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#2E75B6"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="Margin" Value="0,10,0,10"/>
+        </Style>
+
+        <Style x:Key="PermissionCheckBox" TargetType="CheckBox">
+            <Setter Property="Margin" Value="0,5,0,5"/>
+            <Setter Property="Foreground" Value="#333"/>
+        </Style>
+
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
+
+    <Border Background="White" Margin="10" CornerRadius="8" BorderBrush="#DDD" BorderThickness="1">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Form Header -->
+            <Border Background="#2E75B6" Padding="15" Grid.Row="0" CornerRadius="4">
+                <TextBlock Text="{Binding WindowTitle}"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="White"/>
+            </Border>
+            
+            <!-- Error message -->
+            <TextBlock Text="{Binding ErrorMessage}"
+                       Style="{StaticResource FormLabel}"
+                       Foreground="Red"
+                       Grid.Row="1"
+                       Visibility="{Binding IsErrorVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                       Margin="0,10,0,0"/>
+
+            <!-- Form Content -->
+            <ScrollViewer Grid.Row="2" Margin="0,15,0,15" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- Role Information Section -->
+                    <TextBlock Text="Role Information" Style="{StaticResource FormSectionHeader}"/>
+
+                    <TextBlock Text="Role Name *" Style="{StaticResource FormLabel}"/>
+                    <TextBox Text="{Binding RoleName, UpdateSourceTrigger=PropertyChanged}" 
+                             Style="{StaticResource FormTextBox}"/>
+
+                    <TextBlock Text="Description" Style="{StaticResource FormLabel}"/>
+                    <TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}" 
+                             TextWrapping="Wrap"
+                             AcceptsReturn="True"
+                             Height="60"
+                             Style="{StaticResource FormTextBox}"/>
+
+                    <!-- Permissions Section -->
+                    <TextBlock Text="Permissions" Style="{StaticResource FormSectionHeader}"/>
+                    <TextBlock Text="Select the permissions for this role:" 
+                               Foreground="#666" 
+                               Margin="0,0,0,10"/>
+
+                    <Border BorderBrush="#DDD" BorderThickness="1" Padding="10" CornerRadius="4">
+                        <ItemsControl ItemsSource="{Binding PermissionsList}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding PermissionName}" 
+                                              IsChecked="{Binding IsSelected}" 
+                                              Style="{StaticResource PermissionCheckBox}"
+                                              ToolTip="{Binding Description}"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Form Actions -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancel" 
+                        Style="{StaticResource CancelButton}"
+                        Command="{Binding CancelCommand}"/>
+                <Button Content="Save" 
+                        Style="{StaticResource ActionButton}"
+                        Command="{Binding SaveCommand}"
+                        IsEnabled="{Binding CanSave}"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

@@ -371,7 +371,7 @@
                         <TextBlock Grid.Row="2" Grid.Column="0" 
                                    Text="Default Period:" 
                                    FontWeight="SemiBold"
-                                   VerticalAlignment="Top" 
+                                   VerticalAlignment="Center" 
                                    Margin="0,5,0,15"/>
 
                         <ComboBox Grid.Row="2" Grid.Column="1"

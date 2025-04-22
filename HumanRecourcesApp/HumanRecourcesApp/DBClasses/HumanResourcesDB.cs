@@ -43,12 +43,6 @@ namespace HumanResourcesApp.DBClasses
             }
         }
 
-        // Role Read Operations
-        public List<Role> GetAllRoles()
-        {
-            return _context.Roles.AsNoTracking().ToList();
-        }
-
         public Role? GetRoleById(int id)
         {
             return _context.Roles.AsNoTracking().FirstOrDefault(s => s.RoleId == id);
@@ -252,6 +246,44 @@ namespace HumanResourcesApp.DBClasses
             return timeOffBalance;
         }
 
+        // Role Read Operations
+
+        public List<Role> GetAllRolesByUserId(int userId)
+        {
+            return _context.Roles.AsNoTracking().Where(r => r.Users.Any(u => u.UserId == userId)).ToList();
+        }
+
+        public List<Role> GetAllRolesByEmployeeId(int employeeId)
+        {
+            return _context.Roles.AsNoTracking().Where(r => r.Users.Any(u => u.Employee != null && u.Employee.EmployeeId == employeeId)).ToList();
+        }
+
+        public List<Role> GetAllRoles()
+        {
+            return _context.Roles.AsNoTracking().ToList();
+        }
+
+        public bool IsUniqueRoleName(Role role)
+        {
+            if (_context.Roles.AsNoTracking().Count() == 0)
+            {
+                return true;
+            }
+            else if (role.RoleId == 0)
+            {
+                return !_context.Roles.AsNoTracking().Any(d => d.RoleName.ToLower() == role.RoleName.Trim().ToLower());
+            }
+            else
+            {
+                return !_context.Roles.AsNoTracking().Any(d => d.RoleName.ToLower() == role.RoleName.Trim().ToLower() && d.RoleId != role.RoleId);
+            }
+        }
+
+        // Permission Read Operations
+        public List<Permission> GetAllPermissions()
+        {
+            return _context.Permissions.AsNoTracking().ToList();
+        }
 
         // =====================================
         // CREATE OPERATIONS
@@ -360,6 +392,13 @@ namespace HumanResourcesApp.DBClasses
                 };
                 _context.TimeOffBalances.Add(timeOffBalance);
             }
+            _context.SaveChanges();
+        }
+
+        //Role Create Operations
+        public void CreateRole(Role role)
+        {
+            _context.Roles.Add(role);
             _context.SaveChanges();
         }
 
@@ -562,6 +601,51 @@ namespace HumanResourcesApp.DBClasses
             }
         }
 
+        // Role Update Operations
+        public void UpdateRole(Role role)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    // Find the existing role with its permissions
+                    var existingRole = context.Roles
+                        .Include(r => r.RolePermissions)
+                        .FirstOrDefault(r => r.RoleId == role.RoleId);
+
+                    if (existingRole != null)
+                    {
+                        // Update basic role properties
+                        existingRole.RoleName = role.RoleName;
+                        existingRole.Description = role.Description;
+
+                        // Remove all existing role permissions
+                        context.RolePermissions.RemoveRange(existingRole.RolePermissions);
+
+                        // Add the new role permissions
+                        foreach (var permission in role.RolePermissions)
+                        {
+                            context.RolePermissions.Add(new RolePermission
+                            {
+                                RoleId = existingRole.RoleId,
+                                PermissionId = permission.PermissionId,
+                                CreatedAt = DateTime.Now
+                            });
+                        }
+
+                        context.SaveChanges();
+                        transaction.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // =====================================
         // DELETE OPERATIONS
         // =====================================
@@ -629,6 +713,39 @@ namespace HumanResourcesApp.DBClasses
             {
                 _context.TimeOffRequests.Remove(existingTimeOffRequest);
                 _context.SaveChanges();
+            }
+        }
+
+        // Roles Delete Operations
+        public void DeleteRole(Role role)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    // Find the role with its related permissions
+                    var existingRole = context.Roles
+                        .Include(r => r.RolePermissions)
+                        .FirstOrDefault(r => r.RoleId == role.RoleId);
+
+                    if (existingRole != null)
+                    {
+                        // First remove all role permissions
+                        context.RolePermissions.RemoveRange(existingRole.RolePermissions);
+
+                        // Then remove the role itself
+                        context.Roles.Remove(existingRole);
+
+                        context.SaveChanges();
+                        transaction.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }
