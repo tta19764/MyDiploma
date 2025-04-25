@@ -20,13 +20,13 @@ namespace HumanRecourcesApp.ViewModels
         private readonly HumanResourcesDB _context;
         [ObservableProperty]
         private ObservableCollection<DepartmentDisplayModel> departments;
-        private Department selectedDepartment;
+        private Department? selectedDepartment; // Changed to nullable  
         [ObservableProperty]
         private string statusMessage = string.Empty;
         [ObservableProperty]
         private int totalCount;
 
-        public Department SelectedDepartment
+        public Department? SelectedDepartment // Changed to nullable  
         {
             get => selectedDepartment;
             set
@@ -38,13 +38,12 @@ namespace HumanRecourcesApp.ViewModels
             }
         }
 
-
         public DepartmentViewModel()
         {
             _context = new HumanResourcesDB();
             Departments = new ObservableCollection<DepartmentDisplayModel>();
 
-            // Load data
+            // Load data  
             LoadDepartments();
         }
         [RelayCommand]
@@ -59,13 +58,13 @@ namespace HumanRecourcesApp.ViewModels
             {
                 StatusMessage = "Loading departments...";
 
-                // Load departments with related manager data
+                // Load departments with related manager data  
                 var departments = _context.GetAllDepartments();
 
                 Departments = new ObservableCollection<DepartmentDisplayModel>();
                 foreach (var department in departments)
                 {
-                    var manager =  _context.GetAllEmplyees()
+                    var manager = _context.GetAllEmplyees()
                         .FirstOrDefault(e => e.EmployeeId == department.ManagerId);
                     Departments.Add(new DepartmentDisplayModel
                     {
@@ -106,12 +105,21 @@ namespace HumanRecourcesApp.ViewModels
         {
             if (department != null)
             {
-                var window = new DepartmentFormWindow(_context.GetDepartmentById(department.DepartmentId));
-
-                if (window.ShowDialog() == true)
+                var departmentEntity = _context.GetDepartmentById(department.DepartmentId);
+                if (departmentEntity != null)
                 {
-                    LoadDepartments();
-                    StatusMessage = $"Department '{department.DepartmentName}' updated successfully";
+                    var window = new DepartmentFormWindow(departmentEntity);
+
+                    if (window.ShowDialog() == true)
+                    {
+                        LoadDepartments();
+                        StatusMessage = $"Department '{department.DepartmentName}' updated successfully";
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("The selected department could not be found in the database.",
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -121,7 +129,7 @@ namespace HumanRecourcesApp.ViewModels
         {
             if (department == null) return;
 
-            // Check if the department has employees
+            // Check if the department has employees  
             if (department.Employees.Count > 0)
             {
                 MessageBox.Show(
@@ -133,7 +141,7 @@ namespace HumanRecourcesApp.ViewModels
                 return;
             }
 
-            // Confirm deletion
+            // Confirm deletion  
             var result = MessageBox.Show(
                 $"Are you sure you want to delete the department '{department.DepartmentName}'?",
                 "Confirm Deletion",
@@ -145,11 +153,22 @@ namespace HumanRecourcesApp.ViewModels
                 try
                 {
                     string departmentName = department.DepartmentName;
-                    _context.DeleteDepartment(_context.GetDepartmentById(department.DepartmentId));
+                    var departmentEntity = _context.GetDepartmentById(department.DepartmentId);
 
-                    // Refresh the grid
-                    LoadDepartments();
-                    StatusMessage = $"Department '{departmentName}' deleted successfully";
+                    if (departmentEntity != null)
+                    {
+                        _context.DeleteDepartment(departmentEntity);
+
+                        // Refresh the grid  
+                        LoadDepartments();
+                        StatusMessage = $"Department '{departmentName}' deleted successfully";
+                    }
+                    else
+                    {
+                        StatusMessage = "Error: Department not found in the database.";
+                        MessageBox.Show("The selected department could not be found in the database.",
+                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
                 catch (Exception ex)
                 {

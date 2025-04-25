@@ -32,7 +32,7 @@ namespace HumanResourcesApp.ViewModels
                 {
                     RoleId = r.RoleId,
                     RoleName = r.RoleName,
-                    Description = r.Description,
+                    Description = r.Description ?? string.Empty,
                     CreatedAt = r.CreatedAt,
                     PermissionCount = r.RolePermissions.Count
                 }));
@@ -74,13 +74,29 @@ namespace HumanResourcesApp.ViewModels
             {
                 if (roleDisplayModel == null) return;
 
-                // Add confirmation dialog here if needed
+                if (_context.IsRoleUsedInUsers(roleDisplayModel.RoleId))
+                {
+                    MessageBox.Show("This role is currently in use and cannot be deleted.",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Add confirmation dialog here if needed  
                 var message = MessageBox.Show($"Are you sure you want to delete the role '{roleDisplayModel.RoleName}'?",
                     "Delete Role", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
                 if (message == MessageBoxResult.Yes)
                 {
-                    _context.DeleteRole(_context.GetRoleById(roleDisplayModel.RoleId));
+                    var role = _context.GetRoleById(roleDisplayModel.RoleId);
+                    if (role != null)
+                    {
+                        _context.DeleteRole(role);
+                    }
+                    else
+                    {
+                        MessageBox.Show("The role could not be found.",
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
             }
             catch (Exception ex)

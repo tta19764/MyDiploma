@@ -11,59 +11,23 @@ using System.Windows.Input;
 
 namespace HumanResourcesApp.ViewModels
 {
-    public class PositionViewModel : ObservableObject
+    public partial class PositionViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
-        private ObservableCollection<PositionDisplayModel> _positions;
-        private PositionDisplayModel _selectedPosition;
-        private PositionDisplayModel _newPosition;
-        private bool _isAddingNew;
-
-        public ObservableCollection<PositionDisplayModel> Positions
-        {
-            get => _positions;
-            set => SetProperty(ref _positions, value);
-        }
-
-        public PositionDisplayModel SelectedPosition
-        {
-            get => _selectedPosition;
-            set => SetProperty(ref _selectedPosition, value);
-        }
-
-        public PositionDisplayModel NewPosition
-        {
-            get => _newPosition;
-            set => SetProperty(ref _newPosition, value);
-        }
-
-        public bool IsAddingNew
-        {
-            get => _isAddingNew;
-            set => SetProperty(ref _isAddingNew, value);
-        }
-
-        public ICommand AddCommand { get; }
-        public ICommand SaveCommand { get; }
-        public ICommand CancelCommand { get; }
-        public ICommand EditCommand { get; }
-        public ICommand DeleteCommand { get; }
-        public ICommand SaveNewCommand { get; }
+        [ObservableProperty] private ObservableCollection<PositionDisplayModel> positions;
+        [ObservableProperty] private PositionDisplayModel selectedPosition;
+        [ObservableProperty] private PositionDisplayModel newPosition;
+        [ObservableProperty] private bool isAddingNew;
 
         public PositionViewModel()
         {
             // Initialize commands
             _context = new HumanResourcesDB();
-            AddCommand = new RelayCommand(ExecuteAdd);
-            SaveCommand = new RelayCommand(ExecuteSave);
-            CancelCommand = new RelayCommand(ExecuteCancel);
-            SaveNewCommand = new RelayCommand(ExecuteSaveNew);
-            EditCommand = new RelayCommand<PositionDisplayModel>(ExecuteEdit);
-            DeleteCommand = new RelayCommand<PositionDisplayModel>(ExecuteDelete);
 
             // Initialize collections
             Positions = new ObservableCollection<PositionDisplayModel>();
             NewPosition = new PositionDisplayModel();
+            SelectedPosition = new PositionDisplayModel();
 
             // Load data
             LoadPositions();
@@ -74,11 +38,12 @@ namespace HumanResourcesApp.ViewModels
             var positionsList = _context.GetAllPositions();
             foreach (var position in positionsList)
             {
-                Positions.Add(new PositionDisplayModel { PositionId = position.PositionId, CreatedAt = position.CreatedAt, Description = position.Description, PositionTitle = position.PositionTitle, IsEdditing = false});
+                Positions.Add(new PositionDisplayModel { PositionId = position.PositionId, CreatedAt = position.CreatedAt, Description = position.Description ?? string.Empty, PositionTitle = position.PositionTitle, IsEdditing = false});
             }
         }
 
-        private void ExecuteAdd()
+        [RelayCommand]
+        private void Add()
         {
             IsAddingNew = true;
             NewPosition = new PositionDisplayModel
@@ -91,7 +56,8 @@ namespace HumanResourcesApp.ViewModels
             };
         }
 
-        private void ExecuteSave()
+        [RelayCommand]
+        private void Save()
         {
             if (SelectedPosition != null && SelectedPosition.IsEdditing)
             {
@@ -128,7 +94,8 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        private void ExecuteSaveNew()
+        [RelayCommand]
+        private void SaveNew()
         {
             if (IsAddingNew)
             {
@@ -164,7 +131,8 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        private void ExecuteCancel()
+        [RelayCommand]
+        private void Cancel()
         {
             if (IsAddingNew)
             {
@@ -179,7 +147,12 @@ namespace HumanResourcesApp.ViewModels
                 {
                     // Restore original values
                     int index = Positions.IndexOf(SelectedPosition);
-                    Positions[index] = new PositionDisplayModel() { PositionId = originalPosition.PositionId, CreatedAt = originalPosition.CreatedAt, Description = originalPosition.Description, PositionTitle = originalPosition.PositionTitle};
+                    Positions[index] = new PositionDisplayModel() { 
+                        PositionId = originalPosition.PositionId, 
+                        CreatedAt = originalPosition.CreatedAt, 
+                        Description = originalPosition.Description ?? string.Empty,
+                        PositionTitle = originalPosition.PositionTitle
+                    };
                     SelectedPosition = Positions[index];
                 }
 
@@ -187,7 +160,8 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        private void ExecuteEdit(PositionDisplayModel position)
+        [RelayCommand]
+        private void Edit(PositionDisplayModel position)
         {
             if (position == null) return;
 
@@ -196,9 +170,17 @@ namespace HumanResourcesApp.ViewModels
             SelectedPosition.IsEdditing = true;
         }
 
-        private void ExecuteDelete(PositionDisplayModel position)
+        [RelayCommand]
+        private void Delete(PositionDisplayModel position)
         {
             if (position == null) return;
+
+            // Check if the position is in use
+            if (_context.IsPositionUsedInEmployees(position.PositionId))
+            {
+                MessageBox.Show("Cannot delete this position as it is currently in use.");
+                return;
+            }
 
             var result = MessageBox.Show($"Are you sure you want to delete position '{position.PositionTitle}'?",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);

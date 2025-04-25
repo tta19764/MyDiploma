@@ -1,0 +1,7 @@
+E:\C#_projects\HumanResourcesApp\Testing\Testing\bin\Debug\Testing.exe.config
+E:\C#_projects\HumanResourcesApp\Testing\Testing\bin\Debug\Testing.exe
+E:\C#_projects\HumanResourcesApp\Testing\Testing\bin\Debug\Testing.pdb
+E:\C#_projects\HumanResourcesApp\Testing\Testing\obj\Debug\Testing.csproj.AssemblyReference.cache
+E:\C#_projects\HumanResourcesApp\Testing\Testing\obj\Debug\Testing.csproj.CoreCompileInputs.cache
+E:\C#_projects\HumanResourcesApp\Testing\Testing\obj\Debug\Testing.exe
+E:\C#_projects\HumanResourcesApp\Testing\Testing\obj\Debug\Testing.pdb

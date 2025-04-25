@@ -23,6 +23,7 @@ namespace HumanResourcesApp.Views
         public UsersPage()
         {
             InitializeComponent();
+            DataContext = new ViewModels.UsersPageViewModel();
         }
     }
 }

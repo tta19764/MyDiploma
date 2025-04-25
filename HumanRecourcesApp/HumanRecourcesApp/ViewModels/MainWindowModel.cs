@@ -43,12 +43,29 @@ namespace HumanRecourcesApp.ViewModels
                     UserInitials = "??";
                 }
             }
+            else
+            {
+                UserFullName = "Guest";
+                UserInitials = "??";
+                UserRoleName = "Guest";
+                UserRole = new Role
+                {
+                    RoleName = "Guest"
+                };
+                CurrentPage = new DashboardPage(UserFullName);
+            }
         }
 
         [RelayCommand]
         private void Navigate(object? parameter)
         {
-            string pageName = parameter as string;
+            string? pageName = parameter as string;
+
+            if (pageName == null)
+            {
+                CurrentPage = new DashboardPage(UserFullName); // Replace null with a default Page instance  
+                return;
+            }
 
             switch (pageName)
             {
@@ -76,8 +93,11 @@ namespace HumanRecourcesApp.ViewModels
                 case "Roles":
                     CurrentPage = new RolesPage();
                     break;
+                case "Users":
+                    CurrentPage = new UsersPage();
+                    break;
                 default:
-                    CurrentPage = null;
+                    CurrentPage = new DashboardPage(UserFullName); // Replace null with a default Page instance  
                     break;
             }
         }

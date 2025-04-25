@@ -4,6 +4,7 @@ using HumanResourcesApp.Views;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,6 +47,27 @@ namespace HumanResourcesApp.DBClasses
         public Role? GetRoleById(int id)
         {
             return _context.Roles.AsNoTracking().FirstOrDefault(s => s.RoleId == id);
+        }
+
+        public User? GetUserById(int id)
+        {
+            return _context.Users.AsNoTracking().FirstOrDefault(s => s.UserId == id);
+        }
+
+        public bool IsUniqueLogin(User user)
+        {
+            if (_context.Users.AsNoTracking().Count() == 0)
+            {
+                return true;
+            }
+            else if (user.UserId == 0)
+            {
+                return !_context.Users.AsNoTracking().Any(d => d.Username.ToLower() == user.Username.Trim().ToLower());
+            }
+            else
+            {
+                return !_context.Users.AsNoTracking().Any(d => d.Username.ToLower() == user.Username.Trim().ToLower() && d.UserId != user.UserId);
+            }
         }
 
         // Department Read Operations
@@ -96,14 +118,35 @@ namespace HumanResourcesApp.DBClasses
             return _context.Employees.AsNoTracking().Where(s => s.Position == position && s.Departments.Count() == 0).ToList();
         }
 
-        public List<Employee> GetEmployeesByPosition(Position position)
-        {
-            return _context.Employees.AsNoTracking().Where(s => s.Position == position).ToList();
-        }
-
         public List<Employee> GetEmployeesByDepartment(Department department)
         {
             return _context.Employees.AsNoTracking().Where(s => s.Department == department).ToList();
+        }
+
+        public List<Employee> GetAllActiveEmployees()
+        {
+            return _context.Employees.AsNoTracking().Where(s => s.IsActive == true).ToList();
+        }
+
+        public bool CanDeleteEmployee(int employeeId)
+        {
+            // Checks that would prevent deletion
+            var isManager = _context.Departments.Any(d => d.ManagerId == employeeId);
+            if (isManager)
+                return false; // Can't delete a department manager
+
+            var isPerformanceReviewer = _context.PerformanceReviews
+                .Any(r => r.ReviewerId == employeeId);
+            if (isPerformanceReviewer)
+                return false;
+
+            var isTimeOffApprover = _context.TimeOffRequests
+                .Any(r => r.ApprovedBy == employeeId);
+            if (isTimeOffApprover)
+                return false;
+
+            // If all checks pass, employee can be deleted
+            return true;
         }
 
         // Position Read Operations
@@ -131,6 +174,11 @@ namespace HumanResourcesApp.DBClasses
             {
                 return !_context.Positions.AsNoTracking().Any(d => d.PositionTitle.ToLower() == position.PositionTitle.Trim().ToLower() && d.PositionId != position.PositionId);
             }
+        }
+
+        public bool IsPositionUsedInEmployees(int positionId)
+        {
+            return _context.Employees.AsNoTracking().Any(d => d.PositionId == positionId);
         }
 
         // Attendance Read Operations
@@ -279,6 +327,11 @@ namespace HumanResourcesApp.DBClasses
             }
         }
 
+        public bool IsRoleUsedInUsers(int roleId)
+        {
+            return _context.Users.AsNoTracking().Any(d => d.RoleId == roleId);
+        }
+
         // Permission Read Operations
         public List<Permission> GetAllPermissions()
         {
@@ -323,7 +376,8 @@ namespace HumanResourcesApp.DBClasses
                 // Create balance entries for each time off type
                 foreach (var type in allTypes)
                 {
-                    var period = (context.TimeOffBalances.FirstOrDefault(s => s.TimeOffTypeId == type.TimeOffTypeId).Period) ?? "Yearly";
+                    // Updated line to handle the null reference issue
+                    var period = context.TimeOffBalances.FirstOrDefault(s => s.TimeOffTypeId == type.TimeOffTypeId)?.Period ?? "Yearly";
 
                     context.TimeOffBalances.Add(new TimeOffBalance
                     {
@@ -646,6 +700,68 @@ namespace HumanResourcesApp.DBClasses
             }
         }
 
+        // User Update Operations
+        public void UpdateUser(User user)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    // Detach local User
+                    var localUser = context.Users.Local
+                        .FirstOrDefault(e => e.UserId == user.UserId);
+                    if (localUser != null)
+                    {
+                        context.Entry(localUser).State = EntityState.Detached;
+                    }
+
+                    // Remove the UserId from any other Employee that might already be linked to this UserId
+                    int? currentEmployeeId = user.Employee?.EmployeeId;
+
+                    var existingEmployeeWithUser = context.Employees
+                        .FirstOrDefault(e => e.UserId == user.UserId && e.EmployeeId != currentEmployeeId);
+
+
+                    if (existingEmployeeWithUser != null)
+                    {
+                        existingEmployeeWithUser.UserId = null;
+                        context.Entry(existingEmployeeWithUser).State = EntityState.Modified;
+                    }
+
+                    // Handle Employee
+                    if (user.Employee != null)
+                    {
+                        var localEmployee = context.Employees.Local
+                            .FirstOrDefault(e => e.EmployeeId == user.Employee.EmployeeId);
+                        if (localEmployee != null)
+                        {
+                            context.Entry(localEmployee).State = EntityState.Detached;
+                        }
+
+                        user.Employee.UserId = user.UserId;
+
+                        context.Attach(user.Employee);
+                        context.Entry(user.Employee).State = EntityState.Modified;
+                    }
+
+                    // Update User
+                    context.Attach(user);
+                    context.Entry(user).State = EntityState.Modified;
+
+                    context.SaveChanges();
+                    transaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+
         // =====================================
         // DELETE OPERATIONS
         // =====================================
@@ -664,11 +780,64 @@ namespace HumanResourcesApp.DBClasses
         // Employee Delete Operations
         public void DeleteEmployee(Employee employee)
         {
-            var existingEmployee = _context.Employees.Find(employee.EmployeeId);
-            if (existingEmployee != null)
+            try
             {
-                _context.Employees.Remove(existingEmployee);
-                _context.SaveChanges();
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    if (!CanDeleteEmployee(employee.EmployeeId))
+                        throw new InvalidOperationException("This employee cannot be deleted due to dependencies.");
+
+                    var existingEmployee = context.Employees.Find(employee.EmployeeId);
+                    if (existingEmployee != null)
+                    {
+
+                        foreach (var timeOffBalance in existingEmployee.TimeOffBalances)
+                        {
+                            context.TimeOffBalances.Remove(timeOffBalance);
+                        }
+
+                        existingEmployee.TimeOffBalances.Clear();
+
+                        foreach (var request in existingEmployee.TimeOffRequestEmployees)
+                        {
+                            context.TimeOffRequests.Remove(request);
+                        }
+
+                        existingEmployee.TimeOffRequestEmployees.Clear();
+
+                        foreach (var attendance in existingEmployee.Attendances)
+                        {
+                            context.Attendances.Remove(attendance);
+                        }
+
+                        existingEmployee.Attendances.Clear();
+
+                        foreach (var payroll in existingEmployee.EmployeePayrolls)
+                        {
+                            context.EmployeePayrolls.Remove(payroll);
+                        }
+
+                        existingEmployee.EmployeePayrolls.Clear();
+
+                        foreach (var performanceReview in existingEmployee.PerformanceReviewEmployees)
+                        {
+                            context.PerformanceReviews.Remove(performanceReview);
+                        }
+
+                        existingEmployee.PerformanceReviewEmployees.Clear();
+
+                        // Finally delete the employee
+                        context.Employees.Remove(existingEmployee);
+                        context.SaveChanges();
+                        transaction.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting employee: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -746,6 +915,53 @@ namespace HumanResourcesApp.DBClasses
             catch (Exception ex)
             {
                 MessageBox.Show($"Error deleting role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // User Delete Operations
+        public void DeleteUser(User user)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    var existingUser = _context.Users.Find(user.UserId);
+                    if (existingUser != null)
+                    {
+                        // Set UserId to null in related system logs
+                        var relatedLogs = _context.SystemLogs.Where(log => log.UserId == user.UserId).ToList();
+                        foreach (var log in relatedLogs)
+                        {
+                            log.UserId = null;
+                        }
+
+                        // Set UserId to null in related payroll items
+                        var relatedPayrolls = _context.EmployeePayrolls.Where(p => p.ProcessedBy == user.UserId).ToList();
+                        foreach (var payroll in relatedPayrolls)
+                        {
+                            payroll.ProcessedBy = null;
+
+                        }
+
+                        var relatedEmployees = _context.Employees.Where(p => p.UserId == user.UserId).ToList();
+                        foreach (var employee in relatedEmployees)
+                        {
+                            employee.UserId = null;
+
+                        }
+
+                        // Delete the user
+                        _context.Users.Remove(existingUser);
+                        _context.SaveChanges();
+                        transaction.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

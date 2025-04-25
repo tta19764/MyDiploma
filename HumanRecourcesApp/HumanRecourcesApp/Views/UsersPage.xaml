@@ -150,7 +150,12 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="First Name" Binding="{Binding Employee.FirstName}" Width="*">
+                    <DataGridTextColumn Header="First Name" Width="*">
+                        <DataGridTextColumn.Binding>
+                            <Binding Path="Employee.FirstName" FallbackValue="N/A">
+                                <Binding.TargetNullValue>N/A</Binding.TargetNullValue>
+                            </Binding>
+                        </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -158,7 +163,12 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Last Name" Binding="{Binding Employee.LastName}" Width="*">
+                    <DataGridTextColumn Header="Last Name" Width="*">
+                        <DataGridTextColumn.Binding>
+                            <Binding Path="Employee.LastName" FallbackValue="N/A">
+                                <Binding.TargetNullValue>N/A</Binding.TargetNullValue>
+                            </Binding>
+                        </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -166,7 +176,12 @@
                             </Style>
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
-                    <DataGridTextColumn Header="Email" Binding="{Binding Employee.Email}" Width="1.3*">
+                    <DataGridTextColumn Header="Email" Width="*">
+                        <DataGridTextColumn.Binding>
+                            <Binding Path="Employee.Email" FallbackValue="N/A">
+                                <Binding.TargetNullValue>N/A</Binding.TargetNullValue>
+                            </Binding>
+                        </DataGridTextColumn.Binding>
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>

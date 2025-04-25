@@ -262,7 +262,8 @@ public partial class HumanResourcesDbContext : DbContext
 
             entity.HasOne(d => d.ProcessedByNavigation).WithMany(p => p.EmployeePayrolls)
                 .HasForeignKey(d => d.ProcessedBy)
-                .HasConstraintName("employee_payroll_processed_by_fkey");
+                .HasConstraintName("employee_payroll_processed_by_fkey")
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<PayPeriod>(entity =>
@@ -580,7 +581,8 @@ public partial class HumanResourcesDbContext : DbContext
 
             entity.HasOne(d => d.User).WithMany(p => p.SystemLogs)
                 .HasForeignKey(d => d.UserId)
-                .HasConstraintName("system_logs_user_id_fkey");
+                .HasConstraintName("system_logs_user_id_fkey")
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<TimeOffBalance>(entity =>

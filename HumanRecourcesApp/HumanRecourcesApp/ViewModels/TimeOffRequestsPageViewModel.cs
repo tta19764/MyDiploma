@@ -20,12 +20,10 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty]
         private ObservableCollection<TimeOffRequestDisplayModel> timeOffRequests;
 
-        [ObservableProperty]
-        private string searchQuery;
-
         public TimeOffRequestsPageViewModel()
         {
             _context = new HumanResourcesDB();
+            TimeOffRequests = new ObservableCollection<TimeOffRequestDisplayModel>();
             LoadRequests();
         }
 
@@ -68,8 +66,15 @@ namespace HumanResourcesApp.ViewModels
             if (timeOffRequest == null)
                 return;
 
+            var request = _context.GetTimeOffRequestById(timeOffRequest.TimeOffRequestId);
+            if (request == null)
+            {
+                MessageBox.Show("The selected time-off request could not be found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             var formWindow = new TimeOffRequestReviewFormWindow();
-            var viewModel = new TimeOffRequestReviewFormViewModel(_context.GetTimeOffRequestById(timeOffRequest.TimeOffRequestId));
+            var viewModel = new TimeOffRequestReviewFormViewModel(request);
             formWindow.DataContext = viewModel;
 
             viewModel.RequestClose += (sender, result) =>

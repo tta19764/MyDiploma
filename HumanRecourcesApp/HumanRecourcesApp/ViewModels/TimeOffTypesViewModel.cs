@@ -38,8 +38,9 @@ namespace HumanResourcesApp.ViewModels
             _context = new HumanResourcesDB();
 
             TimeOffTypes = new ObservableCollection<TimeOffTypeDisplayModel>();
+            SelectedTimeOffType = new TimeOffTypeDisplayModel(); // Initialize to avoid nullability issue  
 
-            // Load data when the view model is created
+            // Load data when the view model is created  
             LoadTimeOffTypes();
         }
 
@@ -111,6 +112,12 @@ namespace HumanResourcesApp.ViewModels
             {
                 if (IsAddingNew)
                 {
+
+                    if (NewTimeOffType == null || string.IsNullOrWhiteSpace(NewTimeOffType.TimeOffTypeName))
+                    {
+                        MessageBox.Show("Time Off Type Name is required.");
+                        return;
+                    }
                     if(string.IsNullOrWhiteSpace(NewTimeOffType.TimeOffTypeName))
                     {
                         MessageBox.Show("Time Off Type Name is required.");
@@ -173,20 +180,24 @@ namespace HumanResourcesApp.ViewModels
                         _context.UpdateTimeOffBalancePeriod(existingType, SelectedTimeOffType.DefaultPeriod);
 
                         // Update in collection
-                        var index = TimeOffTypes.IndexOf(TimeOffTypes.FirstOrDefault(t => t.TimeOffTypeId == existingType.TimeOffTypeId));
-                        if (index >= 0)
+                        var existingItem = TimeOffTypes.FirstOrDefault(t => t.TimeOffTypeId == existingType.TimeOffTypeId);
+                        if (existingItem != null)
                         {
-                            TimeOffTypes[index] = new TimeOffTypeDisplayModel()
+                            var index = TimeOffTypes.IndexOf(existingItem);
+                            if (index >= 0)
                             {
-                                TimeOffTypeId = existingType.TimeOffTypeId,
-                                TimeOffTypeName = existingType.TimeOffTypeName,
-                                Description = existingType.Description,
-                                DefaultDays = existingType.DefaultDays,
-                                IsActive = existingType.IsActive,
-                                CreatedAt = existingType.CreatedAt,
-                                IsEdditing = false,
-                                DefaultPeriod = period
-                            };
+                                TimeOffTypes[index] = new TimeOffTypeDisplayModel()
+                                {
+                                    TimeOffTypeId = existingType.TimeOffTypeId,
+                                    TimeOffTypeName = existingType.TimeOffTypeName,
+                                    Description = existingType.Description,
+                                    DefaultDays = existingType.DefaultDays,
+                                    IsActive = existingType.IsActive,
+                                    CreatedAt = existingType.CreatedAt,
+                                    IsEdditing = false,
+                                    DefaultPeriod = period
+                                };
+                            }
                         }
                     }
                 }

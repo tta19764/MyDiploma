@@ -45,20 +45,31 @@ namespace HumanResourcesApp.ViewModels
         // Edit mode
         public TimeOffRequestFormViewModel(TimeOffRequest request)
         {
-            _context = new HumanResourcesDB();
-            Request = request;
-            _isEditMode = true;
+            try
+            {
+                _context = new HumanResourcesDB();
+                Request = request;
+                _isEditMode = true;
 
-            FormTitle = $"Edit Request #{request.TimeOffRequestId}";
-            LoadData();
+                // Initialize non-nullable fields to avoid CS8618 errors  
+                Employees = new ObservableCollection<Employee>();
+                TimeOffTypes = new ObservableCollection<TimeOffType>();
 
-            SelectedEmployee = Employees.FirstOrDefault(e => e.EmployeeId == request.EmployeeId);
-            SelectedTimeOffType = TimeOffTypes.FirstOrDefault(t => t.TimeOffTypeId == request.TimeOffTypeId);
-            StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue);
-            EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue);
-            Reason = request.Reason;
-            Comments = request.Comments;
-            Status = request.Status;
+                FormTitle = $"Edit Request #{request.TimeOffRequestId}";
+                LoadData();
+
+                SelectedEmployee = Employees.FirstOrDefault(e => e.EmployeeId == request.EmployeeId) ?? throw new InvalidOperationException("Employee not found in the list.");
+                SelectedTimeOffType = TimeOffTypes.FirstOrDefault(t => t.TimeOffTypeId == request.TimeOffTypeId) ?? throw new InvalidOperationException("TimeOffType not found in the list.");
+                StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue);
+                EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue);
+                Reason = request.Reason;
+                Comments = request.Comments;
+                Status = request.Status;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error initializing TimeOffRequestFormViewModel: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void LoadData()

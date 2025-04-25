@@ -39,8 +39,7 @@ namespace HumanResourcesApp.Controls
 
         private static void OnIsActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            NavButton control = d as NavButton;
-            if (control != null)
+            if (d is NavButton control) // Use pattern matching to avoid null check and cast explicitly  
             {
                 control.UpdateButtonStyle();
             }

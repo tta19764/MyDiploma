@@ -13,7 +13,6 @@ namespace HumanResourcesApp.ViewModels
     public partial class EmployeeViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
-        private readonly Employee _employee;
 
         [ObservableProperty]
         private ObservableCollection<Employee> employees;
@@ -24,7 +23,8 @@ namespace HumanResourcesApp.ViewModels
         public EmployeeViewModel()
         {
             _context = new HumanResourcesDB();
-            _employee = new Employee();
+            SelectedEmployee = new Employee();
+            Employees = new ObservableCollection<Employee>();
             LoadEmployees();
         }
 
