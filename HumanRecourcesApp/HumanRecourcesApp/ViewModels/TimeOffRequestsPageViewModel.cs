@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Data;
 
 namespace HumanResourcesApp.ViewModels
 {
@@ -17,8 +18,16 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        [ObservableProperty]
         private ObservableCollection<TimeOffRequestDisplayModel> timeOffRequests;
+        public ObservableCollection<TimeOffRequestDisplayModel> TimeOffRequests
+        {
+            get => timeOffRequests;
+            set => SetProperty(ref timeOffRequests, value);
+        }
+
+        [ObservableProperty]
+        public ListCollectionView timeOffRequestsView;
+
 
         public TimeOffRequestsPageViewModel()
         {
@@ -47,7 +56,14 @@ namespace HumanResourcesApp.ViewModels
                     ApprovalDate = r.ApprovalDate
                 })
             );
+
+            // Always create new ListCollectionView after loading
+            TimeOffRequestsView = new ListCollectionView(TimeOffRequests);
+            TimeOffRequestsView.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(TimeOffRequestDisplayModel.StatusPriority), System.ComponentModel.ListSortDirection.Ascending));
+            TimeOffRequestsView.SortDescriptions.Add(new System.ComponentModel.SortDescription(nameof(TimeOffRequestDisplayModel.StartDate), System.ComponentModel.ListSortDirection.Ascending));
+            TimeOffRequestsView.IsLiveSorting = true;
         }
+
 
         [RelayCommand]
         private void Refresh() => LoadRequests();

@@ -1,0 +1,292 @@
+﻿<Page x:Class="HumanResourcesApp.Views.PayPeriodsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:local="clr-namespace:HumanResourcesApp.Views"
+      xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
+      xmlns:controls="clr-namespace:HumanResourcesApp.Controls"
+      mc:Ignorable="d"
+      d:DesignHeight="600" d:DesignWidth="900"
+      Title="Pay Period Management"
+      Background="#F5F7FA">
+
+    <Page.Resources>
+        <classes:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <classes:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisConverter"/>
+        <classes:DateOnlyToDateTimeConverter x:Key="DateOnlyConverter" />
+
+        <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#2E86DE"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="BorderBrush" Value="#4393E4"/>
+        </Style>
+
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Background" Value="#2E86DE"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#1D75C0"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#166ABD"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DeleteButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#FF5252"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#E03E3E"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#C13333"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="SaveButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#27AE60"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#229954"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#1E874B"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CancelButton" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+            <Setter Property="Background" Value="#7F8C8D"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#6C7A7B"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#5E696A"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StatusStyle" TargetType="TextBlock">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Status}" Value="Draft">
+                    <Setter Property="Foreground" Value="#6C7A7B"/>
+                    <Setter Property="FontStyle" Value="Italic"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Active">
+                    <Setter Property="Foreground" Value="#2E86DE"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Processing">
+                    <Setter Property="Foreground" Value="#F39C12"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Status}" Value="Completed">
+                    <Setter Property="Foreground" Value="#27AE60"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Title and Button -->
+        <Border Grid.Row="0" Background="#2E75B6" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Pay Periods" 
+                    FontSize="22" 
+                    FontWeight="Bold"
+                    Foreground="White" Grid.ColumnSpan="2"/>
+
+                <controls:ActionButtonControl
+                    Grid.Column="1"
+                    DockPanel.Dock="Right"
+                    ButtonContent="Add Pay Period"
+                    ButtonCommand="{Binding AddPayPeriodCommand}"
+                    ButtonPadding="12,8"/>
+            </Grid>
+        </Border>
+
+        <!-- Pay Period Table -->
+        <Border Grid.Row="1" Background="White" CornerRadius="8">
+            <DataGrid x:Name="PayPeriodDataGrid"
+                      ItemsSource="{Binding PayPeriods}" 
+                      SelectedItem="{Binding SelectedPayPeriod}"
+                      AutoGenerateColumns="False" 
+                      IsReadOnly="True" 
+                      CanUserAddRows="False"
+                      RowHeaderWidth="0"
+                      BorderThickness="1"
+                      BorderBrush="#DDDDDD"
+                      Margin="0,0,0,20"
+                      Background="White"
+                      RowBackground="White"
+                      AlternatingRowBackground="#F9FAFC"
+                      GridLinesVisibility="Horizontal"
+                      HeadersVisibility="Column"
+                      HorizontalGridLinesBrush="#E3E3E3"
+                      ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}"
+                      RowHeight="40">
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Header="Start Date" Width=".5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,4">
+                                    <TextBlock Text="{Binding StartDate, StringFormat='{}{0:dd/MM/yyyy}'}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="End Date" Width=".5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,4">
+                                    <TextBlock Text="{Binding EndDate, StringFormat='{}{0:dd/MM/yyyy}'}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Payment Date" Width=".5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,4">
+                                    <TextBlock Text="{Binding PaymentDate, StringFormat='{}{0:dd/MM/yyyy}'}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Status" Width=".5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,4">
+                                    <TextBlock Text="{Binding Status}" Style="{StaticResource StatusStyle}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Associated Payrolls" Width=".5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid Margin="4,4">
+                                    <TextBlock Text="{Binding PayrollCount}" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridTemplateColumn Header="Actions" Width=".8*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Margin="4,4" Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisConverter}}">
+                                    <Button Width="70" 
+                                        Content="Edit" 
+                                        Style="{StaticResource ActionButton}"
+                                        Height="30"
+                                        Command="{Binding DataContext.EditPayPeriodCommand, 
+                                  RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                        CommandParameter="{Binding}"
+                                        IsEnabled="{Binding IsEditable}"/>
+                                    <Button Width="70" 
+                                        Content="Delete" 
+                                        Style="{StaticResource DeleteButton}"
+                                        Height="30"
+                                        Command="{Binding DataContext.DeletePayPeriodCommand, 
+                                  RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                        CommandParameter="{Binding}"
+                                        IsEnabled="{Binding IsEditable}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Border>
+
+        <!-- Add/Edit Pay Period Form -->
+        <Border Background="White" Padding="20" CornerRadius="8" Margin="15 20 15 15" Grid.Row="2"
+                Visibility="{Binding IsAddingOrEditing, Converter={StaticResource BoolToVisConverter}}">
+            <StackPanel Orientation="Vertical" Width="450">
+                <TextBlock Text="{Binding FormTitle}" FontSize="18" FontWeight="Bold" Margin="0 0 0 10"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Text="Start Date:" Width="120" VerticalAlignment="Center"/>
+                    <DatePicker SelectedDate="{Binding NewPayPeriod.StartDate, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource DateOnlyConverter}}"
+                        Width="300"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Text="End Date:" Width="120" VerticalAlignment="Center"/>
+                    <DatePicker SelectedDate="{Binding NewPayPeriod.EndDate, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource DateOnlyConverter}}"
+                        Width="300"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Text="Payment Date:" Width="120" VerticalAlignment="Center"/>
+                    <DatePicker SelectedDate="{Binding NewPayPeriod.PaymentDate, UpdateSourceTrigger=PropertyChanged, Converter={StaticResource DateOnlyConverter}}"
+                        Width="300"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Text="Status:" Width="120" VerticalAlignment="Center"/>
+                    <ComboBox Text="{Binding NewPayPeriod.Status}" Width="300">
+                        <ComboBoxItem Content="Draft"/>
+                        <ComboBoxItem Content="Active"/>
+                        <ComboBoxItem Content="Processing"/>
+                        <ComboBoxItem Content="Completed"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel 
+                    Orientation="Horizontal" 
+                    Margin="0,10,20,0" 
+                    HorizontalAlignment="Right">
+                    <Button Content="Save" 
+                        Command="{Binding SaveCommand}" 
+                        Style="{StaticResource SaveButton}"
+                        Width="100" 
+                        Margin="0,0,10,0"
+                        Height="20"/>
+
+                    <Button Content="Cancel" 
+                        Command="{Binding CancelCommand}" 
+                        Style="{StaticResource CancelButton}"
+                        Width="100"
+                        Height="20"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Page>

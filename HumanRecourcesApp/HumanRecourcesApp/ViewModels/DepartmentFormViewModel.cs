@@ -16,24 +16,16 @@ namespace HumanRecourcesApp.ViewModels
     public partial class DepartmentFormViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
-        private readonly bool _isEditMode;
-
-        [ObservableProperty]
-        private string formTitle;
-        [ObservableProperty]
-        private string departmentName;
-        [ObservableProperty]
-        private string description;
+        [ObservableProperty] private bool isEditMode;
+        [ObservableProperty] private string formTitle;
+        [ObservableProperty] private string departmentName;
+        [ObservableProperty] private string description;
         private DateTime? _createdAt;
-        [ObservableProperty]
-        private EmployeeDisplayModel selectedManager;
-        [ObservableProperty]
-        private ObservableCollection<Position> positions;
+        [ObservableProperty] private EmployeeDisplayModel selectedManager;
+        [ObservableProperty] private ObservableCollection<Position> positions;
         private Position _selectedPosition;
-        [ObservableProperty]
-        private string validationMessage;
-        [ObservableProperty]
-        private ObservableCollection<EmployeeDisplayModel> managers;
+        [ObservableProperty] private string validationMessage;
+        [ObservableProperty] private ObservableCollection<EmployeeDisplayModel> managers;
 
         // Properties
 
@@ -94,7 +86,7 @@ namespace HumanRecourcesApp.ViewModels
             {
                 CreatedAt = DateTime.Now
             };
-            _isEditMode = false;
+            IsEditMode = false;
 
             FormTitle = "Add New Department";
             CreatedAt = DateTime.Now;
@@ -108,13 +100,13 @@ namespace HumanRecourcesApp.ViewModels
         {
             _context = new HumanResourcesDB();
             Department = department;
-            _isEditMode = true;
+            IsEditMode = true;
 
             FormTitle = $"Edit Department: {department.DepartmentName}";
 
             // Initialize properties from department
             DepartmentName = department.DepartmentName;
-            Description = department.Description;
+            Description = department.Description ?? string.Empty;
             CreatedAt = department.CreatedAt;
             Managers = new ObservableCollection<EmployeeDisplayModel>();
             var employees = _context.GetAllEmplyees();
@@ -142,7 +134,7 @@ namespace HumanRecourcesApp.ViewModels
                 
 
                 // Set selected manager if in edit mode
-                if (_isEditMode && Department.ManagerId.HasValue)
+                if (IsEditMode && Department.ManagerId.HasValue)
                 {
                     int positionId = _context.GetDepartmentById(Department.DepartmentId).Manager.PositionId;
                     SelectedPosition = Positions.FirstOrDefault(p => p.PositionId == positionId);
@@ -163,7 +155,7 @@ namespace HumanRecourcesApp.ViewModels
                 try
                 {
 
-                    if (_isEditMode)
+                    if (IsEditMode)
                     {
                         _context.UpdateDepartment(Department);
                     }
@@ -218,7 +210,7 @@ namespace HumanRecourcesApp.ViewModels
 
             // Check for duplicate department name
 
-            Department.DepartmentName = DepartmentName?.Trim();
+            Department.DepartmentName = DepartmentName.Trim();
             Department.Description = Description?.Trim();
             Department.ManagerId = SelectedManager?.EmployeeId;
             Department.CreatedAt = CreatedAt;

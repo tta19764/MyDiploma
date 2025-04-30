@@ -338,6 +338,108 @@ namespace HumanResourcesApp.DBClasses
             return _context.Permissions.AsNoTracking().ToList();
         }
 
+        // PayPeriod Read Operations
+        public List<PayPeriod> GetAllPayPeriods()
+        {
+            return _context.PayPeriods.AsNoTracking().ToList();
+        }
+
+        public PayPeriod? GetPayPeriodById(int id)
+        {
+            return _context.PayPeriods.AsNoTracking().FirstOrDefault(s => s.PayPeriodId == id);
+        }
+
+        public bool IsPayPeriodTimeValid(PayPeriod payPeriod)
+        {
+            // Check date logic
+            if (payPeriod.StartDate > payPeriod.EndDate)
+                return false;
+
+            if (payPeriod.PaymentDate < payPeriod.EndDate)
+                return false;
+
+            // Check for overlapping PayPeriods (excluding itself if updating)
+            var overlappingPeriods = _context.PayPeriods
+                .AsNoTracking()
+                .Where(p => p.PayPeriodId != payPeriod.PayPeriodId)
+                .Where(p =>
+                    (payPeriod.StartDate >= p.StartDate && payPeriod.StartDate <= p.EndDate) ||
+                    (payPeriod.EndDate >= p.StartDate && payPeriod.EndDate <= p.EndDate) ||
+                    (payPeriod.StartDate <= p.StartDate && payPeriod.EndDate >= p.EndDate))
+                .Any();
+
+            return !overlappingPeriods;
+        }
+
+        // SystemLog Read Operations
+        public List<SystemLog> GetAllSystemLogs()
+        {
+            return _context.SystemLogs.AsNoTracking().ToList();
+        }
+
+        public bool CanDeletePayPeriod(PayPeriod payPeriod)
+        {
+            // Check if there are any EmployeePayrolls linked to this PayPeriod
+            return !_context.EmployeePayrolls.AsNoTracking().Any(ep => ep.PayPeriodId == payPeriod.PayPeriodId);
+        }
+
+        // PerformanceCriteria Read Operations
+
+        public List<PerformanceCriterion> GetAllPerformanceCriterias()
+        {
+            return _context.PerformanceCriteria.AsNoTracking().ToList();
+        }
+
+        public bool IsUniquePerformanceCriterionName(PerformanceCriterion performanceCriterion)
+        {
+            if (_context.PerformanceCriteria.AsNoTracking().Count() == 0)
+            {
+                return true;
+            }
+            else if (performanceCriterion.CriteriaId == 0)
+            {
+                return !_context.PerformanceCriteria.AsNoTracking().Any(d => d.CriteriaName.ToLower() == performanceCriterion.CriteriaName.Trim().ToLower());
+            }
+            else
+            {
+                return !_context.PerformanceCriteria.AsNoTracking().Any(d => d.CriteriaName.ToLower() == performanceCriterion.CriteriaName.Trim().ToLower() && d.CriteriaId != performanceCriterion.CriteriaId);
+            }
+        }
+
+        public bool IsPerformanceCriterionUsedInScores(int performanceCriterionId)
+        {
+            return _context.PerformanceScores.AsNoTracking().Any(d => d.CriteriaId == performanceCriterionId);
+        }
+
+        public List<PerformanceCriterion> GetAllActiveCriteria()
+        {
+            return _context.PerformanceCriteria.AsNoTracking().Where(c => c.IsActive == true).ToList();
+        }
+
+        // PerformanceReview Read Operations
+
+        public List<PerformanceReview> GetAllPerformanceReviews()
+        {
+            return _context.PerformanceReviews.AsNoTracking().ToList();
+        }
+
+        public PerformanceReview? GetPerformanceReviewById(int id)
+        {
+            return _context.PerformanceReviews.AsNoTracking().FirstOrDefault(s => s.ReviewId == id);
+        }
+
+        // PerformanceScore Read Operations
+
+        public List<PerformanceScore> GetAllPerformanceScores()
+        {
+            return _context.PerformanceScores.AsNoTracking().ToList();
+        }
+
+        public PerformanceScore? GetPerformanceScoreById(int id)
+        {
+            return _context.PerformanceScores.AsNoTracking().FirstOrDefault(s => s.ScoreId == id);
+        }
+
         // =====================================
         // CREATE OPERATIONS
         // =====================================
@@ -453,6 +555,30 @@ namespace HumanResourcesApp.DBClasses
         public void CreateRole(Role role)
         {
             _context.Roles.Add(role);
+            _context.SaveChanges();
+        }
+
+        // PayPeriod Create Operations
+
+        public void CreatePayPeriod(PayPeriod payPeriod)
+        {
+            _context.PayPeriods.Add(payPeriod);
+            _context.SaveChanges();
+        }
+
+        // PerformanceCriteria Create Operations
+
+        public void CreatePerformanceCriterion(PerformanceCriterion performanceCriterion)
+        {
+            _context.PerformanceCriteria.Add(performanceCriterion);
+            _context.SaveChanges();
+        }
+
+        // PerformanceReview Create Operations
+
+        public void CreatePerformanceReview(PerformanceReview performanceReview)
+        {
+            _context.PerformanceReviews.Add(performanceReview);
             _context.SaveChanges();
         }
 
@@ -760,7 +886,115 @@ namespace HumanResourcesApp.DBClasses
             }
         }
 
+        // PayPeriod Update Operations
 
+        public void UpdatePayPeriod(PayPeriod payPeriod)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<PayPeriod>()
+                        .Local
+                        .FirstOrDefault(e => e.PayPeriodId == payPeriod.PayPeriodId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(payPeriod).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating PayPeriod: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // PerformanceCriteria Update Operations
+
+        public void UpdatePerformanceCriterion(PerformanceCriterion performanceCriterion)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<PerformanceCriterion>()
+                        .Local
+                        .FirstOrDefault(e => e.CriteriaId == performanceCriterion.CriteriaId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(performanceCriterion).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating PerformanceCriterion: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // PerformanceReview Update Operations
+        public void UpdatePerformanceReview(PerformanceReview performanceReview)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<PerformanceReview>()
+                        .Local
+                        .FirstOrDefault(e => e.ReviewId == performanceReview.ReviewId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(performanceReview).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating PerformanceReview: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // PerformanceScore Update Operations
+        public void UpdatePerformanceScore(PerformanceScore performanceScore)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<PerformanceScore>()
+                        .Local
+                        .FirstOrDefault(e => e.ScoreId == performanceScore.ScoreId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(performanceScore).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating PerformanceScore: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
         // =====================================
         // DELETE OPERATIONS
@@ -927,25 +1161,25 @@ namespace HumanResourcesApp.DBClasses
                 {
                     using var transaction = context.Database.BeginTransaction();
 
-                    var existingUser = _context.Users.Find(user.UserId);
+                    var existingUser = context.Users.Find(user.UserId);
                     if (existingUser != null)
                     {
                         // Set UserId to null in related system logs
-                        var relatedLogs = _context.SystemLogs.Where(log => log.UserId == user.UserId).ToList();
+                        var relatedLogs = context.SystemLogs.Where(log => log.UserId == user.UserId).ToList();
                         foreach (var log in relatedLogs)
                         {
                             log.UserId = null;
                         }
 
                         // Set UserId to null in related payroll items
-                        var relatedPayrolls = _context.EmployeePayrolls.Where(p => p.ProcessedBy == user.UserId).ToList();
+                        var relatedPayrolls = context.EmployeePayrolls.Where(p => p.ProcessedBy == user.UserId).ToList();
                         foreach (var payroll in relatedPayrolls)
                         {
                             payroll.ProcessedBy = null;
 
                         }
 
-                        var relatedEmployees = _context.Employees.Where(p => p.UserId == user.UserId).ToList();
+                        var relatedEmployees = context.Employees.Where(p => p.UserId == user.UserId).ToList();
                         foreach (var employee in relatedEmployees)
                         {
                             employee.UserId = null;
@@ -953,8 +1187,8 @@ namespace HumanResourcesApp.DBClasses
                         }
 
                         // Delete the user
-                        _context.Users.Remove(existingUser);
-                        _context.SaveChanges();
+                        context.Users.Remove(existingUser);
+                        context.SaveChanges();
                         transaction.Commit();
                     }
                 }
@@ -962,6 +1196,60 @@ namespace HumanResourcesApp.DBClasses
             catch (Exception ex)
             {
                 MessageBox.Show($"Error deleting user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // PayPeriod Delete Operations
+
+        public void DeletePayPeriod(PayPeriod payPeriod)
+        {
+            var existingPayPeriod = _context.PayPeriods.Find(payPeriod.PayPeriodId);
+            if (existingPayPeriod != null && CanDeletePayPeriod(existingPayPeriod))
+            {
+                _context.PayPeriods.Remove(existingPayPeriod);
+                _context.SaveChanges();
+            }
+        }
+
+        // PerformanceCriteria Delete Operations
+
+        public void DeletePerformanceCriteria(PerformanceCriterion performanceCriterion)
+        {
+            var existingPerformanceCriterion = _context.PerformanceCriteria.Find(performanceCriterion.CriteriaId);
+            if (existingPerformanceCriterion != null && !IsPerformanceCriterionUsedInScores(existingPerformanceCriterion.CriteriaId))
+            {
+                _context.PerformanceCriteria.Remove(existingPerformanceCriterion);
+                _context.SaveChanges();
+            }
+        }
+
+        // PerformanceReview Delete Operations
+
+        public void DeletePerformanceReview(PerformanceReview performanceReview)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    // Find the role with its related permissions
+                    var existingPerformanceReview = context.PerformanceReviews.Find(performanceReview.ReviewId);
+
+                    if (existingPerformanceReview != null)
+                    {
+                        context.PerformanceScores.RemoveRange(existingPerformanceReview.PerformanceScores);
+
+                        context.PerformanceReviews.Remove(existingPerformanceReview);
+
+                        context.SaveChanges();
+                        transaction.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting performance review: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

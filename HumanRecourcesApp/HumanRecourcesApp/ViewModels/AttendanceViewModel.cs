@@ -49,9 +49,13 @@ namespace HumanResourcesApp.ViewModels
                 SetProperty(ref selectedEmployee, value);
                 if (value != null)
                 {
-                    NewAttendance.Employee = _context.GetEmployeeById(value.EmployeeId);
-                    NewAttendance.EmployeeId = value.EmployeeId;
-                    NewAttendance.EmployeeFullName = $"{value.FirstName} {value.LastName}";
+                    var employee = _context.GetEmployeeById(value.EmployeeId);
+                    if (employee != null)
+                    {
+                        NewAttendance.Employee = employee;
+                        NewAttendance.EmployeeId = value.EmployeeId;
+                        NewAttendance.EmployeeFullName = $"{value.FirstName} {value.LastName}";
+                    }
                 }
             }
         }
@@ -88,9 +92,14 @@ namespace HumanResourcesApp.ViewModels
 
             // Initialize collections
             Attendances = new ObservableCollection<AttendanceDisplayModel>();
-            newAttendance = new AttendanceDisplayModel();
+            NewAttendance = new AttendanceDisplayModel();
             Employees = new ObservableCollection<EmployeeDisplayModel>();
             Departments = new ObservableCollection<Department>();
+
+            SelectedAttendance = new AttendanceDisplayModel();
+            SelectedEmployee = new EmployeeDisplayModel();
+            SelectedDepartment = new Department();
+            Status = string.Empty;
 
             // Load data
             LoadAttendances();

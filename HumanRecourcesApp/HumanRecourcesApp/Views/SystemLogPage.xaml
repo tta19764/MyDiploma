@@ -1,0 +1,293 @@
+﻿<Page x:Class="HumanResourcesApp.Views.SystemLogPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
+      xmlns:vm="clr-namespace:HumanResourcesApp.ViewModels"
+      xmlns:controls="clr-namespace:HumanResourcesApp.Controls"
+      mc:Ignorable="d" 
+      Title="System Logs"
+      d:DesignHeight="650" d:DesignWidth="1200"
+      Background="#F5F7FA">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <!-- Define converter directly -->
+            <classes:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <classes:EmptyCollectionToVisibilityConverter x:Key="EmptyCollectionToVisibilityConverter"/>
+
+            <!-- Button Styles (from UsersPage) -->
+            <Style x:Key="ActionButton" TargetType="Button">
+                <Setter Property="Padding" Value="12,5"/>
+                <Setter Property="Margin" Value="2"/>
+                <Setter Property="Height" Value="22"/>
+                <Setter Property="Background" Value="#2E86DE"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#1D75C0"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#166ABD"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- DataGrid Column Header Style (from UsersPage) -->
+            <Style x:Key="DataGridColumnHeaderStyle" TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="#2E86DE"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Padding" Value="10,8"/>
+                <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                <Setter Property="BorderBrush" Value="#4393E4"/>
+            </Style>
+
+            <Style x:Key="PageHeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="24"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Margin" Value="0,0,0,16"/>
+                <Setter Property="Foreground" Value="#333333"/>
+            </Style>
+            <Style x:Key="PageDescriptionStyle" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="Margin" Value="0,0,0,24"/>
+                <Setter Property="Foreground" Value="#666666"/>
+            </Style>
+
+            <!-- Updated DataGrid Style (incorporating elements from UsersPage) -->
+            <Style TargetType="DataGrid">
+                <Setter Property="AutoGenerateColumns" Value="False"/>
+                <Setter Property="IsReadOnly" Value="True"/>
+                <Setter Property="CanUserAddRows" Value="False"/>
+                <Setter Property="CanUserDeleteRows" Value="False"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="BorderBrush" Value="#DDDDDD"/>
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="RowBackground" Value="White"/>
+                <Setter Property="AlternatingRowBackground" Value="#F9FAFC"/>
+                <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+                <Setter Property="HeadersVisibility" Value="Column"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="#E3E3E3"/>
+                <Setter Property="RowHeaderWidth" Value="0"/>
+            </Style>
+
+            <!-- Use the DataGridColumnHeaderStyle from UsersPage -->
+            <Style TargetType="DataGridColumnHeader" BasedOn="{StaticResource DataGridColumnHeaderStyle}"/>
+
+            <Style TargetType="DataGridRow">
+                <Setter Property="Height" Value="35"/>
+            </Style>
+            <Style TargetType="DataGridCell">
+                <Setter Property="Padding" Value="8,4"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+            <Style x:Key="ActionButtonStyle" TargetType="Button" BasedOn="{StaticResource ActionButton}">
+                <Setter Property="Width" Value="32"/>
+                <Setter Property="Height" Value="32"/>
+                <Setter Property="Margin" Value="4,0"/>
+                <Setter Property="Padding" Value="4"/>
+            </Style>
+            <Style x:Key="BadgeStyle" TargetType="Border">
+                <Setter Property="CornerRadius" Value="3"/>
+                <Setter Property="Padding" Value="6,2"/>
+            </Style>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header (styled like UsersPage) -->
+        <Border Grid.Row="0" Background="#2E75B6" Padding="15">
+            <Grid>
+                <TextBlock Text="System Logs" 
+                           FontSize="22" 
+                           FontWeight="Bold"
+                           Foreground="White"/>
+            </Grid>
+        </Border>
+
+        <!-- Content Panel -->
+        <Grid Grid.Row="1">
+            <!-- Data Grid (styled like UsersPage) -->
+            <DataGrid ItemsSource="{Binding SystemLogs}" 
+                      SelectionMode="Single"
+                      VirtualizingPanel.ScrollUnit="Pixel"
+                      VirtualizingPanel.IsVirtualizing="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="ID" Binding="{Binding LogId}" Width=".5*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Date/Time" Binding="{Binding LogDate, StringFormat=yyyy-MM-dd HH:mm:ss}" Width="1.2*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTemplateColumn Header="Level" Width=".8*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border>
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource BadgeStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding LogLevel}" Value="Error">
+                                                    <Setter Property="Background" Value="#FFCDD2"/>
+                                                    <Setter Property="BorderBrush" Value="#E57373"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding LogLevel}" Value="Warning">
+                                                    <Setter Property="Background" Value="#FFF9C4"/>
+                                                    <Setter Property="BorderBrush" Value="#FBC02D"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding LogLevel}" Value="Info">
+                                                    <Setter Property="Background" Value="#BBDEFB"/>
+                                                    <Setter Property="BorderBrush" Value="#64B5F6"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding LogLevel}" Value="Debug">
+                                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                                    <Setter Property="BorderBrush" Value="#9E9E9E"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding LogLevel}" TextAlignment="Center" FontSize="12"/>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="1*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Source" Binding="{Binding LogSource}" Width="1*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Entity Type" Binding="{Binding EntityType}" Width="1*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Entity ID" Binding="{Binding EntityId}" Width=".7*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="User" Binding="{Binding User.UserName}" Width="1*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="IP Address" Binding="{Binding IpAddress}" Width="1*">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- JSON Values Buttons -->
+                    <DataGridTemplateColumn Header="Changes" Width="1.5*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Style="{StaticResource ActionButtonStyle}" 
+                                            ToolTip="View Old Values"
+                                            Command="{Binding DataContext.ShowOldValuesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding OldValues, Converter={StaticResource StringToVisibilityConverter}}">
+                                        <Image Source="/Resources/history.png" Width="16" Height="16"/>
+                                    </Button>
+                                    <Button Style="{StaticResource ActionButtonStyle}" 
+                                            ToolTip="View New Values"
+                                            Command="{Binding DataContext.ShowNewValuesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding NewValues, Converter={StaticResource StringToVisibilityConverter}}">
+                                        <Image Source="/Resources/update.png" Width="16" Height="16"/>
+                                    </Button>
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!-- Details Button -->
+                    <DataGridTemplateColumn Header="Details" Width=".7*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Style="{StaticResource ActionButtonStyle}" 
+                                        ToolTip="View Details"
+                                        Command="{Binding DataContext.ShowDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding}">
+                                    <Image Source="/Resources/info.png" Width="16" Height="16"/>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- Empty State Text -->
+            <TextBlock Grid.Row="1" 
+                       Text="No system logs found" 
+                       FontSize="14" 
+                       Foreground="#666666" 
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding SystemLogs.Count, Converter={StaticResource EmptyCollectionToVisibilityConverter}}"/>
+        </Grid>
+    </Grid>
+</Page>

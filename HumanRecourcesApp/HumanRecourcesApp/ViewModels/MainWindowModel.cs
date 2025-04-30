@@ -96,6 +96,18 @@ namespace HumanRecourcesApp.ViewModels
                 case "Users":
                     CurrentPage = new UsersPage();
                     break;
+                case "PayPeriods":
+                    CurrentPage = new PayPeriodsPage();
+                    break;
+                case "SystemLogs":
+                    CurrentPage = new SystemLogPage();
+                    break;
+                case "PerformanceCriteria":
+                    CurrentPage = new PerformanceCriteriaPage();
+                    break;
+                case "PerformanceReviews":
+                    CurrentPage = new PerformanceReviewsPage();
+                    break;
                 default:
                     CurrentPage = new DashboardPage(UserFullName); // Replace null with a default Page instance  
                     break;

@@ -28,6 +28,24 @@
     <Compile Update="Views\EmployeePage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\PayPeriodsPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\PerformanceCriteriaPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\PerformanceReviewDetailWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\PerformanceReviewFormWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\PerformanceReviewsPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\PerformanceReviewViewWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\PositionPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -35,6 +53,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\RolesPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\SystemLogPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\TimeOffRequestFormWindow.xaml.cs">
@@ -81,6 +102,24 @@
     <Page Update="Views\LoginView.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Views\PayPeriodsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PerformanceCriteriaPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PerformanceReviewDetailWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PerformanceReviewFormWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PerformanceReviewsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PerformanceReviewViewWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\PositionPage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -88,6 +127,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\RolesPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\SystemLogPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\TimeOffRequestFormWindow.xaml">

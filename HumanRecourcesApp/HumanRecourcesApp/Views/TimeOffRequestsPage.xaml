@@ -106,20 +106,16 @@
         </Border>
         <ScrollViewer Grid.Row="1">
             <StackPanel Background="#F7F7F7">
-
-                <!-- Page Header -->
-
-
                 <!-- Request Cards -->
-                <ItemsControl ItemsSource="{Binding TimeOffRequests}">
+                <ItemsControl ItemsSource="{Binding TimeOffRequestsView}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border BorderBrush="#DDD"
-                BorderThickness="1"
-                CornerRadius="8"
-                Margin="15,15,15,0"
-                Padding="16"
-                Background="White">
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Margin="15,15,15,0"
+                                Padding="16"
+                                Background="White">
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto"/>
@@ -141,13 +137,13 @@
                                     <!-- Date & Duration -->
                                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,8,0,0">
                                         <TextBlock>
-                        <Run Text="Period: "/>
-                        <Run Text="{Binding StartDate}" FontWeight="SemiBold"/>
-                        <Run Text=" – "/>
-                        <Run Text="{Binding EndDate}" FontWeight="SemiBold"/>
-                        <Run Text=" ("/>
-                        <Run Text="{Binding TotalDays}"/>
-                        <Run Text=" days)"/>
+                                            <Run Text="Period: "/>
+                                            <Run Text="{Binding StartDate}" FontWeight="SemiBold"/>
+                                            <Run Text=" – "/>
+                                            <Run Text="{Binding EndDate}" FontWeight="SemiBold"/>
+                                            <Run Text=" ("/>
+                                            <Run Text="{Binding TotalDays}"/>
+                                            <Run Text=" days)"/>
                                         </TextBlock>
 
                                         <TextBlock Text="{Binding Reason}" FontStyle="Italic" Foreground="#666" TextWrapping="Wrap" Margin="0,4,0,0"/>
@@ -156,18 +152,18 @@
                                     <!-- Status -->
                                     <StackPanel Grid.Row="2" Grid.Column="0" Orientation="Horizontal" Margin="0,10,0,0">
                                         <TextBlock>
-                        <Run Text="Status: " FontWeight="SemiBold"/>
-                        <Run Text="{Binding Status}" Foreground="#444"/>
+                                            <Run Text="Status: " FontWeight="SemiBold"/>
+                                            <Run Text="{Binding Status}" Foreground="#444"/>
                                         </TextBlock>
                                         <TextBlock Text=" | " Margin="6,0"/>
                                         <TextBlock>
-                        <Run Text="Reviewed by: "/>
-                        <Run Text="{Binding ApprovedByName}" FontWeight="SemiBold"/>
+                                            <Run Text="Reviewed by: "/>
+                                            <Run Text="{Binding ApprovedByName}" FontWeight="SemiBold"/>
                                         </TextBlock>
                                         <TextBlock Text=" | " Margin="6,0"/>
                                         <TextBlock>
-                        <Run Text="Review Date: "/>
-                        <Run Text="{Binding ApprovalDate}" FontWeight="SemiBold"/>
+                                            <Run Text="Review Date: "/>
+                                            <Run Text="{Binding ApprovalDate}" FontWeight="SemiBold"/>
                                         </TextBlock>
                                     </StackPanel>
                                     <!-- Buttons -->
