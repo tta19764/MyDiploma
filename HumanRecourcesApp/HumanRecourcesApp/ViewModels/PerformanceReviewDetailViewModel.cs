@@ -15,7 +15,6 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        #region Properties
         [ObservableProperty]
         private PerformanceReview review;
 
@@ -38,7 +37,6 @@ namespace HumanResourcesApp.ViewModels
         private bool showAcknowledgement;
 
         public event EventHandler<bool> RequestClose;
-        #endregion
 
         public PerformanceReviewDetailViewModel(PerformanceReview review)
         {

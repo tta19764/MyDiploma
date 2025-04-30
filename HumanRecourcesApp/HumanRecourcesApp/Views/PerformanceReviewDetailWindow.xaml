@@ -13,7 +13,10 @@
 
     <Window.Resources>
         <classes:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
-        
+
+        <!-- New converter for enabling/disabling controls based on status -->
+        <classes:StringToBooleanConverter x:Key="StatusToBoolConverter" TrueValue="Submitted" Inverted="False"/>
+
         <Style x:Key="FormLabel" TargetType="TextBlock">
             <Setter Property="Margin" Value="0,12,0,4"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -125,7 +128,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                
+
                 <TextBlock Text="Review Performance"
                            Grid.Column="0"
                          FontSize="20"
@@ -238,7 +241,8 @@
                                               TickFrequency="0.5"
                                               TickPlacement="BottomRight"
                                               IsSnapToTickEnabled="True"
-                                              Value="{Binding Score}"/>
+                                              Value="{Binding Score}"
+                                              IsEnabled="{Binding DataContext.Review.Status, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Converter={StaticResource StatusToBoolConverter}}"/>
                                         <TextBlock Text="{Binding Score}" 
                                                  HorizontalAlignment="Center"
                                                  FontWeight="Bold"/>
@@ -251,7 +255,8 @@
                                                AcceptsReturn="True"
                                                Height="60"
                                                Margin="0,20,0,0"
-                                               Padding="5"/>
+                                               Padding="5"
+                                               IsReadOnly="{Binding DataContext.Review.Status, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Converter={StaticResource StatusToBoolConverter}, ConverterParameter=Inverted}"/>
                                     </Grid>
                                 </Grid>
                             </Border>
@@ -280,7 +285,8 @@
                                   TickPlacement="BottomRight"
                                   IsSnapToTickEnabled="True"
                                   Value="{Binding Review.OverallRating}"
-                                  Height="35"/>
+                                  Height="35"
+                                  IsEnabled="{Binding Review.Status, Converter={StaticResource StatusToBoolConverter}}"/>
                             <TextBlock Text="{Binding Review.OverallRating}" 
                                      HorizontalAlignment="Center"
                                      FontWeight="Bold"/>
@@ -291,7 +297,8 @@
                         <TextBlock Text="Review Status" Style="{StaticResource FormLabel}"/>
                         <ComboBox ItemsSource="{Binding ReviewStatuses}"
                                 SelectedItem="{Binding SelectedStatus}"
-                                Style="{StaticResource FormInput}"/>
+                                Style="{StaticResource FormInput}"
+                                IsEnabled="{Binding Review.Status, Converter={StaticResource StatusToBoolConverter}}"/>
                     </StackPanel>
                 </Grid>
 
@@ -300,7 +307,8 @@
                        TextWrapping="Wrap"
                        AcceptsReturn="True"
                        Height="100"
-                       Padding="8"/>
+                       Padding="8"
+                       IsReadOnly="{Binding Review.Status, Converter={StaticResource StatusToBoolConverter}, ConverterParameter=Inverted}"/>
 
                 <!-- Employee Acknowledgement (Optional) -->
                 <StackPanel Visibility="{Binding ShowAcknowledgement, Converter={StaticResource BoolToVisConverter}}">
@@ -324,20 +332,21 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                
-                <Button Content="Cancel" 
+
+                    <Button Content="Cancel" 
                         Grid.Column="3"
                       Command="{Binding CancelCommand}"
                       Style="{StaticResource CancelButton}"
                       DockPanel.Dock="Right"/>
 
-                <Button Content="Save" 
+                    <Button Content="Save" 
                         Grid.Column="2"
                       Command="{Binding SaveCommand}"
                       Style="{StaticResource ActionButton}"
-                      DockPanel.Dock="Right"/>
+                      DockPanel.Dock="Right"
+                      Visibility="{Binding Review.Status, Converter={StaticResource StatusToBoolConverter}, ConverterParameter=Visibility}"/>
 
-                <Button Content="Acknowledge" 
+                    <Button Content="Acknowledge" 
                         Grid.Column="1"
                       Command="{Binding AcknowledgeCommand}"
                       Style="{StaticResource AcknowledgeButton}"

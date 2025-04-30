@@ -137,9 +137,7 @@ namespace HumanResourcesApp.ViewModels
                 return;
             }
 
-            var viewWindow = new PerformanceReviewViewWindow();
-            var viewModel = new PerformanceReviewViewWindowViewModel(review);
-            viewWindow.DataContext = viewModel;
+            var viewWindow = new PerformanceReviewViewWindow(review);
             viewWindow.ShowDialog();
         }
 
