@@ -14,6 +14,8 @@ namespace HumanRecourcesApp.ViewModels
 {
     public partial class MainWindowViewModel : ObservableObject
     {
+        private readonly HumanResourcesDB _context;
+        private readonly User _user;
         [ObservableProperty]
         private string userFullName = string.Empty;
         [ObservableProperty]
@@ -29,10 +31,12 @@ namespace HumanRecourcesApp.ViewModels
         {
             if (user != null)
             {
+                _context = new HumanResourcesDB();
                 UserRole = user.Role;
                 UserRoleName = user.Role?.RoleName ?? "Unknown";
-                CurrentPage = new DashboardPage(UserFullName);
-                if(user.Employee != null)
+                _user = _context.GetUserById(user.UserId) ?? user;
+                CurrentPage = new DashboardPage(this, _user);
+                if (user.Employee != null)
                 {
                     UserFullName = $"{user.Employee.FirstName} {user.Employee.LastName}";
                     UserInitials = $"{user.Employee.FirstName[0]}{user.Employee.LastName[0]}".ToUpper();
@@ -48,11 +52,12 @@ namespace HumanRecourcesApp.ViewModels
                 UserFullName = "Guest";
                 UserInitials = "??";
                 UserRoleName = "Guest";
+                _user = new User { UserId = 0, Employee = null, Role = null };
                 UserRole = new Role
                 {
                     RoleName = "Guest"
                 };
-                CurrentPage = new DashboardPage(UserFullName);
+                CurrentPage = new DashboardPage(this, _user);
             }
         }
 
@@ -63,14 +68,14 @@ namespace HumanRecourcesApp.ViewModels
 
             if (pageName == null)
             {
-                CurrentPage = new DashboardPage(UserFullName); // Replace null with a default Page instance  
+                CurrentPage = new DashboardPage(this, _user); // Replace null with a default Page instance  
                 return;
             }
 
             switch (pageName)
             {
                 case "Dashboard":
-                    CurrentPage = new DashboardPage(UserFullName);
+                    CurrentPage = new DashboardPage(this, _user);
                     break;
                 case "Departments":
                     CurrentPage = new DepartmentPage();
@@ -82,7 +87,7 @@ namespace HumanRecourcesApp.ViewModels
                     CurrentPage = new EmployeePage();
                     break;
                 case "Attendance":
-                    CurrentPage = new AttendancePage();
+                    CurrentPage = new AttendancePage(_user);
                     break;
                 case "TimeOffTypes":
                     CurrentPage = new TimeOffTypesPage();
@@ -108,8 +113,14 @@ namespace HumanRecourcesApp.ViewModels
                 case "PerformanceReviews":
                     CurrentPage = new PerformanceReviewsPage();
                     break;
+                case "PayrollItems":
+                    CurrentPage = new PayrollItemsPage();
+                    break;
+                case "ProcessPayroll":
+                    CurrentPage = new ProcessPayrollPage(this, _user);
+                    break;
                 default:
-                    CurrentPage = new DashboardPage(UserFullName); // Replace null with a default Page instance  
+                    CurrentPage = new DashboardPage(this, _user); // Replace null with a default Page instance  
                     break;
             }
         }

@@ -31,6 +31,12 @@
     <Compile Update="Views\PayPeriodsPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="Views\PayrollDetailsWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\PayrollItemsPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Views\PerformanceCriteriaPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -47,6 +53,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\PositionPage.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\ProcessPayrollPage.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\RoleFormWindow.xaml.cs">
@@ -105,6 +114,12 @@
     <Page Update="Views\PayPeriodsPage.xaml">
       <SubType>Designer</SubType>
     </Page>
+    <Page Update="Views\PayrollDetailsWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\PayrollItemsPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="Views\PerformanceCriteriaPage.xaml">
       <SubType>Designer</SubType>
     </Page>
@@ -121,6 +136,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\PositionPage.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Views\ProcessPayrollPage.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Views\RoleFormWindow.xaml">

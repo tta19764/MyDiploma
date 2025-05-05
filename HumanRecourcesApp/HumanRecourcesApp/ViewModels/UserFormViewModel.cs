@@ -111,7 +111,7 @@ namespace HumanResourcesApp.ViewModels
             WindowTitle = "Edit User";
 
             // Create a new user or clone the existing one
-            User = user;
+            User = _context.GetUserById(user.UserId);
 
             // Load reference data
             LoadRoles();
@@ -222,28 +222,10 @@ namespace HumanResourcesApp.ViewModels
                 // Update employee link
                 if (SelectedEmployee != null)
                 {
-                    // If this user was linked to another employee, remove the link
-                    if (User.UserId > 0)
-                    {
-                        var currentLinkedEmployee = _context.GetAllEmplyees().FirstOrDefault(e => e.UserId == User.UserId);
-                        if (currentLinkedEmployee != null && currentLinkedEmployee.EmployeeId != SelectedEmployee.EmployeeId)
-                        {
-                            currentLinkedEmployee.UserId = null;
-                        }
-                    }
-
-                    // Link the new employee
-                    SelectedEmployee.UserId = User.UserId;
                     User.Employee = _context.GetEmployeeById(SelectedEmployee.EmployeeId);
                 }
                 else if (User.Employee != null)
                 {
-                    // Remove the link if previously linked
-                    var currentLinkedEmployee = _context.GetAllEmplyees().FirstOrDefault(e => e.UserId == User.UserId);
-                    if (currentLinkedEmployee != null)
-                    {
-                        currentLinkedEmployee.UserId = null;
-                    }
                     User.Employee = null;
                 }
 

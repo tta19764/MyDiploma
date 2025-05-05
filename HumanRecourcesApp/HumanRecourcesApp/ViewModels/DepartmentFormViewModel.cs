@@ -54,7 +54,7 @@ namespace HumanRecourcesApp.ViewModels
                     if (value != null)
                     {
                         Managers.Clear();
-                        var employees = _context.GetAllEmplyeesByPosition(value);
+                        var employees = _context.GetAllFreeEmplyeesByPosition(value);
                         foreach (var employee in employees)
                         {
                             Managers.Add(new EmployeeDisplayModel
@@ -65,6 +65,23 @@ namespace HumanRecourcesApp.ViewModels
                                 Position = employee.Position
                             });
                         }
+                        if(IsEditMode && Department.ManagerId != null)
+                        {
+                            var currentManager = _context.GetEmployeeById(Department.ManagerId.Value);
+                            Managers.Add(new EmployeeDisplayModel
+                            {
+                                EmployeeId = currentManager.EmployeeId,
+                                FirstName = currentManager.FirstName,
+                                LastName = currentManager.LastName,
+                                Position = currentManager.Position
+                            });
+                            SelectedManager = Managers.FirstOrDefault(m => m.EmployeeId == Department.ManagerId);
+                        }
+                        else
+                        {
+                            SelectedManager = null;
+                        }
+                        
                     }
                     else
                     {

@@ -103,7 +103,8 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
             
             <TextBlock Text="Attendances" 
                 FontSize="22" 
@@ -115,6 +116,15 @@
                         DockPanel.Dock="Right"
                         ButtonContent="Add Attendance"
                         ButtonCommand="{Binding AddAttendanceCommand}"
+                        ButtonPadding="12,8"/>
+
+                <controls:ActionButtonControl
+                    Margin="10,0,0,0"
+                        Grid.Column="2"
+                        DockPanel.Dock="Right"
+                        Visibility="{Binding IsEmployee, Converter={StaticResource BoolToVisConverter}}"
+                        ButtonContent="{Binding CheckAction}"
+                        ButtonCommand="{Binding CheckCommand}"
                         ButtonPadding="12,8"/>
             </Grid>
         </Border>
@@ -248,8 +258,8 @@
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Text="Status:" Width="120" VerticalAlignment="Center"/>
                     <ComboBox Text="{Binding NewAttendance.Status}" Width="300">
-                        <ComboBoxItem Content="Present"/>
-                        <ComboBoxItem Content="Absent"/>
+                        <ComboBoxItem Content="Checked In"/>
+                        <ComboBoxItem Content="Checked Out"/>
                         <ComboBoxItem Content="Late"/>
                         <ComboBoxItem Content="On Leave"/>
                     </ComboBox>

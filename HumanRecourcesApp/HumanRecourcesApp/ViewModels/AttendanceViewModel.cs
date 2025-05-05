@@ -16,8 +16,16 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
+        private readonly User _user;
+
         [ObservableProperty]
         private ObservableCollection<Department> departments;
+
+        [ObservableProperty]
+        private string checkAction;
+
+        [ObservableProperty]
+        private bool isEmployee;
 
         [ObservableProperty]
         private ObservableCollection<EmployeeDisplayModel> employees;
@@ -85,10 +93,24 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        public AttendanceViewModel()
+        public AttendanceViewModel(User user)
         {
             // Initialize commands
             _context = new HumanResourcesDB();
+            _user = _context.GetUserById(user.UserId) ?? new User();
+            IsEmployee = _user.Employee != null;
+            if (IsEmployee && _context.GetAllAttendances().Where(a => a.EmployeeId == _user.Employee.EmployeeId && a.CheckInTime.HasValue && a.CheckInTime.Value.Date == DateTime.Now.Date).Count() > _context.GetAllAttendances().Where(a => a.EmployeeId == _user.Employee.EmployeeId && a.CheckOutTime.HasValue && a.CheckOutTime.Value.Date == DateTime.Now.Date).Count())
+            {
+                CheckAction = "Check Out";
+            }
+            else if(IsEmployee)
+            {
+                CheckAction = "Check In";
+            }
+            else
+            {
+                CheckAction = string.Empty;
+            }
 
             // Initialize collections
             Attendances = new ObservableCollection<AttendanceDisplayModel>();
@@ -192,22 +214,65 @@ namespace HumanResourcesApp.ViewModels
 
             return false;
         }
+        [RelayCommand]
+        private void Check()
+        {
+            if(CheckAction == "Check In")
+            {
+                var attendance = new Attendance
+                {
+                    EmployeeId = _user.Employee.EmployeeId,
+                    CheckInTime = DateTime.Now,
+                    CreatedAt = DateTime.Now,
+                    Status = "Checked In"
+                };
+                _context.AddAttendance(attendance);
+                LoadAttendances();
+                CheckAction = "Check Out";
+            }
+            else
+            {
+                var attendance = _context.GetAttendancesByEmployeeId(_user.Employee.EmployeeId)
+                    .Where(at => at.CheckInTime.HasValue && at.CheckInTime.Value.Date == DateTime.Now.Date && !at.CheckOutTime.HasValue).FirstOrDefault();
+                if (attendance != null)
+                {
+                    attendance.CheckOutTime = DateTime.Now;
+                    attendance.Status = "Checked Out";
+                    attendance.WorkHours = CalculateWorkHours((DateTime)attendance.CheckInTime, (DateTime)attendance.CheckOutTime);
+                    _context.UpdateAttendance(attendance);
+                    LoadAttendances();
+                    CheckAction = "Check In";
+                }
+            }
+        }
+
 
         [RelayCommand]
         private void AddAttendance()
         {
             IsAddingNew = true;
-            SelectedEmployee = null;
+            string employeeName = string.Empty;
+            if (_user.Employee != null)
+            {
+                SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentId == _user.Employee.DepartmentId);
+                employeeName = $"{_user.Employee.FirstName} {_user.Employee.LastName}";
+                SelectedEmployee = Employees.FirstOrDefault(e => e.EmployeeId == _user.Employee.EmployeeId);
+            }
+            else
+            {
+                SelectedDepartment = null;
+                SelectedEmployee = null;
+            }
+            
             SelectedAttendance = null;
             NewAttendance = new AttendanceDisplayModel
             {
-                EmployeeFullName = string.Empty,
+                EmployeeFullName = employeeName,
                 Notes = string.Empty,
                 Status = string.Empty,
                 WorkHours = 0,
                 CreatedAt = DateTime.Now
             };
-            SelectedDepartment = null;
         }
 
         private decimal CalculateWorkHours(DateTime checkIn, DateTime checkOut)

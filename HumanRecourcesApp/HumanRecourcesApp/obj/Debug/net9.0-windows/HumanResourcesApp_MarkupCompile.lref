@@ -10,12 +10,15 @@ FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\Empl
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\EmployeePage.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\LoginView.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PayPeriodsPage.xaml;;
+FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PayrollDetailsWindow.xaml;;
+FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PayrollItemsPage.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PerformanceCriteriaPage.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PerformanceReviewDetailWindow.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PerformanceReviewFormWindow.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PerformanceReviewsPage.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PerformanceReviewViewWindow.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\PositionPage.xaml;;
+FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\ProcessPayrollPage.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\RoleFormWindow.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\RolesPage.xaml;;
 FE:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\Views\SystemLogPage.xaml;;

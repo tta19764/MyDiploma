@@ -157,7 +157,7 @@
                                         </TextBlock>
                                         <TextBlock Margin="0,4,0,0">
                                             <Run Text="Review Date: "/>
-                                            <Run Text="{Binding ReviewDate}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding ReviewDate, StringFormat={}{0:dd/MM/yyyy}}" FontWeight="SemiBold"/>
                                         </TextBlock>
                                     </StackPanel>
 
@@ -185,7 +185,7 @@
                                         <TextBlock Text=" | " Margin="6,0"/>
                                         <TextBlock>
                                             <Run Text="Submission Date: "/>
-                                            <Run Text="{Binding SubmissionDate}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding SubmissionDate, StringFormat={}{0:dd/MM/yyyy}}" FontWeight="SemiBold"/>
                                         </TextBlock>
                                     </StackPanel>
 
@@ -254,7 +254,7 @@
                                         </TextBlock>
                                         <TextBlock Margin="0,4,0,0">
                                             <Run Text="Review Date: "/>
-                                            <Run Text="{Binding ReviewDate}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding ReviewDate, StringFormat={}{0:dd/MM/yyyy}}" FontWeight="SemiBold"/>
                                         </TextBlock>
                                     </StackPanel>
 
@@ -277,7 +277,7 @@
                                         <TextBlock Text=" | " Margin="6,0"/>
                                         <TextBlock>
                                             <Run Text="Acknowledged: "/>
-                                            <Run Text="{Binding AcknowledgementDate}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding AcknowledgementDate, StringFormat={}{0:dd/MM/yyyy}}" FontWeight="SemiBold"/>
                                         </TextBlock>
                                     </StackPanel>
 

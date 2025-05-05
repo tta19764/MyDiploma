@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,10 +21,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class AttendancePage : Page
     {
-        public AttendancePage()
+        public AttendancePage(User user)
         {
             InitializeComponent();
-            DataContext = new ViewModels.AttendanceViewModel();
+            DataContext = new ViewModels.AttendanceViewModel(user);
         }
     }
 }

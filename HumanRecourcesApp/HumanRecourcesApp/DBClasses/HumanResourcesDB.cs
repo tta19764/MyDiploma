@@ -192,6 +192,11 @@ namespace HumanResourcesApp.DBClasses
             return _context.Attendances.AsNoTracking().FirstOrDefault(s => s.AttendanceId == id);
         }
 
+        public List<Attendance> GetAttendancesByEmployeeId(int employeeId)
+        {
+            return _context.Attendances.AsNoTracking().Where(s => s.EmployeeId == employeeId).ToList();
+        }
+
         public bool IsAttendanceTimeValid(Attendance attendance)
         {
             // Return false if either time is null, as we can't perform the check
@@ -380,7 +385,7 @@ namespace HumanResourcesApp.DBClasses
         public bool CanDeletePayPeriod(PayPeriod payPeriod)
         {
             // Check if there are any EmployeePayrolls linked to this PayPeriod
-            return !_context.EmployeePayrolls.AsNoTracking().Any(ep => ep.PayPeriodId == payPeriod.PayPeriodId);
+            return (payPeriod.Status != "Completed") || (payPeriod.Status == "Completed" && !_context.EmployeePayrolls.AsNoTracking().Any(ep => ep.PayPeriodId == payPeriod.PayPeriodId));
         }
 
         // PerformanceCriteria Read Operations
@@ -440,6 +445,81 @@ namespace HumanResourcesApp.DBClasses
             return _context.PerformanceScores.AsNoTracking().FirstOrDefault(s => s.ScoreId == id);
         }
 
+        // PayrollItems Read Operations
+
+        public List<PayrollItem> GetAllPayrollItems()
+        {
+            return _context.PayrollItems.AsNoTracking().ToList();
+        }
+
+        public bool IsUniquePayrollItemName(PayrollItem payrollItem)
+        {
+            if (_context.PayrollItems.AsNoTracking().Count() == 0)
+            {
+                return true;
+            }
+            else if (payrollItem.PayrollItemId == 0)
+            {
+                return !_context.PayrollItems.AsNoTracking().Any(d => d.ItemName.ToLower() == payrollItem.ItemName.Trim().ToLower());
+            }
+            else
+            {
+                return !_context.PayrollItems.AsNoTracking().Any(d => d.ItemName.ToLower() == payrollItem.ItemName.Trim().ToLower() && d.PayrollItemId != payrollItem.PayrollItemId);
+            }
+        }
+
+        public bool IsPayrollItemUsedInPayrollDetails(int payrollItemId)
+        {
+            return _context.PayrollDetails.AsNoTracking().Any(d => d.PayrollItemId == payrollItemId);
+        }
+
+        public PayrollItem? GetPayrollItemById(int id)
+        {
+            return _context.PayrollItems.AsNoTracking().FirstOrDefault(s => s.PayrollItemId == id);
+        }
+
+        // EmployeePayroll Read Operations
+
+        public List<EmployeePayroll> GetAllEmployeePayrolls()
+        {
+            return _context.EmployeePayrolls.AsNoTracking().ToList();
+        }
+
+        public EmployeePayroll? GetEmployeePayrollById(int id)
+        {
+            return _context.EmployeePayrolls.AsNoTracking().FirstOrDefault(s => s.PayrollId == id);
+        }
+
+        // EmployeePayroll Read Operations by EmployeeId
+
+        public List<EmployeePayroll> GetEmployeePayrollsByEmployeeId(int employeeId)
+        {
+            return _context.EmployeePayrolls.AsNoTracking().Where(s => s.EmployeeId == employeeId).ToList();
+        }
+
+        public EmployeePayroll? GetEmployeePayrollByEmployeeAndPayPeriodId(int payPeriodId, int employeeId)
+        {
+            return _context.EmployeePayrolls.AsNoTracking().FirstOrDefault(s => s.EmployeeId == employeeId && s.PayPeriodId == payPeriodId);
+        }
+
+        // PayrollDetail Read Operations
+
+        public List<PayrollDetail> GetAllPayrollDetails()
+        {
+            return _context.PayrollDetails.AsNoTracking().ToList();
+        }
+
+        public PayrollDetail? GetPayrollDetailById(int id)
+        {
+            return _context.PayrollDetails.AsNoTracking().FirstOrDefault(s => s.PayrollDetailId == id);
+        }
+
+        public List<PayrollDetail> GetPayrollDetailsByPayrollId(int payrollId)
+        {
+            return _context.PayrollDetails.AsNoTracking().Where(s => s.PayrollId == payrollId).ToList();
+        }
+
+
         // =====================================
         // CREATE OPERATIONS
         // =====================================
@@ -447,9 +527,45 @@ namespace HumanResourcesApp.DBClasses
         // User Create Operations
         public void AddUser(User user)
         {
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            try
+            {
+                if (user == null)
+                    return;
+
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    if (user.Employee != null)
+                    {
+                        // Fetch and attach the existing employee to avoid tracking conflict
+                        var employee = context.Employees
+                            .FirstOrDefault(e => e.EmployeeId == user.Employee.EmployeeId && e.User == null);
+
+                        if (employee != null)
+                        {
+                            employee.User = user; // Set relationship
+                            user.Employee = employee; // Make sure user references the tracked employee
+                        }
+                        else
+                        {
+                            // Prevent EF from trying to track an already tracked or invalid employee
+                            user.Employee = null;
+                        }
+                    }
+
+                    context.Users.Add(user);
+                    context.SaveChanges();
+                    transaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
+
 
         // Department Create Operations
         public void AddDepartment(Department department)
@@ -581,6 +697,38 @@ namespace HumanResourcesApp.DBClasses
             _context.PerformanceReviews.Add(performanceReview);
             _context.SaveChanges();
         }
+
+        // PayrollItems Create Operations
+
+        public void CreatePayrollItem(PayrollItem payrollItem)
+        {
+            _context.PayrollItems.Add(payrollItem);
+            _context.SaveChanges();
+        }
+
+        // EmployeePayroll Create Operations
+
+        public void CreateEmployeePayroll(EmployeePayroll employeePayroll)
+        {
+            _context.EmployeePayrolls.Add(employeePayroll);
+            _context.SaveChanges();
+        }
+
+        public int CreateEmployeePayrollReturnId(EmployeePayroll employeePayroll)
+        {
+            _context.EmployeePayrolls.Add(employeePayroll);
+            _context.SaveChanges();
+            return employeePayroll.PayrollId;
+        }
+
+        // PayrollDetail Create Operations
+
+        public void CreatePayrollDetail(PayrollDetail payrollDetail)
+        {
+            _context.PayrollDetails.Add(payrollDetail);
+            _context.SaveChanges();
+        }
+
 
         // =====================================
         // UPDATE OPERATIONS
@@ -996,6 +1144,115 @@ namespace HumanResourcesApp.DBClasses
             }
         }
 
+        // PayrollItems Update Operations
+        public void UpdatePayrollItem(PayrollItem payrollItem)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<PayrollItem>()
+                        .Local
+                        .FirstOrDefault(e => e.PayrollItemId == payrollItem.PayrollItemId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(payrollItem).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating PayrollItem: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // EmployeePayroll Update Operations
+
+        public void UpdateEmployeePayroll(EmployeePayroll employeePayroll)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<EmployeePayroll>()
+                        .Local
+                        .FirstOrDefault(e => e.PayrollId == employeePayroll.PayrollId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(employeePayroll).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating EmployeePayroll: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public void UpdatePayrollDetail(PayrollDetail payrollDetail)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<PayrollDetail>()
+                        .Local
+                        .FirstOrDefault(e => e.PayrollDetailId == payrollDetail.PayrollDetailId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(payrollDetail).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating PayrollDetail: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // Attendance Update Operations
+
+        public void UpdateAttendance(Attendance attendance)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<Attendance>()
+                        .Local
+                        .FirstOrDefault(e => e.AttendanceId == attendance.AttendanceId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(attendance).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error updating Attendance: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // =====================================
         // DELETE OPERATIONS
         // =====================================
@@ -1203,11 +1460,31 @@ namespace HumanResourcesApp.DBClasses
 
         public void DeletePayPeriod(PayPeriod payPeriod)
         {
-            var existingPayPeriod = _context.PayPeriods.Find(payPeriod.PayPeriodId);
-            if (existingPayPeriod != null && CanDeletePayPeriod(existingPayPeriod))
+            try
             {
-                _context.PayPeriods.Remove(existingPayPeriod);
-                _context.SaveChanges();
+                using (var context = new HumanResourcesDbContext())
+                {
+                    using var transaction = context.Database.BeginTransaction();
+
+                    var existingPayPeriod = context.PayPeriods.Find(payPeriod.PayPeriodId);
+                    if (existingPayPeriod != null && CanDeletePayPeriod(existingPayPeriod))
+                    {
+                        var relatedEmployeePayrolls = context.EmployeePayrolls.Where(ep => ep.PayPeriodId == existingPayPeriod.PayPeriodId).ToList();
+                        foreach (var payroll in relatedEmployeePayrolls)
+                        {
+                            context.RemoveRange(payroll.PayrollDetails);
+                        }
+                        context.RemoveRange(relatedEmployeePayrolls);
+
+                        context.PayPeriods.Remove(existingPayPeriod);
+                        context.SaveChanges();
+                        transaction.Commit();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -1250,6 +1527,17 @@ namespace HumanResourcesApp.DBClasses
             catch (Exception ex)
             {
                 MessageBox.Show($"Error deleting performance review: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // PayrollItems Delete Operations
+        public void DeletePayrollItem(PayrollItem payrollItem)
+        {
+            var existingPayrollItem = _context.PayrollItems.Find(payrollItem.PayrollItemId);
+            if (existingPayrollItem != null)
+            {
+                _context.PayrollItems.Remove(existingPayrollItem);
+                _context.SaveChanges();
             }
         }
     }

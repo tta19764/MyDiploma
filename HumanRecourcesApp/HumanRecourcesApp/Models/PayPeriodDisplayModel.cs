@@ -12,10 +12,12 @@ namespace HumanResourcesApp.Models
         [ObservableProperty] private int payPeriodId;
         [ObservableProperty] private DateOnly startDate;
         [ObservableProperty] private DateOnly endDate;
+        public string Description => $"{StartDate.ToString()} - {EndDate.ToString()}";
         [ObservableProperty] private DateOnly paymentDate;
         [ObservableProperty] private string status = string.Empty;
         public DateTime? CreatedAt { get; set; }
         [ObservableProperty] private int payrollCount;
         [ObservableProperty] private bool isEditable;
+        [ObservableProperty] private bool isDeletable;
     }
 }

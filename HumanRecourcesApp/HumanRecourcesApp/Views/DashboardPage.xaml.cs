@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using HumanResourcesApp.Classes;
 using System.Globalization;
 using HumanResourcesApp.Models;
+using HumanRecourcesApp.ViewModels;
 
 namespace HumanResourcesApp.Views
 {
@@ -24,10 +25,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class DashboardPage : Page
     {
-        public DashboardPage(string _userName)
+        public DashboardPage(MainWindowViewModel mainVM, User user)
         {
             InitializeComponent();
-            DataContext = new DashboardViewModel(_userName);
+            DataContext = new DashboardViewModel(mainVM, user);
         }
     }
 }

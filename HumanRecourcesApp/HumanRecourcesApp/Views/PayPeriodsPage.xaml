@@ -100,10 +100,6 @@
                     <Setter Property="Foreground" Value="#2E86DE"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
                 </DataTrigger>
-                <DataTrigger Binding="{Binding Status}" Value="Processing">
-                    <Setter Property="Foreground" Value="#F39C12"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                </DataTrigger>
                 <DataTrigger Binding="{Binding Status}" Value="Completed">
                     <Setter Property="Foreground" Value="#27AE60"/>
                     <Setter Property="FontWeight" Value="SemiBold"/>
@@ -207,10 +203,10 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Actions" Width=".8*">
+                    <DataGridTemplateColumn Header="Actions" Width="auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="4,4" Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisConverter}}">
+                                <StackPanel Orientation="Horizontal" Margin="4,4">
                                     <Button Width="70" 
                                         Content="Edit" 
                                         Style="{StaticResource ActionButton}"
@@ -218,6 +214,7 @@
                                         Command="{Binding DataContext.EditPayPeriodCommand, 
                                   RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
                                         CommandParameter="{Binding}"
+                                             Visibility="{Binding IsEditable, Converter={StaticResource BoolToVisConverter}}"
                                         IsEnabled="{Binding IsEditable}"/>
                                     <Button Width="70" 
                                         Content="Delete" 
@@ -226,7 +223,8 @@
                                         Command="{Binding DataContext.DeletePayPeriodCommand, 
                                   RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
                                         CommandParameter="{Binding}"
-                                        IsEnabled="{Binding IsEditable}"/>
+                                            Visibility="{Binding IsDeletable, Converter={StaticResource BoolToVisConverter}}"
+                                        IsEnabled="{Binding IsDeletable}"/>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
@@ -264,7 +262,6 @@
                     <ComboBox Text="{Binding NewPayPeriod.Status}" Width="300">
                         <ComboBoxItem Content="Draft"/>
                         <ComboBoxItem Content="Active"/>
-                        <ComboBoxItem Content="Processing"/>
                         <ComboBoxItem Content="Completed"/>
                     </ComboBox>
                 </StackPanel>

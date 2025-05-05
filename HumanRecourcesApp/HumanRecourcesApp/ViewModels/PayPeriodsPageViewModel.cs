@@ -66,7 +66,8 @@ namespace HumanResourcesApp.ViewModels
                     Status = payPeriod.Status,
                     CreatedAt = payPeriod.CreatedAt,
                     PayrollCount = payPeriod.EmployeePayrolls.Count,
-                    IsEditable = payPeriod.Status == "Draft"
+                    IsEditable = payPeriod.Status == "Draft",
+                    IsDeletable = (payPeriod.Status != "Completed") || (payPeriod.Status == "Completed" && payPeriod.EmployeePayrolls.Count == 0)
                 });
             }
         }
@@ -202,9 +203,9 @@ namespace HumanResourcesApp.ViewModels
             if (payPeriod == null) return;
 
             // Check if the payPeriod is editable (Draft status)
-            if (!payPeriod.IsEditable)
+            if (!payPeriod.IsDeletable)
             {
-                MessageBox.Show("Only pay periods with 'Draft' status can be deleted.",
+                MessageBox.Show("Only pay periods that don't have 'Completed' status can be deleted.",
                     "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }

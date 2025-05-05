@@ -95,6 +95,11 @@ namespace HumanResourcesApp.ViewModels
 
             if (authenticatedUser != null)
             {
+                if(authenticatedUser.IsActive == false)
+                {
+                    ErrorMessage = "User is inactive";
+                    return;
+                }
                 // Authentication successful - open main window
                 var mainWindow = new MainWindow(authenticatedUser);
                 mainWindow.Show();

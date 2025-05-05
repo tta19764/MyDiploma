@@ -18,28 +18,8 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty]
         private Employee employee;
 
+        [ObservableProperty]
         private string userIdString;
-        public string UserIdString
-        {
-            get => userIdString;
-            set
-            {
-                if (int.TryParse(value, out int userId))
-                {
-                    Employee.UserId = userId;
-                    SetProperty(ref userIdString, value);
-                }
-                else if (string.IsNullOrWhiteSpace(value))
-                {
-                    Employee.UserId = null;
-                    SetProperty(ref userIdString, value);
-                }
-                else
-                {
-                    MessageBox.Show("Invalid User ID format.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-            }
-        }
 
         private string salaryString;
         public string SalaryString
@@ -91,7 +71,7 @@ namespace HumanResourcesApp.ViewModels
                 IsActive = true,
                 HireDate = DateOnly.FromDateTime(DateTime.Today)
             };
-            UserIdString = string.Empty;
+            UserIdString = "Account is not linked";
             SalaryString = string.Empty;
 
             LoadDepartmentsAndPositions();
@@ -124,7 +104,7 @@ namespace HumanResourcesApp.ViewModels
                 DepartmentId = employeeToEdit.DepartmentId
             };
 
-            UserIdString = (Employee.UserId == null) ? string.Empty : Employee.UserId.ToString();
+            UserIdString = (Employee.UserId == null) ? "Account is not linked" : Employee.UserId.ToString() ?? "Account is not linked";
             SalaryString = Employee.Salary.ToString();
 
             _isNewEmployee = false;
