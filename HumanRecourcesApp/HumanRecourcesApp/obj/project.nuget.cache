@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "YzAClgzC2Hs=",
+  "dgSpecHash": "CIRr+iqmoKY=",
   "success": true,
   "projectFilePath": "E:\\C#_projects\\HumanResourcesApp\\HumanRecourcesApp\\HumanRecourcesApp\\HumanResourcesApp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\tta19\\.nuget\\packages\\castle.core\\5.1.1\\castle.core.5.1.1.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.0\\communitytoolkit.mvvm.8.4.0.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
+    "C:\\Users\\tta19\\.nuget\\packages\\livecharts.wpf.netcore3\\0.9.8\\livecharts.wpf.netcore3.0.9.8.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\microsoft.build.framework\\17.8.3\\microsoft.build.framework.17.8.3.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\microsoft.build.locator\\1.7.8\\microsoft.build.locator.1.7.8.nupkg.sha512",
@@ -44,6 +45,7 @@
     "C:\\Users\\tta19\\.nuget\\packages\\system.composition.hosting\\7.0.0\\system.composition.hosting.7.0.0.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\system.composition.runtime\\7.0.0\\system.composition.runtime.7.0.0.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\system.composition.typedparts\\7.0.0\\system.composition.typedparts.7.0.0.nupkg.sha512",
+    "C:\\Users\\tta19\\.nuget\\packages\\system.data.datasetextensions\\4.5.0\\system.data.datasetextensions.4.5.0.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\system.diagnostics.eventlog\\6.0.0\\system.diagnostics.eventlog.6.0.0.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\system.io.pipelines\\7.0.0\\system.io.pipelines.7.0.0.nupkg.sha512",
     "C:\\Users\\tta19\\.nuget\\packages\\system.reflection.metadata\\7.0.0\\system.reflection.metadata.7.0.0.nupkg.sha512",

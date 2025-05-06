@@ -19,10 +19,10 @@ namespace HumanResourcesApp.Models
         private int payrollItemId;
 
         [ObservableProperty]
-        private string itemName;
+        private string itemName = string.Empty;
 
         [ObservableProperty]
-        private string itemType;
+        private string itemType = string.Empty;
 
         [ObservableProperty]
         private bool isPercentageBased;

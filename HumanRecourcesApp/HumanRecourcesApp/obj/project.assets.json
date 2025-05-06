@@ -47,6 +47,27 @@
           }
         }
       },
+      "LiveCharts.Wpf.NetCore3/0.9.8": {
+        "type": "package",
+        "dependencies": {
+          "System.Data.DataSetExtensions": "4.5.0"
+        },
+        "compile": {
+          "lib/net8.0-windows7.0/LiveCharts.Wpf.dll": {},
+          "lib/net8.0-windows7.0/LiveCharts.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0-windows7.0/LiveCharts.Wpf.dll": {},
+          "lib/net8.0-windows7.0/LiveCharts.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.WindowsDesktop.App.WPF"
+        ]
+      },
       "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
         "type": "package",
         "compile": {
@@ -896,6 +917,15 @@
           "buildTransitive/net6.0/_._": {}
         }
       },
+      "System.Data.DataSetExtensions/4.5.0": {
+        "type": "package",
+        "compile": {
+          "ref/netstandard2.0/System.Data.DataSetExtensions.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Data.DataSetExtensions.dll": {}
+        }
+      },
       "System.Diagnostics.EventLog/6.0.0": {
         "type": "package",
         "compile": {
@@ -1099,6 +1129,32 @@
         "lib/netstandard2.0/Humanizer.dll",
         "lib/netstandard2.0/Humanizer.xml",
         "logo.png"
+      ]
+    },
+    "LiveCharts.Wpf.NetCore3/0.9.8": {
+      "sha512": "EWwggMrRkWOdt/TdFhcs0LIXzpEuN392zGB+tLcO4UinKV13+V3NyhFoURPVP3GmQXjgrrlMDp+zyuSQeut53w==",
+      "type": "package",
+      "path": "livecharts.wpf.netcore3/0.9.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net40/LiveCharts.Wpf.dll",
+        "lib/net40/LiveCharts.dll",
+        "lib/net40/LiveCharts.xml",
+        "lib/net6.0-windows7.0/LiveCharts.Wpf.dll",
+        "lib/net6.0-windows7.0/LiveCharts.dll",
+        "lib/net6.0-windows7.0/LiveCharts.xml",
+        "lib/net7.0-windows7.0/LiveCharts.Wpf.dll",
+        "lib/net7.0-windows7.0/LiveCharts.dll",
+        "lib/net7.0-windows7.0/LiveCharts.xml",
+        "lib/net8.0-windows7.0/LiveCharts.Wpf.dll",
+        "lib/net8.0-windows7.0/LiveCharts.dll",
+        "lib/net8.0-windows7.0/LiveCharts.xml",
+        "lib/netcoreapp3.1/LiveCharts.Wpf.dll",
+        "lib/netcoreapp3.1/LiveCharts.dll",
+        "lib/netcoreapp3.1/LiveCharts.xml",
+        "livecharts.wpf.netcore3.0.9.8.nupkg.sha512",
+        "livecharts.wpf.netcore3.nuspec"
       ]
     },
     "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
@@ -2798,6 +2854,25 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "System.Data.DataSetExtensions/4.5.0": {
+      "sha512": "221clPs1445HkTBZPL+K9sDBdJRB8UN8rgjO3ztB0CQ26z//fmJXtlsr6whGatscsKGBrhJl5bwJuKSA8mwFOw==",
+      "type": "package",
+      "path": "system.data.datasetextensions/4.5.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE.TXT",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net45/_._",
+        "lib/netstandard2.0/System.Data.DataSetExtensions.dll",
+        "ref/net45/_._",
+        "ref/netstandard2.0/System.Data.DataSetExtensions.dll",
+        "system.data.datasetextensions.4.5.0.nupkg.sha512",
+        "system.data.datasetextensions.nuspec",
+        "useSharedDesignerContext.txt",
+        "version.txt"
+      ]
+    },
     "System.Diagnostics.EventLog/6.0.0": {
       "sha512": "lcyUiXTsETK2ALsZrX+nWuHSIQeazhqPphLfaRxzdGaG93+0kELqpgEHtwWOlQe7+jSFnKwaCAgL4kjeZCQJnw==",
       "type": "package",
@@ -3057,6 +3132,7 @@
   "projectFileDependencyGroups": {
     "net9.0-windows7.0": [
       "CommunityToolkit.Mvvm >= 8.4.0",
+      "LiveCharts.Wpf.NetCore3 >= 0.9.8",
       "Microsoft.EntityFrameworkCore >= 9.0.3",
       "Microsoft.EntityFrameworkCore.Design >= 9.0.3",
       "Microsoft.EntityFrameworkCore.Proxies >= 9.0.3",
@@ -3118,6 +3194,10 @@
           "CommunityToolkit.Mvvm": {
             "target": "Package",
             "version": "[8.4.0, )"
+          },
+          "LiveCharts.Wpf.NetCore3": {
+            "target": "Package",
+            "version": "[0.9.8, )"
           },
           "Microsoft.EntityFrameworkCore": {
             "target": "Package",

@@ -5,12 +5,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:HumanResourcesApp.Views"
       xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
+      xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
       mc:Ignorable="d" 
       d:DesignHeight="650" d:DesignWidth="1060"
       Title="Dashboard">
-    
+
     <Page.Resources>
         <classes:PercentageColorConverter x:Key="PercentageColorConverter"/>
+        <classes:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
     </Page.Resources>
 
 
@@ -216,16 +218,58 @@
                             FontSize="16" 
                             Margin="0,0,0,15"/>
 
-                        <!-- Replace with actual chart control -->
-                        <Border Grid.Row="1" 
-                            Background="#F8F9FA" 
-                            CornerRadius="6">
-                            <TextBlock Text="[Department Distribution Chart]" 
-                                HorizontalAlignment="Center" 
-                                VerticalAlignment="Center" 
-                                FontStyle="Italic" 
-                                Foreground="#777777"/>
-                        </Border>
+                        <!-- Department Distribution Chart -->
+                        <Grid Grid.Row="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <lvc:PieChart Grid.Row="0"
+                                Series="{Binding DepartmentSeries}"
+                                LegendLocation="None"
+                                InnerRadius="0"
+                                Margin="0,0,0,10"
+                                DataTooltip="{x:Null}">
+                                <lvc:PieChart.ChartLegend>
+                                    <lvc:DefaultLegend Visibility="Collapsed"/>
+                                </lvc:PieChart.ChartLegend>
+                            </lvc:PieChart>
+
+                            <ItemsControl Grid.Row="1" 
+                                      ItemsSource="{Binding DepartmentLegendItems}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" 
+                                                Margin="0,0,15,5">
+                                            <Rectangle Width="12" 
+                                                   Height="12" 
+                                                   Fill="{Binding Color}" 
+                                                   Margin="0,0,5,0"
+                                                   VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding DepartmentName}" 
+                                                   FontSize="12" 
+                                                   VerticalAlignment="Center"/>
+                                            <TextBlock Text=" (" 
+                                                   FontSize="12" 
+                                                   VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Percentage, StringFormat='{}{0:0}%'}" 
+                                                   FontSize="12" 
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"/>
+                                            <TextBlock Text=")" 
+                                                   FontSize="12" 
+                                                   VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
                     </Grid>
                 </Border>
 
@@ -339,7 +383,8 @@
                                 Background="#FFF8E5" 
                                 CornerRadius="6" 
                                 Padding="15" 
-                                Margin="0,15,0,0">
+                                Margin="0,15,0,0"
+                                Visibility="{Binding IsAlert, Converter={StaticResource BoolToVisConverter}}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -353,10 +398,10 @@
                                            Margin="0,0,10,0"/>
 
                                 <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Payroll Alert" 
+                                    <TextBlock Text="{Binding AlertTitle}" 
                                                FontWeight="SemiBold" 
                                                Foreground="#D69E2E"/>
-                                    <TextBlock Text="Next payroll processing is due in 3 days. Please ensure all time records are approved." 
+                                    <TextBlock Text="{Binding AlertContent}" 
                                                TextWrapping="Wrap" 
                                                Foreground="#AF7F14" 
                                                FontSize="13" 

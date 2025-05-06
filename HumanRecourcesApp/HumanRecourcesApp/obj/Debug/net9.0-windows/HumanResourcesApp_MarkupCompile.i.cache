@@ -12,9 +12,9 @@ TRACE;DEBUG;NET;NET9_0;NETCOREAPP
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\App.xaml
 29-229899308
 
-112-2083519392
-218-1920395493
+113803232085
+220-1564859947
 Controls\ActionButtonControl.xaml;Controls\NavButton.xaml;MainWindow.xaml;Views\AttendancePage.xaml;Views\DashboardPage.xaml;Views\DepartmentFormWindow.xaml;Views\DepartmentPage.xaml;Views\EmployeeFormWindow.xaml;Views\EmployeePage.xaml;Views\LoginView.xaml;Views\PayPeriodsPage.xaml;Views\PayrollDetailsWindow.xaml;Views\PayrollItemsPage.xaml;Views\PerformanceCriteriaPage.xaml;Views\PerformanceReviewDetailWindow.xaml;Views\PerformanceReviewFormWindow.xaml;Views\PerformanceReviewsPage.xaml;Views\PerformanceReviewViewWindow.xaml;Views\PositionPage.xaml;Views\ProcessPayrollPage.xaml;Views\RoleFormWindow.xaml;Views\RolesPage.xaml;Views\SystemLogPage.xaml;Views\TimeOffRequestFormWindow.xaml;Views\TimeOffRequestReviewFormWindow.xaml;Views\TimeOffRequestsPage.xaml;Views\TimeOffTypesPage.xaml;Views\UserForm.xaml;Views\UsersPage.xaml;
 
-True
+False
 

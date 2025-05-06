@@ -180,3 +180,5 @@ E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\n
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\ProcessPayrollPage.baml
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\PayrollDetailsWindow.g.cs
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\PayrollDetailsWindow.baml
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\LiveCharts.Wpf.dll
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\LiveCharts.dll

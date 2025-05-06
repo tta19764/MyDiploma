@@ -9,6 +9,7 @@
       "HumanResourcesApp/1.0.0": {
         "dependencies": {
           "CommunityToolkit.Mvvm": "8.4.0",
+          "LiveCharts.Wpf.NetCore3": "0.9.8",
           "Microsoft.EntityFrameworkCore": "9.0.3",
           "Microsoft.EntityFrameworkCore.Design": "9.0.3",
           "Microsoft.EntityFrameworkCore.Proxies": "9.0.3",
@@ -43,6 +44,21 @@
           "lib/net6.0/Humanizer.dll": {
             "assemblyVersion": "2.14.0.0",
             "fileVersion": "2.14.1.48190"
+          }
+        }
+      },
+      "LiveCharts.Wpf.NetCore3/0.9.8": {
+        "dependencies": {
+          "System.Data.DataSetExtensions": "4.5.0"
+        },
+        "runtime": {
+          "lib/net8.0-windows7.0/LiveCharts.Wpf.dll": {
+            "assemblyVersion": "0.9.8.0",
+            "fileVersion": "0.9.8.0"
+          },
+          "lib/net8.0-windows7.0/LiveCharts.dll": {
+            "assemblyVersion": "0.9.8.0",
+            "fileVersion": "0.9.8.0"
           }
         }
       },
@@ -632,6 +648,7 @@
           }
         }
       },
+      "System.Data.DataSetExtensions/4.5.0": {},
       "System.Diagnostics.EventLog/6.0.0": {},
       "System.IO.Pipelines/7.0.0": {},
       "System.Reflection.Metadata/7.0.0": {
@@ -678,6 +695,13 @@
       "sha512": "sha512-lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw==",
       "path": "humanizer.core/2.14.1",
       "hashPath": "humanizer.core.2.14.1.nupkg.sha512"
+    },
+    "LiveCharts.Wpf.NetCore3/0.9.8": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-EWwggMrRkWOdt/TdFhcs0LIXzpEuN392zGB+tLcO4UinKV13+V3NyhFoURPVP3GmQXjgrrlMDp+zyuSQeut53w==",
+      "path": "livecharts.wpf.netcore3/0.9.8",
+      "hashPath": "livecharts.wpf.netcore3.0.9.8.nupkg.sha512"
     },
     "Microsoft.Bcl.AsyncInterfaces/7.0.0": {
       "type": "package",
@@ -937,6 +961,13 @@
       "sha512": "sha512-ZK0KNPfbtxVceTwh+oHNGUOYV2WNOHReX2AXipuvkURC7s/jPwoWfsu3SnDBDgofqbiWr96geofdQ2erm/KTHg==",
       "path": "system.composition.typedparts/7.0.0",
       "hashPath": "system.composition.typedparts.7.0.0.nupkg.sha512"
+    },
+    "System.Data.DataSetExtensions/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-221clPs1445HkTBZPL+K9sDBdJRB8UN8rgjO3ztB0CQ26z//fmJXtlsr6whGatscsKGBrhJl5bwJuKSA8mwFOw==",
+      "path": "system.data.datasetextensions/4.5.0",
+      "hashPath": "system.data.datasetextensions.4.5.0.nupkg.sha512"
     },
     "System.Diagnostics.EventLog/6.0.0": {
       "type": "package",
