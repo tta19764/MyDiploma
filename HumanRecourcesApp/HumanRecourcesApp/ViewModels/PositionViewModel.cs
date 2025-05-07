@@ -18,8 +18,9 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private PositionDisplayModel selectedPosition;
         [ObservableProperty] private PositionDisplayModel newPosition;
         [ObservableProperty] private bool isAddingNew;
+        private readonly User user;
 
-        public PositionViewModel()
+        public PositionViewModel(User _user)
         {
             // Initialize commands
             _context = new HumanResourcesDB();
@@ -28,6 +29,7 @@ namespace HumanResourcesApp.ViewModels
             Positions = new ObservableCollection<PositionDisplayModel>();
             NewPosition = new PositionDisplayModel();
             SelectedPosition = new PositionDisplayModel();
+            user = _user;
 
             // Load data
             LoadPositions();
@@ -115,7 +117,7 @@ namespace HumanResourcesApp.ViewModels
 
                 if (_context.IsUniquePositionTitle(positionToAdd))
                 {
-                    _context.AddPosition(positionToAdd);
+                    _context.AddPosition(user, positionToAdd);
                 }
                 else
                 {

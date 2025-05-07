@@ -182,3 +182,11 @@ E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\n
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\Views\PayrollDetailsWindow.baml
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\LiveCharts.Wpf.dll
 E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\LiveCharts.dll
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\obj\Debug\net9.0-windows\HumanResourcesApp_Content.g.cs
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\Resources\AppIcon32.ico
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\Resources\hidden.ico
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\Resources\new.ico
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\Resources\old.ico
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\Resources\show.ico
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\Resources\info.ico
+E:\C#_projects\HumanResourcesApp\HumanRecourcesApp\HumanRecourcesApp\bin\Debug\net9.0-windows\Resources\no-document.ico

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,10 +20,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class EmployeeFormWindow : Window
     {
-        public EmployeeFormWindow()
+        public EmployeeFormWindow(User user)
         {
             InitializeComponent();
-            DataContext = new ViewModels.EmployeeFormViewModel();
+            DataContext = new ViewModels.EmployeeFormViewModel(user);
         }
     }
 }

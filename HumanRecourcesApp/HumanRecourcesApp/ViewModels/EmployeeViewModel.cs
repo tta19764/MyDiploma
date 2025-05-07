@@ -14,15 +14,14 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        [ObservableProperty]
-        private ObservableCollection<Employee> employees;
+        [ObservableProperty] private ObservableCollection<Employee> employees;
+        private readonly User user;
+        [ObservableProperty] private Employee selectedEmployee;
 
-        [ObservableProperty]
-        private Employee selectedEmployee;
-
-        public EmployeeViewModel()
+        public EmployeeViewModel(User _user)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             SelectedEmployee = new Employee();
             Employees = new ObservableCollection<Employee>();
             LoadEmployees();
@@ -44,8 +43,8 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void AddEmployee()
         {
-            var formWindow = new Views.EmployeeFormWindow();
-            var viewModel = new EmployeeFormViewModel();
+            var formWindow = new Views.EmployeeFormWindow(user);
+            var viewModel = new EmployeeFormViewModel(user);
             formWindow.DataContext = viewModel;
 
             viewModel.RequestClose += (sender, result) =>
@@ -66,8 +65,8 @@ namespace HumanResourcesApp.ViewModels
         {
             if (employee == null) return;
 
-            var formWindow = new Views.EmployeeFormWindow();
-            var viewModel = new EmployeeFormViewModel(employee);
+            var formWindow = new Views.EmployeeFormWindow(user);
+            var viewModel = new EmployeeFormViewModel(user, employee);
             formWindow.DataContext = viewModel;
 
             viewModel.RequestClose += (sender, result) =>

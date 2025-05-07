@@ -16,29 +16,19 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        [ObservableProperty]
-        private ObservableCollection<PayPeriodDisplayModel> payPeriods;
+        [ObservableProperty] private ObservableCollection<PayPeriodDisplayModel> payPeriods;
+        [ObservableProperty] private PayPeriodDisplayModel selectedPayPeriod;
+        [ObservableProperty] private PayPeriodDisplayModel newPayPeriod;
+        [ObservableProperty] private bool isAddingOrEditing;
+        [ObservableProperty] private bool isEditing;
+        [ObservableProperty] private string formTitle;
+        private readonly User user;
 
-        [ObservableProperty]
-        private PayPeriodDisplayModel selectedPayPeriod;
-
-        [ObservableProperty]
-        private PayPeriodDisplayModel newPayPeriod;
-
-        [ObservableProperty]
-        private bool isAddingOrEditing;
-
-        [ObservableProperty]
-        private bool isEditing;
-
-        [ObservableProperty]
-        private string formTitle;
-
-        public PayPeriodViewModel()
+        public PayPeriodViewModel(User _user)
         {
             // Initialize context
             _context = new HumanResourcesDB();
-
+            user = _user;
             // Initialize collections
             PayPeriods = new ObservableCollection<PayPeriodDisplayModel>();
             NewPayPeriod = new PayPeriodDisplayModel();
@@ -159,7 +149,7 @@ namespace HumanResourcesApp.ViewModels
                 {
                     // Double-check that we're only editing Draft status pay periods
                     var existingPayPeriod = _context.GetPayPeriodById(payPeriod.PayPeriodId);
-                    if (existingPayPeriod.Status != "Draft")
+                    if (existingPayPeriod != null && existingPayPeriod.Status != "Draft")
                     {
                         MessageBox.Show("Only pay periods with 'Draft' status can be edited.",
                             "Cannot Edit", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -178,7 +168,7 @@ namespace HumanResourcesApp.ViewModels
                         return;
                     }
 
-                    _context.CreatePayPeriod(payPeriod);
+                    _context.CreatePayPeriod(user, payPeriod);
                 }
 
                 LoadPayPeriods();
@@ -235,9 +225,12 @@ namespace HumanResourcesApp.ViewModels
 
             try
             {
-                _context.DeletePayPeriod(_context.GetPayPeriodById(payPeriod.PayPeriodId));
-                PayPeriods.Remove(payPeriod);
-            }
+                PayPeriod? payPeriodToDelete = _context.GetPayPeriodById(payPeriod.PayPeriodId);
+                if (payPeriodToDelete != null)
+                {
+                    _context.DeletePayPeriod(payPeriodToDelete);
+                    PayPeriods.Remove(payPeriod);
+                }            }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error deleting pay period: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);

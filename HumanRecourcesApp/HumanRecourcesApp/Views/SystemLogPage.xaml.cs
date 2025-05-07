@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,10 +21,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class SystemLogPage : Page
     {
-        public SystemLogPage()
+        public SystemLogPage(User user)
         {
             InitializeComponent();
-            DataContext = new ViewModels.SystemLogViewModel();
+            DataContext = new ViewModels.SystemLogViewModel(user);
         }
     }
 }

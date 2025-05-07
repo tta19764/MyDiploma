@@ -205,7 +205,7 @@ namespace HumanResourcesApp.ViewModels
                     AlertTitle += ", Pending Time Off Requests";
                 }
             }
-            else if (_context.GetAllTimeOffRequests()
+            else if (user.Employee != null && _context.GetAllTimeOffRequests()
                     .Where(r => r.Status == "Pending" && r.Employee.DepartmentId == user.Employee.DepartmentId && r.StartDate <= DateOnly.FromDateTime(DateTime.Now.AddDays(14))).Any())
             {
                 if (!IsAlert)
@@ -336,8 +336,8 @@ namespace HumanResourcesApp.ViewModels
         private void AddEmployee()
         {
             // Implementation for navigating to add employee page
-            var formWindow = new Views.EmployeeFormWindow();
-            var viewModel = new EmployeeFormViewModel();
+            var formWindow = new Views.EmployeeFormWindow(user);
+            var viewModel = new EmployeeFormViewModel(user);
             formWindow.DataContext = viewModel;
 
             viewModel.RequestClose += (sender, result) =>
@@ -352,14 +352,14 @@ namespace HumanResourcesApp.ViewModels
         private void ApproveTimeOff()
         {
             // Implementation for navigating to time off approvals
-            _window.CurrentPage = new TimeOffRequestsPage();
+            _window.CurrentPage = new TimeOffRequestsPage(user);
 
         }
         [RelayCommand]
         private void ScheduleReview()
         {
             // Implementation for navigating to schedule review
-            var formWindow = new PerformanceReviewFormWindow();
+            var formWindow = new PerformanceReviewFormWindow(user);
             formWindow.ShowDialog();
         }
         [RelayCommand]
@@ -369,7 +369,4 @@ namespace HumanResourcesApp.ViewModels
             _window.CurrentPage = new ProcessPayrollPage(_window, user);
         }
     }
-
-    // Model class for department legend items
-    
 }

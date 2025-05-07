@@ -15,12 +15,12 @@ namespace HumanResourcesApp.Models
         public string EmployeeName { get; set; } = string.Empty;
 
         [ObservableProperty] private int reviewerId;
-        [ObservableProperty] private string reviewerName;
-        [ObservableProperty] private string reviewPeriod;
+        [ObservableProperty] private string reviewerName = string.Empty;
+        [ObservableProperty] private string reviewPeriod = string.Empty;
         [ObservableProperty] private DateOnly reviewDate;
         [ObservableProperty] private decimal? overallRating;
-        [ObservableProperty] private string comments;
-        [ObservableProperty] private string status;
+        [ObservableProperty] private string comments = string.Empty;
+        [ObservableProperty] private string status = string.Empty;
 
         public DateTime? SubmissionDate { get; set; }
 

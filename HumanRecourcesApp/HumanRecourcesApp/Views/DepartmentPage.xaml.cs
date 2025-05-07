@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using HumanResourcesApp.Models;
 
 namespace HumanResourcesApp.Views
 {
@@ -21,10 +22,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class DepartmentPage : Page
     {
-        public DepartmentPage()
+        public DepartmentPage(User user)
         {
             InitializeComponent();
-            DataContext = new DepartmentViewModel();
+            DataContext = new DepartmentViewModel(user);
         }
     }
 }

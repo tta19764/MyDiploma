@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,10 +20,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class PerformanceReviewFormWindow : Window
     {
-        public PerformanceReviewFormWindow()
+        public PerformanceReviewFormWindow(User user)
         {
             InitializeComponent();
-            DataContext = new ViewModels.PerformanceReviewFormViewModel();
+            DataContext = new ViewModels.PerformanceReviewFormViewModel(user);
         }
     }
 }

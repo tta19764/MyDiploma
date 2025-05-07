@@ -18,36 +18,16 @@ namespace HumanResourcesApp.ViewModels
 
         private readonly User _user;
 
-        [ObservableProperty]
-        private ObservableCollection<Department> departments;
-
-        [ObservableProperty]
-        private string checkAction;
-
-        [ObservableProperty]
-        private bool isEmployee;
-
-        [ObservableProperty]
-        private ObservableCollection<EmployeeDisplayModel> employees;
-
-        [ObservableProperty]
-        private ObservableCollection<AttendanceDisplayModel> attendances;
-
-        [ObservableProperty]
-        private AttendanceDisplayModel selectedAttendance;
-
-        [ObservableProperty]
-        private AttendanceDisplayModel newAttendance;
-
-        [ObservableProperty]
-        private bool isAddingNew;
-
-        [ObservableProperty]
-        private string checkInTimeText = "08:00";
-
-        [ObservableProperty]
-        private string checkOutTimeText = "17:00";
-
+        [ObservableProperty] private ObservableCollection<Department> departments;
+        [ObservableProperty] private string checkAction;
+        [ObservableProperty] private bool isEmployee;
+        [ObservableProperty] private ObservableCollection<EmployeeDisplayModel> employees;
+        [ObservableProperty] private ObservableCollection<AttendanceDisplayModel> attendances;
+        [ObservableProperty] private AttendanceDisplayModel selectedAttendance;
+        [ObservableProperty] private AttendanceDisplayModel newAttendance;
+        [ObservableProperty] private bool isAddingNew;
+        [ObservableProperty] private string checkInTimeText = "08:00";
+        [ObservableProperty] private string checkOutTimeText = "17:00";
         private EmployeeDisplayModel selectedEmployee;
         public EmployeeDisplayModel SelectedEmployee
         {
@@ -226,7 +206,7 @@ namespace HumanResourcesApp.ViewModels
                     CreatedAt = DateTime.Now,
                     Status = "Checked In"
                 };
-                _context.AddAttendance(attendance);
+                _context.CheckIn(_user, attendance);
                 LoadAttendances();
                 CheckAction = "Check Out";
             }
@@ -239,7 +219,7 @@ namespace HumanResourcesApp.ViewModels
                     attendance.CheckOutTime = DateTime.Now;
                     attendance.Status = "Checked Out";
                     attendance.WorkHours = CalculateWorkHours((DateTime)attendance.CheckInTime, (DateTime)attendance.CheckOutTime);
-                    _context.UpdateAttendance(attendance);
+                    _context.CheckOut(_user, attendance);
                     LoadAttendances();
                     CheckAction = "Check In";
                 }
@@ -352,7 +332,7 @@ namespace HumanResourcesApp.ViewModels
 
                 if (_context.IsAttendanceTimeValid(attendance))
                 {
-                    _context.AddAttendance(attendance);
+                    _context.AddAttendance(_user, attendance);
                     LoadAttendances();
                     IsAddingNew = false;
                 }
@@ -374,7 +354,7 @@ namespace HumanResourcesApp.ViewModels
             if (IsAddingNew)
             {
                 IsAddingNew = false;
-                newAttendance = new AttendanceDisplayModel();
+                NewAttendance = new AttendanceDisplayModel();
             }
         }
 

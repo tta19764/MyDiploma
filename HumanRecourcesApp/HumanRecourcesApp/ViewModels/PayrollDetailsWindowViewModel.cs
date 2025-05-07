@@ -73,9 +73,12 @@ namespace HumanRecourcesApp.ViewModels
         [ObservableProperty]
         private bool isActive;
 
-        public PayrollDetailsWindowViewModel(int payPeriodId, int employeeId)
+        private readonly User user;
+
+        public PayrollDetailsWindowViewModel(User _user, int payPeriodId, int employeeId)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             this.employeeId = employeeId;
             this.payPeriodId = payPeriodId;
 
@@ -404,7 +407,7 @@ namespace HumanRecourcesApp.ViewModels
                         NetSalary = NetSalary,
                         CreatedAt = DateTime.Now
                     };
-                    PayrollId = _context.CreateEmployeePayrollReturnId(newPayroll);
+                    PayrollId = _context.CreateEmployeePayrollReturnId(user, newPayroll);
                 } 
 
                 // Handle new and existing details
@@ -422,7 +425,7 @@ namespace HumanRecourcesApp.ViewModels
                                 Amount = detail.Amount,
                                 CreatedAt = DateTime.Now
                             };
-                            _context.CreatePayrollDetail(newDetail);
+                            _context.CreatePayrollDetail(user, newDetail);
                         }
                     }
                     else

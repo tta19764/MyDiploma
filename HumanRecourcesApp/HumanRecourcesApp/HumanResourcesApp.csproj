@@ -10,7 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\AppIcon32.ico" />
     <None Remove="Resources\hidden.ico" />
+    <None Remove="Resources\info.ico" />
+    <None Remove="Resources\new.ico" />
+    <None Remove="Resources\no-document.ico" />
+    <None Remove="Resources\old.ico" />
     <None Remove="Resources\show.ico" />
   </ItemGroup>
 
@@ -28,8 +33,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\hidden.ico" />
-    <Resource Include="Resources\show.ico" />
+    <Content Include="Resources\AppIcon32.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\hidden.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\info.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\new.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\no-document.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\old.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\show.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

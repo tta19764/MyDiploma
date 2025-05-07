@@ -9,6 +9,9 @@ using HumanResourcesApp.DBClasses;
 using HumanResourcesApp.Views;
 using System.Data;
 using System.Windows.Controls;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using System.IO;
 
 namespace HumanResourcesApp.ViewModels
 {
@@ -33,12 +36,21 @@ namespace HumanResourcesApp.ViewModels
 
         public string PasswordVisibilityTooltip => IsPasswordVisible ? "Hide Password" : "Show Password";
 
-        public string PasswordVisibilityIcon => IsPasswordVisible
-    ? "E:\\C#_projects\\HumanResourcesApp\\HumanRecourcesApp\\HumanRecourcesApp\\Resources\\hidden.ico"
-    : "E:\\C#_projects\\HumanResourcesApp\\HumanRecourcesApp\\HumanRecourcesApp\\Resources\\show.ico";
 
-
-
+        public ImageSource PasswordVisibilityIcon
+        {
+            get
+            {
+                var fileName = IsPasswordVisible ? "hidden.ico" : "show.ico";
+                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", fileName);
+        
+                if (!File.Exists(path))
+                    return new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "no-document.ico"), UriKind.Absolute));
+        
+                return new BitmapImage(new Uri(path, UriKind.Absolute));
+            }
+        }
+    
         [RelayCommand]
         private void TogglePasswordVisibility() 
         { 
@@ -56,34 +68,20 @@ namespace HumanResourcesApp.ViewModels
                 }
             }
         }
+        private readonly User activeUser;
+        [ObservableProperty] private User user;
+        [ObservableProperty] private ObservableCollection<Role> roles = new();
+        [ObservableProperty] private ObservableCollection<Employee> employees = new();
+        [ObservableProperty] private Role? selectedRole;
+        [ObservableProperty] private Employee? selectedEmployee;
+        [ObservableProperty] private string windowTitle;
+        [ObservableProperty] private bool isEditMode;
+        [ObservableProperty] private string password = string.Empty;
 
-        [ObservableProperty]
-        private User user;
-
-        [ObservableProperty]
-        private ObservableCollection<Role> roles = new();
-
-        [ObservableProperty]
-        private ObservableCollection<Employee> employees = new();
-
-        [ObservableProperty]
-        private Role? selectedRole;
-
-        [ObservableProperty]
-        private Employee? selectedEmployee;
-
-        [ObservableProperty]
-        private string windowTitle;
-
-        [ObservableProperty]
-        private bool isEditMode;
-
-        [ObservableProperty]
-        private string password = string.Empty;
-
-        public UserFormViewModel(Window window)
+        public UserFormViewModel(User _user, Window window)
         {
             _context = new HumanResourcesDB();
+            activeUser = _user;
             IsEditMode = false;
             WindowTitle = "Add New User";
 
@@ -103,15 +101,16 @@ namespace HumanResourcesApp.ViewModels
             _window = window;
         }
 
-        public UserFormViewModel(Window window, User user)
+        public UserFormViewModel(User _user, Window window, User user)
         {
             _context = new HumanResourcesDB();
+            activeUser = _user;
             // Determine if we're editing or creating
             IsEditMode = true;
             WindowTitle = "Edit User";
 
             // Create a new user or clone the existing one
-            User = _context.GetUserById(user.UserId);
+            User = _context.GetUserById(user.UserId) ?? user;
 
             // Load reference data
             LoadRoles();
@@ -245,7 +244,7 @@ namespace HumanResourcesApp.ViewModels
                 // Save changes
                 if (!IsEditMode)
                 {
-                    _context.AddUser(User);
+                    _context.AddUser(activeUser, User);
                 }
                 else
                 {

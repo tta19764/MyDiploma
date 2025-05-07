@@ -107,6 +107,7 @@
             <Style x:Key="BadgeStyle" TargetType="Border">
                 <Setter Property="CornerRadius" Value="3"/>
                 <Setter Property="Padding" Value="6,2"/>
+                <Setter Property="VerticalAlignment" Value="center"/>
             </Style>
         </ResourceDictionary>
     </Page.Resources>
@@ -222,7 +223,7 @@
                         </DataGridTextColumn.ElementStyle>
                     </DataGridTextColumn>
 
-                    <DataGridTextColumn Header="User" Binding="{Binding User.UserName}" Width="1*">
+                    <DataGridTextColumn Header="UserId" Binding="{Binding UserId}" Width="1*">
                         <DataGridTextColumn.ElementStyle>
                             <Style TargetType="TextBlock">
                                 <Setter Property="VerticalAlignment" Value="Center"/>
@@ -241,38 +242,46 @@
                     </DataGridTextColumn>
 
                     <!-- JSON Values Buttons -->
-                    <DataGridTemplateColumn Header="Changes" Width="1.5*">
+                    <DataGridTemplateColumn Header="Changes" Width="Auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal">
-                                    <Button Style="{StaticResource ActionButtonStyle}" 
-                                            ToolTip="View Old Values"
-                                            Command="{Binding DataContext.ShowOldValuesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Visibility="{Binding OldValues, Converter={StaticResource StringToVisibilityConverter}}">
-                                        <Image Source="/Resources/history.png" Width="16" Height="16"/>
-                                    </Button>
-                                    <Button Style="{StaticResource ActionButtonStyle}" 
-                                            ToolTip="View New Values"
-                                            Command="{Binding DataContext.ShowNewValuesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
-                                            CommandParameter="{Binding}"
-                                            Visibility="{Binding NewValues, Converter={StaticResource StringToVisibilityConverter}}">
-                                        <Image Source="/Resources/update.png" Width="16" Height="16"/>
-                                    </Button>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="50"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Style="{StaticResource ActionButtonStyle}"
+                                                Grid.Column="0"
+                                                ToolTip="View Old Values"
+                                                Command="{Binding DataContext.ShowOldValuesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding OldValues, Converter={StaticResource StringToVisibilityConverter}}">
+                                                <Image Source="{Binding DataContext.NewValueIcon, RelativeSource={RelativeSource AncestorType=DataGrid}}" Width="16" Height="16"/>
+                                        </Button>
+                                        <Button Style="{StaticResource ActionButtonStyle}"
+                                                Grid.Column="1"
+                                                ToolTip="View New Values"
+                                                Command="{Binding DataContext.ShowNewValuesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                CommandParameter="{Binding}"
+                                                Visibility="{Binding NewValues, Converter={StaticResource StringToVisibilityConverter}}">
+                                                <Image Source="{Binding DataContext.OldValueIcon, RelativeSource={RelativeSource AncestorType=DataGrid}}" Width="16" Height="16"/>
+                                        </Button>
+                                    </Grid>
                                 </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
 
                     <!-- Details Button -->
-                    <DataGridTemplateColumn Header="Details" Width=".7*">
+                    <DataGridTemplateColumn Header="Details" Width=".6*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Style="{StaticResource ActionButtonStyle}" 
                                         ToolTip="View Details"
                                         Command="{Binding DataContext.ShowDetailsCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                         CommandParameter="{Binding}">
-                                    <Image Source="/Resources/info.png" Width="16" Height="16"/>
+                                    <Image Source="{Binding DataContext.DetailsIcon, RelativeSource={RelativeSource AncestorType=DataGrid}}" Width="16" Height="16"/>
                                 </Button>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>

@@ -19,31 +19,20 @@ namespace HumanResourcesApp.ViewModels
         private readonly HumanResourcesDB _context;
         private static readonly Regex _numericRegex = new Regex(@"^[0-9]*(?:\.[0-9]*)?$");
 
-        [ObservableProperty]
-        private ObservableCollection<PerformanceCriterion> performanceCriteria;
+        [ObservableProperty] private ObservableCollection<PerformanceCriterion> performanceCriteria;
+        [ObservableProperty] private PerformanceCriterion selectedCriteria;
+        [ObservableProperty] private PerformanceCriterion newCriteria;
+        [ObservableProperty] private bool isAddingOrEditing;
+        [ObservableProperty] private bool isEditing;
+        [ObservableProperty] private string formTitle;
+        [ObservableProperty] private string weightPercentageText = "";
+        private readonly User user;
 
-        [ObservableProperty]
-        private PerformanceCriterion selectedCriteria;
-
-        [ObservableProperty]
-        private PerformanceCriterion newCriteria;
-
-        [ObservableProperty]
-        private bool isAddingOrEditing;
-
-        [ObservableProperty]
-        private bool isEditing;
-
-        [ObservableProperty]
-        private string formTitle;
-
-        [ObservableProperty]
-        private string weightPercentageText = "";
-
-        public PerformanceCriteriaViewModel()
+        public PerformanceCriteriaViewModel(User _user)
         {
             // Initialize context
             _context = new HumanResourcesDB();
+            user = _user;
 
             // Initialize collections
             PerformanceCriteria = new ObservableCollection<PerformanceCriterion>();
@@ -180,7 +169,7 @@ namespace HumanResourcesApp.ViewModels
                 }
                 else
                 {
-                    _context.CreatePerformanceCriterion(NewCriteria);
+                    _context.CreatePerformanceCriterion(user, NewCriteria);
                 }
 
                 LoadPerformanceCriteria();

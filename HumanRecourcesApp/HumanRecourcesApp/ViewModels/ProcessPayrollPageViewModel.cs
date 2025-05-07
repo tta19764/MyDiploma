@@ -19,7 +19,7 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
         private readonly MainWindowViewModel _window;
-        private readonly User _user;
+        private readonly User user;
 
         [ObservableProperty]
         private ObservableCollection<PayPeriodDisplayModel> payPeriods;
@@ -73,11 +73,11 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        public ProcessPayrollPageViewModel(MainWindowViewModel window, User user)
+        public ProcessPayrollPageViewModel(MainWindowViewModel window, User _user)
         {
             _context = new HumanResourcesDB();
             _window = window;
-            _user = user;
+            user = _user;
 
             displayPayrollEmployees = new ObservableCollection<PayrollEmployeeDisplayModel>();
             PayPeriods = new ObservableCollection<PayPeriodDisplayModel>();
@@ -173,7 +173,7 @@ namespace HumanResourcesApp.ViewModels
                     employeeViewModel.GrossPay = payrollRecord.GrossSalary;
                     employeeViewModel.TotalDeductions = payrollRecord.TotalDeductions;
                     employeeViewModel.NetPay = payrollRecord.NetSalary;
-                    employeeViewModel.PayrollStatus = payrollRecord.Status;
+                    employeeViewModel.PayrollStatus = payrollRecord.Status ?? string.Empty;
                     employeeViewModel.PayrollDetails = new ObservableCollection<PayrollDetail>(
                         _context.GetAllPayrollDetails().Where(pd => pd.PayrollId == payrollRecord.PayrollId));
                 }
@@ -239,7 +239,7 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void CreatePayPeriod()
         {
-            _window.CurrentPage = new PayPeriodsPage();
+            _window.CurrentPage = new PayPeriodsPage(user);
         }
 
         [RelayCommand]
@@ -272,12 +272,12 @@ namespace HumanResourcesApp.ViewModels
                             TotalDeductions = CalculateDeductions(employee),
                             NetSalary = employee.GrossPay - CalculateDeductions(employee),
                             Status = "Processed",
-                            ProcessedBy = _user.UserId,
+                            ProcessedBy = user.UserId,
                             ProcessedDate = DateTime.Now,
                             CreatedAt = DateTime.Now
                         };
 
-                        int payrollId = _context.CreateEmployeePayrollReturnId(newPayroll);
+                        int payrollId = _context.CreateEmployeePayrollReturnId(user, newPayroll);
 
                         // Create payroll details
                         CreateDefaultPayrollDetails(payrollId, employee);
@@ -295,7 +295,7 @@ namespace HumanResourcesApp.ViewModels
                             TotalDeductions = employee.TotalDeductions,
                             NetSalary = employee.NetPay,
                             Status = "Processed",
-                            ProcessedBy = _user.UserId,
+                            ProcessedBy = user.UserId,
                             ProcessedDate = DateTime.Now
                         };
 
@@ -444,7 +444,7 @@ namespace HumanResourcesApp.ViewModels
                         CreatedAt = DateTime.Now
                     };
 
-                    _context.CreatePayrollDetail(payrollDetail);
+                    _context.CreatePayrollDetail(user, payrollDetail);
                 }
             }
         }
@@ -454,7 +454,7 @@ namespace HumanResourcesApp.ViewModels
         {
             if (employee == null) return;
 
-            var window = new PayrollDetailsWindow(SelectedPayPeriod.PayPeriodId, employee.EmployeeId);
+            var window = new PayrollDetailsWindow(user, SelectedPayPeriod.PayPeriodId, employee.EmployeeId);
 
             if(window.ShowDialog() == true)
             {

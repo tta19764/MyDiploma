@@ -14,13 +14,15 @@ namespace HumanResourcesApp.ViewModels
     public partial class RolesPageViewModel : ObservableObject
     {
 
-        [ObservableProperty]private ObservableCollection<RoleDisplayModel> roles;
+        [ObservableProperty] private ObservableCollection<RoleDisplayModel> roles;
         private readonly HumanResourcesDB _context;
+        private readonly User user;
 
-        public RolesPageViewModel()
+        public RolesPageViewModel(User _user)
         {
             _context = new HumanResourcesDB();
             roles = new ObservableCollection<RoleDisplayModel>();
+            user = _user;
             LoadRoles();
         }
 
@@ -41,7 +43,7 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void Create()
         {
-            var viewModel = new RoleFormViewModel();
+            var viewModel = new RoleFormViewModel(user);
             var window = new RoleFormWindow { DataContext = viewModel };
 
             if (window.ShowDialog() == true)
@@ -58,7 +60,7 @@ namespace HumanResourcesApp.ViewModels
             var role = _context.GetRoleById(roleDisplayModel.RoleId);
             if (role == null) return;
 
-            var viewModel = new RoleFormViewModel(role);
+            var viewModel = new RoleFormViewModel(user, role);
             var window = new RoleFormWindow { DataContext = viewModel };
 
             if (window.ShowDialog() == true)

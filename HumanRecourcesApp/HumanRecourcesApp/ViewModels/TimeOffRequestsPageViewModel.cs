@@ -18,21 +18,22 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        private ObservableCollection<TimeOffRequestDisplayModel> timeOffRequests;
+        private ObservableCollection<TimeOffRequestDisplayModel> timeOffRequests = new ObservableCollection<TimeOffRequestDisplayModel>();
         public ObservableCollection<TimeOffRequestDisplayModel> TimeOffRequests
         {
             get => timeOffRequests;
             set => SetProperty(ref timeOffRequests, value);
         }
 
-        [ObservableProperty]
-        public ListCollectionView timeOffRequestsView;
+        [ObservableProperty] private ListCollectionView timeOffRequestsView;
+        private readonly User user;
 
 
-        public TimeOffRequestsPageViewModel()
+        public TimeOffRequestsPageViewModel(User _user)
         {
             _context = new HumanResourcesDB();
             TimeOffRequests = new ObservableCollection<TimeOffRequestDisplayModel>();
+            user = _user;
             LoadRequests();
         }
 
@@ -71,7 +72,7 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void Create(Window window)
         {
-            var form = new TimeOffRequestFormWindow();
+            var form = new TimeOffRequestFormWindow(user);
             if (form.ShowDialog() == true)
                 LoadRequests();
         }
@@ -113,7 +114,7 @@ namespace HumanResourcesApp.ViewModels
 
             if (request != null)
             {
-                var form = new TimeOffRequestFormWindow(request);
+                var form = new TimeOffRequestFormWindow(user, request);
                 if (form.ShowDialog() == true)
                     LoadRequests();
             }

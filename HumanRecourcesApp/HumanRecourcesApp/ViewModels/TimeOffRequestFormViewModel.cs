@@ -16,6 +16,7 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
         private readonly bool _isEditMode;
+        private readonly User user;
 
         [ObservableProperty] private string formTitle;
         [ObservableProperty] private ObservableCollection<Employee> employees;
@@ -32,9 +33,14 @@ namespace HumanResourcesApp.ViewModels
         public TimeOffRequest Request { get; }
 
         // Create mode
-        public TimeOffRequestFormViewModel()
+        public TimeOffRequestFormViewModel(User _user)
         {
             _context = new HumanResourcesDB();
+            user = _user;
+            Employees = new ObservableCollection<Employee>();
+            TimeOffTypes = new ObservableCollection<TimeOffType>();
+            SelectedEmployee = new Employee();
+            SelectedTimeOffType = new TimeOffType();
             Request = new TimeOffRequest { CreatedAt = DateTime.Now };
             _isEditMode = false;
 
@@ -43,21 +49,24 @@ namespace HumanResourcesApp.ViewModels
         }
 
         // Edit mode
-        public TimeOffRequestFormViewModel(TimeOffRequest request)
+        public TimeOffRequestFormViewModel(User _user, TimeOffRequest request)
         {
+            _context = new HumanResourcesDB();
+            user = _user;
+            Request = request;
+            _isEditMode = true;
+
+            // Initialize non-nullable fields to avoid CS8618 errors  
+            Employees = new ObservableCollection<Employee>();
+            TimeOffTypes = new ObservableCollection<TimeOffType>();
+            SelectedEmployee = new Employee();
+            SelectedTimeOffType = new TimeOffType();
+
+            FormTitle = $"Edit Request #{request.TimeOffRequestId}";
+            
             try
             {
-                _context = new HumanResourcesDB();
-                Request = request;
-                _isEditMode = true;
-
-                // Initialize non-nullable fields to avoid CS8618 errors  
-                Employees = new ObservableCollection<Employee>();
-                TimeOffTypes = new ObservableCollection<TimeOffType>();
-
-                FormTitle = $"Edit Request #{request.TimeOffRequestId}";
                 LoadData();
-
                 SelectedEmployee = Employees.FirstOrDefault(e => e.EmployeeId == request.EmployeeId) ?? throw new InvalidOperationException("Employee not found in the list.");
                 SelectedTimeOffType = TimeOffTypes.FirstOrDefault(t => t.TimeOffTypeId == request.TimeOffTypeId) ?? throw new InvalidOperationException("TimeOffType not found in the list.");
                 StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue);
@@ -105,7 +114,7 @@ namespace HumanResourcesApp.ViewModels
                 if (_isEditMode)
                     _context.UpdateTimeOffRequest(Request);
                 else
-                    _context.AddTimeOffRequest(Request);
+                    _context.AddTimeOffRequest(user, Request);
 
                 window.DialogResult = true;
                 window.Close();

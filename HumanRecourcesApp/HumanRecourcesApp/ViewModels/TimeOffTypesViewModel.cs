@@ -13,17 +13,11 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        [ObservableProperty]
-        private ObservableCollection<TimeOffTypeDisplayModel> timeOffTypes;
-
-        [ObservableProperty]
-        private TimeOffTypeDisplayModel selectedTimeOffType;
-
-        [ObservableProperty]
-        private bool isAddingNew;
-
-        [ObservableProperty]
-        private TimeOffTypeDisplayModel? newTimeOffType;
+        [ObservableProperty] private ObservableCollection<TimeOffTypeDisplayModel> timeOffTypes;
+        [ObservableProperty] private TimeOffTypeDisplayModel selectedTimeOffType;
+        [ObservableProperty] private bool isAddingNew;
+        private readonly User user;
+        [ObservableProperty] private TimeOffTypeDisplayModel? newTimeOffType;
 
         public ObservableCollection<string> PeriodOptions { get; } = new()
         {
@@ -33,9 +27,10 @@ namespace HumanResourcesApp.ViewModels
             "Monthly"
         };
 
-        public TimeOffTypesViewModel()
+        public TimeOffTypesViewModel(User _user)
         {
             _context = new HumanResourcesDB();
+            user = _user;
 
             TimeOffTypes = new ObservableCollection<TimeOffTypeDisplayModel>();
             SelectedTimeOffType = new TimeOffTypeDisplayModel(); // Initialize to avoid nullability issue  
@@ -140,8 +135,8 @@ namespace HumanResourcesApp.ViewModels
                         return;
                     }
 
-                    _context.AddTimeOffType(newTimeOffType);
-                    _context.CreateTimeOffBalanceByTimeOffType(newTimeOffType, NewTimeOffType.DefaultPeriod);
+                    _context.AddTimeOffType(user, newTimeOffType);
+                    _context.CreateTimeOffBalanceByTimeOffType(user, newTimeOffType, NewTimeOffType.DefaultPeriod);
 
                     // Add to collection
                     NewTimeOffType.TimeOffTypeId = newTimeOffType.TimeOffTypeId;

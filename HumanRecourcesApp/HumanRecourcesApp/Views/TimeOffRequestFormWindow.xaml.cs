@@ -20,16 +20,16 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class TimeOffRequestFormWindow : Window
     {
-        public TimeOffRequestFormWindow()
+        public TimeOffRequestFormWindow(User user)
         {
             InitializeComponent();
-            DataContext = new ViewModels.TimeOffRequestFormViewModel();
+            DataContext = new ViewModels.TimeOffRequestFormViewModel(user);
         }
 
-        public TimeOffRequestFormWindow(TimeOffRequest timeOffRequest)
+        public TimeOffRequestFormWindow(User user, TimeOffRequest timeOffRequest)
         {
             InitializeComponent();
-            DataContext = new ViewModels.TimeOffRequestFormViewModel(timeOffRequest);
+            DataContext = new ViewModels.TimeOffRequestFormViewModel(user, timeOffRequest);
         }
     }
 }

@@ -20,16 +20,16 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class UserForm : Window
     {
-        public UserForm()
+        public UserForm(User activeUser)
         {
             InitializeComponent();
-            DataContext = new ViewModels.UserFormViewModel(this);
+            DataContext = new ViewModels.UserFormViewModel(activeUser, this);
         }
 
-        public UserForm(User user)
+        public UserForm(User activeUser, User user)
         {
             InitializeComponent();
-            DataContext = new ViewModels.UserFormViewModel(this, user);
+            DataContext = new ViewModels.UserFormViewModel(activeUser, this, user);
         }
     }
 }

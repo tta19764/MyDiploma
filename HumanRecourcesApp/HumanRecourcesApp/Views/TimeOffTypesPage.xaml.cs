@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,10 +21,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class TimeOffTypesPage : Page
     {
-        public TimeOffTypesPage()
+        public TimeOffTypesPage(User user)
         {
             InitializeComponent();
-            DataContext = new ViewModels.TimeOffTypesViewModel();
+            DataContext = new ViewModels.TimeOffTypesViewModel(user);
         }
 
         private void NumberValidationTextBox(object sender, TextCompositionEventArgs e)

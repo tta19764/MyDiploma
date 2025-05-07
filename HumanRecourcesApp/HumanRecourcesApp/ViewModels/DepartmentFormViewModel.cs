@@ -16,6 +16,7 @@ namespace HumanRecourcesApp.ViewModels
     public partial class DepartmentFormViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
+        private readonly User user;
         [ObservableProperty] private bool isEditMode;
         [ObservableProperty] private string formTitle;
         [ObservableProperty] private string departmentName;
@@ -75,7 +76,7 @@ namespace HumanRecourcesApp.ViewModels
                                 LastName = currentManager.LastName,
                                 Position = currentManager.Position
                             });
-                            SelectedManager = Managers.FirstOrDefault(m => m.EmployeeId == Department.ManagerId);
+                            SelectedManager = Managers.FirstOrDefault(m => m.EmployeeId == Department.ManagerId) ?? new EmployeeDisplayModel();
                         }
                         else
                         {
@@ -96,9 +97,10 @@ namespace HumanRecourcesApp.ViewModels
 
 
         // Constructor for Add mode
-        public DepartmentFormViewModel()
+        public DepartmentFormViewModel(User _user)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             Department = new Department
             {
                 CreatedAt = DateTime.Now
@@ -113,9 +115,10 @@ namespace HumanRecourcesApp.ViewModels
         }
 
         // Constructor for Edit mode
-        public DepartmentFormViewModel(Department department)
+        public DepartmentFormViewModel(User _user, Department department)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             Department = department;
             IsEditMode = true;
 
@@ -178,7 +181,7 @@ namespace HumanRecourcesApp.ViewModels
                     }
                     else
                     {
-                        _context.AddDepartment(Department);
+                        _context.AddDepartment(user, Department);
                     }
 
 

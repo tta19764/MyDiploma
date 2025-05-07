@@ -18,13 +18,12 @@ namespace HumanRecourcesApp.ViewModels
     public partial class DepartmentViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
-        [ObservableProperty]
-        private ObservableCollection<DepartmentDisplayModel> departments;
+        [ObservableProperty] private ObservableCollection<DepartmentDisplayModel> departments;
         private Department? selectedDepartment; // Changed to nullable  
-        [ObservableProperty]
-        private string statusMessage = string.Empty;
-        [ObservableProperty]
-        private int totalCount;
+        [ObservableProperty] private string statusMessage = string.Empty;
+        [ObservableProperty] private int totalCount;
+        private readonly User user;
+
 
         public Department? SelectedDepartment // Changed to nullable  
         {
@@ -38,10 +37,11 @@ namespace HumanRecourcesApp.ViewModels
             }
         }
 
-        public DepartmentViewModel()
+        public DepartmentViewModel(User _user)
         {
             _context = new HumanResourcesDB();
             Departments = new ObservableCollection<DepartmentDisplayModel>();
+            user = _user;
 
             // Load data  
             LoadDepartments();
@@ -91,7 +91,7 @@ namespace HumanRecourcesApp.ViewModels
         [RelayCommand]
         private void AddDepartment()
         {
-            var window = new DepartmentFormWindow();
+            var window = new DepartmentFormWindow(user);
 
             if (window.ShowDialog() == true)
             {
@@ -108,7 +108,7 @@ namespace HumanRecourcesApp.ViewModels
                 var departmentEntity = _context.GetDepartmentById(department.DepartmentId);
                 if (departmentEntity != null)
                 {
-                    var window = new DepartmentFormWindow(departmentEntity);
+                    var window = new DepartmentFormWindow(user, departmentEntity);
 
                     if (window.ShowDialog() == true)
                     {

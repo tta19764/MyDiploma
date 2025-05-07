@@ -21,10 +21,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class PayrollDetailsWindow : Window
     {
-        public PayrollDetailsWindow(int payPeriodId, int emplouyeeId)
+        public PayrollDetailsWindow(User user, int payPeriodId, int emplouyeeId)
         {
             InitializeComponent();
-            DataContext = new PayrollDetailsWindowViewModel(payPeriodId, emplouyeeId);
+            DataContext = new PayrollDetailsWindowViewModel(user, payPeriodId, emplouyeeId);
         }
     }
 }

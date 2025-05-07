@@ -21,17 +21,17 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class DepartmentFormWindow : Window
     {
-        public DepartmentFormWindow()
+        public DepartmentFormWindow(User user)
         {
             InitializeComponent();
-            DataContext = new DepartmentFormViewModel();
+            DataContext = new DepartmentFormViewModel(user);
         }
 
         // Constructor with department for edit mode (convenience constructor)
-        public DepartmentFormWindow(Department department)
+        public DepartmentFormWindow(User user, Department department)
         {
             InitializeComponent();
-            DataContext = new DepartmentFormViewModel(department); 
+            DataContext = new DepartmentFormViewModel(user, department); 
         }
     }
 }

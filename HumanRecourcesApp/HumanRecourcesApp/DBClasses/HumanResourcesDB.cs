@@ -6,7 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -19,6 +21,94 @@ namespace HumanResourcesApp.DBClasses
         {
             _context = new HumanResourcesDbContext();
         }
+
+        private bool HasPermission(User user, string permissionName)
+        {
+            return user.Role.RolePermissions.Any(rp => rp.Permission.PermissionName == permissionName);
+        }
+
+        private object TrimForLog(object entity)
+        {
+            // Create a shallow copy and null out navigation properties to avoid cycles
+            var type = entity.GetType();
+            var clone = Activator.CreateInstance(type);
+
+            foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (!prop.CanRead || !prop.CanWrite) continue;
+
+                var value = prop.GetValue(entity);
+
+                // Exclude navigation properties (collections or other entities)
+                if (prop.PropertyType.Namespace?.StartsWith("HumanResourcesManagement.Models") == true && prop.PropertyType != typeof(string))
+                    continue;
+
+                if (typeof(System.Collections.IEnumerable).IsAssignableFrom(prop.PropertyType) && prop.PropertyType != typeof(string))
+                    continue;
+
+                prop.SetValue(clone, value);
+            }
+
+            return clone!;
+        }
+
+        private void LogOperation(User user, string action, string entityType, int? entityId, object? oldValues, object? newValues)
+        {
+            try
+            {
+                var log = new SystemLog
+                {
+                    UserId = user.UserId,
+                    LogDate = DateTime.Now,
+                    LogLevel = "Info",
+                    LogSource = "HumanResourcesDB",
+                    Action = action,
+                    EntityType = entityType,
+                    EntityId = entityId,
+                    OldValues = oldValues != null ? JsonSerializer.Serialize(TrimForLog(oldValues)) : null,
+                    NewValues = newValues != null ? JsonSerializer.Serialize(TrimForLog(newValues)) : null,
+                    IpAddress = IpAddress.GetLocalIpAddress(),
+                    UserAgent = Environment.MachineName
+                };
+
+                _context.SystemLogs.Add(log);
+                _context.SaveChanges();
+            }
+            catch (Exception)
+            {
+                // You can optionally log this to a file or show a message in development
+                //MessageBox.Show($"Error logging operation: {ex.Message}", "Logging Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void LogError(User user, string sourceMethod, Exception ex)
+        {
+            try
+            {
+                var log = new SystemLog
+                {
+                    UserId = user.UserId,
+                    LogDate = DateTime.Now,
+                    LogLevel = "Error",
+                    LogSource = $"HRMS::{sourceMethod}",
+                    Action = "Exception",
+                    EntityType = null,
+                    EntityId = null,
+                    OldValues = null,
+                    NewValues = ex.ToString(),
+                    IpAddress = IpAddress.GetLocalIpAddress(),
+                    UserAgent = Environment.MachineName
+                };
+                _context.SystemLogs.Add(log);
+                _context.SaveChanges();
+            }
+            catch (Exception)
+            {
+                // Fallback if logging fails
+                //MessageBox.Show($"Error logging operation: {ex.Message}", "Logging Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
 
         // =====================================
         // READ OPERATIONS
@@ -525,60 +615,73 @@ namespace HumanResourcesApp.DBClasses
         // =====================================
 
         // User Create Operations
-        public void AddUser(User user)
+        public void AddUser(User actingUser, User newUser)
         {
             try
             {
-                if (user == null)
-                    return;
+                if (!HasPermission(actingUser, "ManageUsers"))
+                    throw new UnauthorizedAccessException("You do not have permission to create users.");
 
-                using (var context = new HumanResourcesDbContext())
+                if (newUser == null)
+                    throw new ArgumentNullException(nameof(newUser), "New user cannot be null.");
+
+                using var context = new HumanResourcesDbContext();
+                using var transaction = context.Database.BeginTransaction();
+
+                if (newUser.Employee != null)
                 {
-                    using var transaction = context.Database.BeginTransaction();
+                    // Fetch and attach the existing employee to avoid tracking conflict
+                    var employee = context.Employees
+                        .FirstOrDefault(e => e.EmployeeId == newUser.Employee.EmployeeId && e.User == null);
 
-                    if (user.Employee != null)
+                    if (employee != null)
                     {
-                        // Fetch and attach the existing employee to avoid tracking conflict
-                        var employee = context.Employees
-                            .FirstOrDefault(e => e.EmployeeId == user.Employee.EmployeeId && e.User == null);
-
-                        if (employee != null)
-                        {
-                            employee.User = user; // Set relationship
-                            user.Employee = employee; // Make sure user references the tracked employee
-                        }
-                        else
-                        {
-                            // Prevent EF from trying to track an already tracked or invalid employee
-                            user.Employee = null;
-                        }
+                        employee.User = newUser;
+                        newUser.Employee = employee;
                     }
-
-                    context.Users.Add(user);
-                    context.SaveChanges();
-                    transaction.Commit();
+                    else
+                    {
+                        newUser.Employee = null;
+                    }
                 }
+
+                context.Users.Add(newUser);
+                context.SaveChanges();
+                transaction.Commit();
+
+                LogOperation(actingUser, "Create", nameof(User), newUser.UserId, null, newUser);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error adding user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(actingUser, "AddUser", ex);
             }
         }
 
-
-
         // Department Create Operations
-        public void AddDepartment(Department department)
-        {
-            _context.Departments.Add(department);
-            _context.SaveChanges();
-        }
-
-        // Employee Create Operations
-        public void AddEmployee(Employee employee)
+        public void AddDepartment(User user, Department department)
         {
             try
             {
+                if (!HasPermission(user, "SystemSettings"))
+                    throw new UnauthorizedAccessException("You do not have permission to create departments.");
+
+                _context.Departments.Add(department);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(Department), department.DepartmentId, null, department);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "AddDepartment", ex);
+            }
+        }
+        // Employee Create Operations
+        public void AddEmployee(User user, Employee employee)
+        {
+            try
+            {
+                if (!HasPermission(user, "CreateEmployees"))
+                    throw new UnauthorizedAccessException("You do not have permission to create employees.");
+
                 using var context = new HumanResourcesDbContext();
                 using var transaction = context.Database.BeginTransaction();
 
@@ -611,125 +714,265 @@ namespace HumanResourcesApp.DBClasses
 
                 context.SaveChanges();
                 transaction.Commit();
+                LogOperation(user, "Create", nameof(Employee), employee.EmployeeId, null, employee);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error adding employee: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-
         // Position Create Operations
-        public void AddPosition(Position position)
+        public void AddPosition(User user, Position position)
         {
-            _context.Positions.Add(position);
-            _context.SaveChanges();
+            try
+            {
+                if (!HasPermission(user, "SystemSettings"))
+                    throw new UnauthorizedAccessException("You do not have permission to create positions.");
+
+                _context.Positions.Add(position);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(Position), position.PositionId, null, position);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "AddPosition", ex);
+            }
+        }
+        // Attendance Create Operations
+        public void AddAttendance(User user, Attendance attendance)
+        {
+            try
+            {
+                if (!HasPermission(user, "ManageAttendance"))
+                    throw new UnauthorizedAccessException("You do not have permission to manage attendance.");
+
+                _context.Attendances.Add(attendance);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(Attendance), attendance.AttendanceId, null, attendance);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "AddAttendance", ex);
+            }
         }
 
-        // Attendance Create Operations
-        public void AddAttendance(Attendance attendance)
+        public void CheckIn(User user, Attendance attendance)
         {
-            _context.Attendances.Add(attendance);
-            _context.SaveChanges();
+            try
+            {
+                _context.Attendances.Add(attendance);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(Attendance), attendance.AttendanceId, null, attendance);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "AddAttendance", ex);
+            }
         }
 
         // TimeOffTypes Create Operations
-        public void AddTimeOffType(TimeOffType timeOffType)
+        public void AddTimeOffType(User user, TimeOffType timeOffType)
         {
-            _context.TimeOffTypes.Add(timeOffType);
-            _context.SaveChanges();
-        }
-
-        // TimeOffRequests Create Operations
-        public void AddTimeOffRequest(TimeOffRequest timeOffRequest)
-        {
-            _context.TimeOffRequests.Add(timeOffRequest);
-            _context.SaveChanges();
-        }
-
-        // TimeOffBalance Create Operations
-        public void CreateTimeOffBalanceByTimeOffType(TimeOffType timeOffType, string period)
-        {
-            var employees = _context.Employees.AsNoTracking().ToList();
-            foreach (var employee in employees)
+            try
             {
-                var timeOffBalance = new TimeOffBalance
-                {
-                    EmployeeId = employee.EmployeeId,
-                    TimeOffTypeId = timeOffType.TimeOffTypeId,
-                    Period = period,
-                    TotalDays = timeOffType.DefaultDays ?? 0,
-                    UsedDays = 0,
-                    RemainingDays = timeOffType.DefaultDays ?? 0
-                };
-                _context.TimeOffBalances.Add(timeOffBalance);
+                if (!HasPermission(user, "ManageLeaves"))
+                    throw new UnauthorizedAccessException("You do not have permission to manage time off types.");
+
+                _context.TimeOffTypes.Add(timeOffType);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(TimeOffType), timeOffType.TimeOffTypeId, null, timeOffType);
             }
-            _context.SaveChanges();
+            catch (Exception ex)
+            {
+                LogError(user, "AddTimeOffType", ex);
+            }
         }
+        // TimeOffRequests Create Operations
+        public void AddTimeOffRequest(User user, TimeOffRequest request)
+        {
+            try
+            {
+                if (!HasPermission(user, "ManageLeaves"))
+                    throw new UnauthorizedAccessException("You do not have permission to manage time off requests.");
 
+                _context.TimeOffRequests.Add(request);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(TimeOffRequest), request.TimeOffRequestId, null, request);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "AddTimeOffRequest", ex);
+            }
+        }
+        // TimeOffBalance Create Operations
+        public void CreateTimeOffBalanceByTimeOffType(User user, TimeOffType timeOffType, string period)
+        {
+            try
+            {
+                if (!HasPermission(user, "ManageLeaves"))
+                    throw new UnauthorizedAccessException("You do not have permission to manage time off balances.");
+
+                var employees = _context.Employees.AsNoTracking().ToList();
+                foreach (var employee in employees)
+                {
+                    var balance = new TimeOffBalance
+                    {
+                        EmployeeId = employee.EmployeeId,
+                        TimeOffTypeId = timeOffType.TimeOffTypeId,
+                        Period = period,
+                        TotalDays = timeOffType.DefaultDays ?? 0,
+                        UsedDays = 0,
+                        RemainingDays = timeOffType.DefaultDays ?? 0,
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.TimeOffBalances.Add(balance);
+                }
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(TimeOffBalance), null, null, timeOffType);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreateTimeOffBalanceByTimeOffType", ex);
+            }
+        }
         //Role Create Operations
-        public void CreateRole(Role role)
+        public void CreateRole(User user, Role role)
         {
-            _context.Roles.Add(role);
-            _context.SaveChanges();
-        }
+            try
+            {
+                if (!HasPermission(user, "ManageRoles"))
+                    throw new UnauthorizedAccessException("You do not have permission to create roles.");
 
+                _context.Roles.Add(role);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(Role), role.RoleId, null, role);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreateRole", ex);
+            }
+        }
         // PayPeriod Create Operations
-
-        public void CreatePayPeriod(PayPeriod payPeriod)
+        public void CreatePayPeriod(User user, PayPeriod payPeriod)
         {
-            _context.PayPeriods.Add(payPeriod);
-            _context.SaveChanges();
-        }
+            try
+            {
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to create pay periods.");
 
+                _context.PayPeriods.Add(payPeriod);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(PayPeriod), payPeriod.PayPeriodId, null, payPeriod);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreatePayPeriod", ex);
+            }
+        }
         // PerformanceCriteria Create Operations
-
-        public void CreatePerformanceCriterion(PerformanceCriterion performanceCriterion)
+        public void CreatePerformanceCriterion(User user, PerformanceCriterion criterion)
         {
-            _context.PerformanceCriteria.Add(performanceCriterion);
-            _context.SaveChanges();
-        }
+            try
+            {
+                if (!HasPermission(user, "ManagePerformance"))
+                    throw new UnauthorizedAccessException("You do not have permission to create performance criteria.");
 
+                _context.PerformanceCriteria.Add(criterion);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(PerformanceCriterion), criterion.CriteriaId, null, criterion);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreatePerformanceCriterion", ex);
+            }
+        }
         // PerformanceReview Create Operations
-
-        public void CreatePerformanceReview(PerformanceReview performanceReview)
+        public void CreatePerformanceReview(User user, PerformanceReview review)
         {
-            _context.PerformanceReviews.Add(performanceReview);
-            _context.SaveChanges();
-        }
+            try
+            {
+                if (!HasPermission(user, "ManagePerformance"))
+                    throw new UnauthorizedAccessException("You do not have permission to create performance reviews.");
 
+                _context.PerformanceReviews.Add(review);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(PerformanceReview), review.ReviewId, null, review);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreatePerformanceReview", ex);
+            }
+        }
         // PayrollItems Create Operations
-
-        public void CreatePayrollItem(PayrollItem payrollItem)
+        public void CreatePayrollItem(User user, PayrollItem item)
         {
-            _context.PayrollItems.Add(payrollItem);
-            _context.SaveChanges();
-        }
+            try
+            {
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to create payroll items.");
 
+                _context.PayrollItems.Add(item);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(PayrollItem), item.PayrollItemId, null, item);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreatePayrollItem", ex);
+            }
+        }
         // EmployeePayroll Create Operations
-
-        public void CreateEmployeePayroll(EmployeePayroll employeePayroll)
+        public void CreateEmployeePayroll(User user, EmployeePayroll payroll)
         {
-            _context.EmployeePayrolls.Add(employeePayroll);
-            _context.SaveChanges();
+            try
+            {
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to create employee payroll records.");
+
+                _context.EmployeePayrolls.Add(payroll);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(EmployeePayroll), payroll.PayrollId, null, payroll);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreateEmployeePayroll", ex);
+            }
         }
 
-        public int CreateEmployeePayrollReturnId(EmployeePayroll employeePayroll)
+        public int CreateEmployeePayrollReturnId(User user, EmployeePayroll payroll)
         {
-            _context.EmployeePayrolls.Add(employeePayroll);
-            _context.SaveChanges();
-            return employeePayroll.PayrollId;
-        }
+            try
+            {
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to create employee payroll records.");
 
+                _context.EmployeePayrolls.Add(payroll);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(EmployeePayroll), payroll.PayrollId, null, payroll);
+                return payroll.PayrollId;
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreateEmployeePayrollReturnId", ex);
+                return -1;
+            }
+        }
         // PayrollDetail Create Operations
-
-        public void CreatePayrollDetail(PayrollDetail payrollDetail)
+        public void CreatePayrollDetail(User user, PayrollDetail detail)
         {
-            _context.PayrollDetails.Add(payrollDetail);
-            _context.SaveChanges();
+            try
+            {
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to create payroll details.");
+
+                _context.PayrollDetails.Add(detail);
+                _context.SaveChanges();
+                LogOperation(user, "Create", nameof(PayrollDetail), detail.PayrollDetailId, null, detail);
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "CreatePayrollDetail", ex);
+            }
         }
-
-
         // =====================================
         // UPDATE OPERATIONS
         // =====================================
@@ -1250,6 +1493,33 @@ namespace HumanResourcesApp.DBClasses
             catch (Exception ex)
             {
                 MessageBox.Show($"Error updating Attendance: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        public void CheckOut(User user, Attendance attendance)
+        {
+            try
+            {
+                using (var context = new HumanResourcesDbContext())
+                {
+                    var local = context.Set<Attendance>()
+                        .Local
+                        .FirstOrDefault(e => e.AttendanceId == attendance.AttendanceId);
+                    // If entity is tracked, detach it
+                    if (local != null)
+                    {
+                        context.Entry(local).State = EntityState.Detached;
+                    }
+                    // Attach and mark as modified
+                    context.Entry(attendance).State = EntityState.Modified;
+                    // Save changes
+                    context.SaveChanges();
+                    LogOperation(user, "Update", nameof(Attendance), attendance.AttendanceId, null, attendance);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "AddAttendance", ex);
             }
         }
 

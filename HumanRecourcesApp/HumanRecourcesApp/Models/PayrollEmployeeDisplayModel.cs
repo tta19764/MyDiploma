@@ -14,16 +14,16 @@ namespace HumanResourcesApp.Models
         private int employeeId;
 
         [ObservableProperty]
-        private string firstName;
+        private string firstName = string.Empty;
 
         [ObservableProperty]
-        private string lastName;
+        private string lastName = string.Empty;
 
         [ObservableProperty]
-        private Department department;
+        private Department department = null!;
 
         [ObservableProperty]
-        private Position position;
+        private Position position = null!;
 
         [ObservableProperty]
         private decimal salary;
@@ -44,7 +44,7 @@ namespace HumanResourcesApp.Models
         private decimal netPay;
 
         [ObservableProperty]
-        private string payrollStatus;
+        private string payrollStatus = string.Empty;
 
         [ObservableProperty]
         private int? processedBy;
@@ -53,10 +53,10 @@ namespace HumanResourcesApp.Models
         private DateTime? processedDate;
 
         [ObservableProperty]
-        private string paymentReference;
+        private string paymentReference = string.Empty;
 
         [ObservableProperty]
-        private ObservableCollection<PayrollDetail> payrollDetails;
+        private ObservableCollection<PayrollDetail> payrollDetails = null!;
 
         [ObservableProperty]
         private bool isVisible = true;

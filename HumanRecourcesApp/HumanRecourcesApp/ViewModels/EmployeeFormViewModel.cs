@@ -14,12 +14,9 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly bool _isNewEmployee;
         private readonly HumanResourcesDB _context;
-
-        [ObservableProperty]
-        private Employee employee;
-
-        [ObservableProperty]
-        private string userIdString;
+        private readonly User user;
+        [ObservableProperty] private Employee employee;
+        [ObservableProperty] private string userIdString;
 
         private string salaryString;
         public string SalaryString
@@ -60,10 +57,10 @@ namespace HumanResourcesApp.ViewModels
         private static readonly Regex PhoneRegex = new(@"^\+?[0-9\s\-]{7,15}$", RegexOptions.Compiled);
 
 
-        public EmployeeFormViewModel()
+        public EmployeeFormViewModel(User _user)
         {
             _context = new HumanResourcesDB();
-
+            user = _user;
             _isNewEmployee = true;
             windowTitle = "Add New Employee";
             Employee = new Employee
@@ -77,10 +74,10 @@ namespace HumanResourcesApp.ViewModels
             LoadDepartmentsAndPositions();
         }
 
-        public EmployeeFormViewModel(Employee employeeToEdit)
+        public EmployeeFormViewModel(User _user, Employee employeeToEdit)
         {
             _context = new HumanResourcesDB();
-
+            user = _user;
             // Create a copy of the employee to avoid modifying the original directly
             Employee = new Employee
             {
@@ -141,7 +138,7 @@ namespace HumanResourcesApp.ViewModels
             {
                 if (_isNewEmployee)
                 {
-                    _context.AddEmployee(Employee);
+                    _context.AddEmployee(user, Employee);
                 }
                 else
                 {

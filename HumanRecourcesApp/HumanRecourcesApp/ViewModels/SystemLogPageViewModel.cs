@@ -4,11 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesApp.DBClasses;
 using HumanResourcesApp.Models;
 using HumanResourcesApp.Views;
+using System.IO;
 
 namespace HumanResourcesApp.ViewModels
 {
@@ -16,18 +19,54 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        [ObservableProperty]
-        private ObservableCollection<SystemLog> systemLogs = new();
+        [ObservableProperty] private ObservableCollection<SystemLog> systemLogs = new();
+        [ObservableProperty] private SystemLog? selectedSystemLog;
+        [ObservableProperty] private bool isLoading;
+        private readonly User user;
 
-        [ObservableProperty]
-        private SystemLog? selectedSystemLog;
+        public ImageSource NewValueIcon
+        {
+            get
+            {
+                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "new.ico");
 
-        [ObservableProperty]
-        private bool isLoading;
+                if (!File.Exists(path))
+                    return new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "no-document.ico"), UriKind.Absolute));
 
-        public SystemLogViewModel()
+                return new BitmapImage(new Uri(path, UriKind.Absolute));
+            }
+        }
+
+        public ImageSource OldValueIcon
+        {
+            get
+            {
+                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "old.ico");
+
+                if (!File.Exists(path))
+                    return new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "no-document.ico"), UriKind.Absolute));
+
+                return new BitmapImage(new Uri(path, UriKind.Absolute));
+            }
+        }
+
+        public ImageSource DetailsIcon
+        {
+            get
+            {
+                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "info.ico");
+
+                if (!File.Exists(path))
+                    return new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "no-document.ico"), UriKind.Absolute));
+
+                return new BitmapImage(new Uri(path, UriKind.Absolute));
+            }
+        }
+
+        public SystemLogViewModel(User _user)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             LoadSystemLogs();
         }
 

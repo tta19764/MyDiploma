@@ -10,9 +10,9 @@ namespace HumanResourcesApp.Models
     public class PerformanceCriteriaDisplayModel : ObservableObject
     {
         public int CriteriaId { get; set; }
-        public string CriteriaName { get; set; }
-        public string Description { get; set; }
-        public string Category { get; set; }
+        public string CriteriaName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
         public decimal WeightPercentage { get; set; }
 
         private decimal _score;
@@ -22,7 +22,7 @@ namespace HumanResourcesApp.Models
             set => SetProperty(ref _score, value);
         }
 
-        private string _comments;
+        private string _comments = string.Empty;
         public string Comments
         {
             get => _comments;

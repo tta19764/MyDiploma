@@ -1,4 +1,5 @@
-﻿using HumanResourcesApp.ViewModels;
+﻿using HumanResourcesApp.Models;
+using HumanResourcesApp.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,10 +22,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class RolesPage : Page
     {
-        public RolesPage()
+        public RolesPage(User user)
         {
             InitializeComponent();
-            DataContext = new RolesPageViewModel();
+            DataContext = new RolesPageViewModel(user);
         }
     }
 }

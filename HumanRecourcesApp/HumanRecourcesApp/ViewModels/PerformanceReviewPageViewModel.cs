@@ -16,25 +16,20 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        [ObservableProperty]
-        private ObservableCollection<PerformanceReviewDisplayModel> performanceReviews;
+        [ObservableProperty] private ObservableCollection<PerformanceReviewDisplayModel> performanceReviews;
+        [ObservableProperty] private ListCollectionView pendingReviewsView;
+        [ObservableProperty] private ListCollectionView acknowledgedReviewsView;
+        [ObservableProperty] private bool hasPendingReviews;
+        [ObservableProperty] private bool hasAcknowledgedReviews;
+        private readonly User user;
 
-        [ObservableProperty]
-        private ListCollectionView pendingReviewsView;
-
-        [ObservableProperty]
-        private ListCollectionView acknowledgedReviewsView;
-
-        [ObservableProperty]
-        private bool hasPendingReviews;
-
-        [ObservableProperty]
-        private bool hasAcknowledgedReviews;
-
-        public PerformanceReviewsPageViewModel()
+        public PerformanceReviewsPageViewModel(User _user)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             PerformanceReviews = new ObservableCollection<PerformanceReviewDisplayModel>();
+            PendingReviewsView = new ListCollectionView(PerformanceReviews);
+            AcknowledgedReviewsView = new ListCollectionView(PerformanceReviews);
             LoadReviews();
         }
 
@@ -50,10 +45,10 @@ namespace HumanResourcesApp.ViewModels
                     EmployeeName = $"{r.Employee.FirstName} {r.Employee.LastName}",
                     ReviewerId = r.ReviewerId,
                     ReviewerName = $"{r.Reviewer.FirstName} {r.Reviewer.LastName}",
-                    ReviewPeriod = r.ReviewPeriod,
+                    ReviewPeriod = r.ReviewPeriod ?? string.Empty,
                     ReviewDate = r.ReviewDate,
                     OverallRating = r.OverallRating,
-                    Comments = r.Comments,
+                    Comments = r.Comments ?? string.Empty,
                     Status = r.Status,
                     SubmissionDate = r.SubmissionDate,
                     AcknowledgementDate = r.AcknowledgementDate,
@@ -89,7 +84,7 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void Create()
         {
-            var formWindow = new PerformanceReviewFormWindow();
+            var formWindow = new PerformanceReviewFormWindow(user);
             if (formWindow.ShowDialog() == true)
                 LoadReviews();
         }

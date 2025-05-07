@@ -15,18 +15,16 @@ namespace HumanResourcesApp.ViewModels
     {
         private readonly HumanResourcesDB _context;
 
-        [ObservableProperty]
-        private ObservableCollection<User> users;
-
-        [ObservableProperty]
-        private User? selectedUser;
+        [ObservableProperty] private ObservableCollection<User> users;
+        private readonly User _user;
+        [ObservableProperty] private User? selectedUser;
 
 
-        public UsersPageViewModel()
+        public UsersPageViewModel(User _user)
         {
             _context = new HumanResourcesDB();
             Users = new ObservableCollection<User>();
-
+            this._user = _user;
             // Load users when the ViewModel is constructed
             LoadUsers();
         }
@@ -60,7 +58,7 @@ namespace HumanResourcesApp.ViewModels
         {
             try
             {
-                var window = new UserForm();
+                var window = new UserForm(_user);
 
                 if (window.ShowDialog() == true)
                 {
@@ -80,7 +78,7 @@ namespace HumanResourcesApp.ViewModels
 
             try
             {
-                var window = new UserForm(user);
+                var window = new UserForm(_user, user);
 
                 if (window.ShowDialog() == true)
                 {

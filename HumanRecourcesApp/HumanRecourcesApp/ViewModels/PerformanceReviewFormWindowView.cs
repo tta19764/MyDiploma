@@ -14,42 +14,24 @@ namespace HumanResourcesApp.ViewModels
     public partial class PerformanceReviewFormViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
-
-        [ObservableProperty]
-        private ObservableCollection<EmployeeDisplayModel> employees;
-
-        [ObservableProperty]
-        private EmployeeDisplayModel selectedEmployee;
-
-        [ObservableProperty]
-        private EmployeeDisplayModel selectedReviewer;
-
-        [ObservableProperty]
-        private string reviewPeriod;
-
-        [ObservableProperty]
-        private DateTime reviewDate;
-
-        [ObservableProperty]
-        private decimal overallRating = 3.0m;
-
-        [ObservableProperty]
-        private string comments;
-
-        [ObservableProperty]
-        private ObservableCollection<PerformanceCriteriaDisplayModel> performanceCriteria;
-
-        [ObservableProperty]
-        private List<string> reviewStatuses;
-
-        [ObservableProperty]
-        private string selectedStatus;
+        private readonly User user;
+        [ObservableProperty] private ObservableCollection<EmployeeDisplayModel> employees;
+        [ObservableProperty] private EmployeeDisplayModel selectedEmployee;
+        [ObservableProperty] private EmployeeDisplayModel selectedReviewer;
+        [ObservableProperty] private string reviewPeriod;
+        [ObservableProperty] private DateTime reviewDate;
+        [ObservableProperty] private decimal overallRating = 3.0m;
+        [ObservableProperty] private string comments;
+        [ObservableProperty] private ObservableCollection<PerformanceCriteriaDisplayModel> performanceCriteria;
+        [ObservableProperty] private List<string> reviewStatuses;
+        [ObservableProperty] private string selectedStatus;
 
         public event EventHandler<bool> RequestClose;
 
-        public PerformanceReviewFormViewModel()
+        public PerformanceReviewFormViewModel(User _user)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             ReviewDate = DateTime.Now;
 
             // Load employees
@@ -144,7 +126,7 @@ namespace HumanResourcesApp.ViewModels
             try
             {
                 // Save to database
-                _context.CreatePerformanceReview(newReview);
+                _context.CreatePerformanceReview(user, newReview);
 
                 MessageBox.Show("Performance review saved successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 CloseDialogWithResult(true);

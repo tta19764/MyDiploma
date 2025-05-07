@@ -18,9 +18,9 @@ namespace HumanResourcesApp.Models
         private decimal score;
 
         [ObservableProperty]
-        private string comments;
+        private string comments = string.Empty;
 
-        public PerformanceCriterion Criteria { get; set; }
+        public PerformanceCriterion Criteria { get; set; } = new PerformanceCriterion();
 
         public PerformanceScore ToModel()
         {

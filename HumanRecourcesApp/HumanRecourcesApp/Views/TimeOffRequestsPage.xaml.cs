@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HumanResourcesApp.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,10 +21,10 @@ namespace HumanResourcesApp.Views
     /// </summary>
     public partial class TimeOffRequestsPage : Page
     {
-        public TimeOffRequestsPage()
+        public TimeOffRequestsPage(User user)
         {
             InitializeComponent();
-            DataContext = new ViewModels.TimeOffRequestsPageViewModel();
+            DataContext = new ViewModels.TimeOffRequestsPageViewModel(user);
         }
     }
 }

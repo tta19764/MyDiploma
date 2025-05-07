@@ -15,12 +15,13 @@ namespace HumanResourcesApp.ViewModels
     public partial class RoleFormViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
-        [ObservableProperty]private Role role;
-        [ObservableProperty]private bool isEditMode;
-        private string _roleName;
-        private string _description;
-        [ObservableProperty]private ObservableCollection<PermissionCheckBoxItem> permissionsList;
-        [ObservableProperty]private string errorMessage;
+        private readonly User user;
+        [ObservableProperty] private Role role;
+        [ObservableProperty] private bool isEditMode;
+        private string _roleName = string.Empty;
+        [ObservableProperty] private ObservableCollection<PermissionCheckBoxItem> permissionsList;
+        [ObservableProperty] private string errorMessage = string.Empty;
+        [ObservableProperty] private bool isErrorVisible = false;
 
         public string RoleName
         {
@@ -31,43 +32,31 @@ namespace HumanResourcesApp.ViewModels
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     ErrorMessage = "Role name cannot be empty.";
+                    IsErrorVisible = true; // Show error message
+                    CanSave = false; // Disable save button
                 }
                 else
                 {
                     ErrorMessage = string.Empty;
                     Role.RoleName = value;
+                    IsErrorVisible = false; // Hide error message
+                    CanSave = true; // Enable save button
                 }
-                SetProperty(ref _roleName, value, nameof(CanSave)); // Notify that CanSave may have changed
             }
         }
 
-        public string Description
-        {
-            get => _description;
-            set
-            {
-                SetProperty(ref _description, value);
-                if(string.IsNullOrWhiteSpace(value))
-                {
-                    ErrorMessage = "Description cannot be empty.";
-                }
-                else
-                {
-                    ErrorMessage = string.Empty;
-                    Role.Description = value;
-                }
-                SetProperty(ref _description, value, nameof(CanSave)); // Notify that CanSave may have changed
-            }
-        }
+        [ObservableProperty] private string description;
 
         public string WindowTitle => IsEditMode ? "Edit Role" : "Create New Role";
 
-        public bool CanSave => !string.IsNullOrWhiteSpace(RoleName) && errorMessage == string.Empty;
+        [ObservableProperty] private bool canSave = false;
 
-        public RoleFormViewModel()
+        public RoleFormViewModel(User _user)
         {
             ErrorMessage = string.Empty;
+            PermissionsList = new ObservableCollection<PermissionCheckBoxItem>();
             _context = new HumanResourcesDB();
+            user = _user;
             Role = new Role { CreatedAt = DateTime.Now };
             IsEditMode = false;
 
@@ -79,22 +68,26 @@ namespace HumanResourcesApp.ViewModels
             LoadPermissions();
         }
 
-        public RoleFormViewModel(Role role)
+        public RoleFormViewModel(User _user, Role role)
         {
+            _context = new HumanResourcesDB();
+            user = _user;
+            ErrorMessage = string.Empty;
+            PermissionsList = new ObservableCollection<PermissionCheckBoxItem>();
+            Role = new Role();
+            Description = string.Empty;
             try
             {
-                ErrorMessage = string.Empty;
-                _context = new HumanResourcesDB();
                 if (_context.GetRoleById(role.RoleId) == null)
                 {
                     throw new Exception("Role not found");
                 }
-                Role = _context.GetRoleById(role.RoleId);
+                Role = _context.GetRoleById(role.RoleId) ?? role;
                 IsEditMode = true;
 
                 // Initialize properties
                 RoleName = Role.RoleName;
-                Description = Role.Description;
+                Description = Role.Description ?? string.Empty;
 
                 // Load all permissions
                 LoadPermissions();
@@ -144,6 +137,8 @@ namespace HumanResourcesApp.ViewModels
                     return;
                 }
 
+                Role.Description = Description;
+
                 // Save role
                 if (IsEditMode)
                 {
@@ -151,7 +146,7 @@ namespace HumanResourcesApp.ViewModels
                 }
                 else
                 {
-                    _context.CreateRole(Role);
+                    _context.CreateRole(user, Role);
                 }
 
                 CloseDialogWithResult(true);

@@ -19,31 +19,20 @@ namespace HumanResourcesApp.ViewModels
         private readonly HumanResourcesDB _context;
         private static readonly Regex _numericRegex = new Regex(@"^[0-9]*(?:\.[0-9]*)?$");
 
-        [ObservableProperty]
-        private ObservableCollection<PayrollItem> payrollItems;
+        [ObservableProperty] private ObservableCollection<PayrollItem> payrollItems;
+        [ObservableProperty] private PayrollItem selectedPayrollItem;
+        [ObservableProperty] private PayrollItem newPayrollItem;
+        [ObservableProperty] private bool isAddingOrEditing;
+        [ObservableProperty] private bool isEditing;
+        [ObservableProperty] private string formTitle;
+        [ObservableProperty] private string defaultValueText = "";
+        private readonly User user;
 
-        [ObservableProperty]
-        private PayrollItem selectedPayrollItem;
-
-        [ObservableProperty]
-        private PayrollItem newPayrollItem;
-
-        [ObservableProperty]
-        private bool isAddingOrEditing;
-
-        [ObservableProperty]
-        private bool isEditing;
-
-        [ObservableProperty]
-        private string formTitle;
-
-        [ObservableProperty]
-        private string defaultValueText = "";
-
-        public PayrollItemsViewModel()
+        public PayrollItemsViewModel(User _user)
         {
             // Initialize context
             _context = new HumanResourcesDB();
+            user = _user;
 
             // Initialize collections
             PayrollItems = new ObservableCollection<PayrollItem>();
@@ -182,7 +171,7 @@ namespace HumanResourcesApp.ViewModels
                 }
                 else
                 {
-                    _context.CreatePayrollItem(NewPayrollItem);
+                    _context.CreatePayrollItem(user, NewPayrollItem);
                 }
 
                 LoadPayrollItems();

@@ -15,7 +15,7 @@ namespace HumanResourcesApp.ViewModels
     public partial class LoginViewModel : ObservableObject
     {
         // Properties for binding
-        private string _username;
+        private string _username = string.Empty;
         public string Username
         {
             get => _username;
@@ -33,7 +33,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty]
         private string passwordError;
 
-        private string _errorMessage;
+        private string _errorMessage = string.Empty;
         public string ErrorMessage
         {
             get => _errorMessage;
