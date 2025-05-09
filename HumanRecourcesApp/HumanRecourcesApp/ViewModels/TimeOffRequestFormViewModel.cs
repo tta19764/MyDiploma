@@ -112,7 +112,7 @@ namespace HumanResourcesApp.ViewModels
                 }
 
                 if (_isEditMode)
-                    _context.UpdateTimeOffRequest(Request);
+                    _context.UpdateTimeOffRequest(user, Request);
                 else
                     _context.AddTimeOffRequest(user, Request);
 

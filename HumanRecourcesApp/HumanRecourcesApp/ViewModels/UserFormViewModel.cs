@@ -248,7 +248,7 @@ namespace HumanResourcesApp.ViewModels
                 }
                 else
                 {
-                    _context.UpdateUser(User);
+                    _context.UpdateUser(activeUser, User);
                 }
 
                 // Close the window

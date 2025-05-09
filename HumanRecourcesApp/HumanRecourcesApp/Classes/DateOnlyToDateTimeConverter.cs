@@ -29,7 +29,7 @@ namespace HumanResourcesApp.Classes
                 }
             }
 
-            return null;
+            return DateTime.MinValue;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -43,7 +43,7 @@ namespace HumanResourcesApp.Classes
             // Return null for nullable DateOnly
             if (targetType == typeof(DateOnly?))
             {
-                return null;
+                return DateTime.MinValue;
             }
 
             // Return default DateOnly

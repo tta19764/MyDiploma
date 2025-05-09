@@ -167,7 +167,7 @@ namespace HumanResourcesApp.ViewModels
             {
                 if (IsEditing)
                 {
-                    _context.UpdatePayrollItem(NewPayrollItem);
+                    _context.UpdatePayrollItem(user, NewPayrollItem);
                 }
                 else
                 {
@@ -179,7 +179,7 @@ namespace HumanResourcesApp.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving payroll item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(user, "SavePayrollItem", ex);
             }
         }
 
@@ -194,40 +194,40 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void DeletePayrollItem(PayrollItem item)
         {
-            if (item == null) return;
-
-            // Check if the payroll item has associated payroll details
-            int detailsCount = item.PayrollDetails.Count;
-            if (detailsCount > 0)
-            {
-                var result = MessageBox.Show(
-                    $"This payroll item has {detailsCount} associated payroll details. Deleting it will also delete all related payroll data.\n\nDo you want to continue?",
-                    "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.No)
-                {
-                    return;
-                }
-            }
-            else
-            {
-                var result = MessageBox.Show($"Are you sure you want to delete the payroll item '{item.ItemName}'?",
-                    "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.No)
-                {
-                    return;
-                }
-            }
-
             try
             {
-                _context.DeletePayrollItem(item);
+                if (item == null) throw new Exception("No payroll item selected.");
+
+                // Check if the payroll item has associated payroll details
+                int detailsCount = item.PayrollDetails.Count;
+                if (detailsCount > 0)
+                {
+                    var result = MessageBox.Show(
+                        $"This payroll item has {detailsCount} associated payroll details. Deleting it will also delete all related payroll data.\n\nDo you want to continue?",
+                        "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    var result = MessageBox.Show($"Are you sure you want to delete the payroll item '{item.ItemName}'?",
+                        "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        return;
+                    }
+                }
+
+                _context.DeletePayrollItem(user, item);
                 PayrollItems.Remove(item);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting payroll item: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(user, "DeletePayrollItem", ex);
             }
         }
     }

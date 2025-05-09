@@ -208,13 +208,13 @@
                                                 Content="Edit" 
                                                 Style="{StaticResource ActionButton}"
                                                 Height="30"
-                                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                                Command="{Binding DataContext.EditPositionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
                                                 CommandParameter="{Binding}"/>
                                         <Button Width="70" 
                                                 Content="Delete" 
                                                 Style="{StaticResource DeleteButton}"
                                                 Height="30"
-                                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                Command="{Binding DataContext.DeletePositionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}"/>
                                     </StackPanel>
 

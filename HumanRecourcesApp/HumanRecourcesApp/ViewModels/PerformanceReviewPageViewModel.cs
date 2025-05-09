@@ -90,32 +90,38 @@ namespace HumanResourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private void Review(PerformanceReviewDisplayModel reviewModel)
+        private void ReviewPerformanceReview(PerformanceReviewDisplayModel reviewModel)
         {
-            if (reviewModel == null)
-                return;
-
-            var review = _context.GetPerformanceReviewById(reviewModel.ReviewId);
-            if (review == null)
+            try
             {
-                MessageBox.Show("The selected performance review could not be found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
+                if (reviewModel == null) throw new Exception("No review selected.");
+
+                var review = _context.GetPerformanceReviewById(reviewModel.ReviewId);
+                if (review == null)
+                {
+                    MessageBox.Show("The selected performance review could not be found.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                var formWindow = new PerformanceReviewDetailWindow();
+                var viewModel = new PerformanceReviewDetailViewModel(user, review);
+                formWindow.DataContext = viewModel;
+
+                viewModel.RequestClose += (sender, result) =>
+                {
+                    formWindow.DialogResult = result;
+                    formWindow.Close();
+                };
+
+                bool? result = formWindow.ShowDialog();
+                if (result == true)
+                {
+                    LoadReviews();
+                }
             }
-
-            var formWindow = new PerformanceReviewDetailWindow();
-            var viewModel = new PerformanceReviewDetailViewModel(review);
-            formWindow.DataContext = viewModel;
-
-            viewModel.RequestClose += (sender, result) =>
+            catch (Exception ex)
             {
-                formWindow.DialogResult = result;
-                formWindow.Close();
-            };
-
-            bool? result = formWindow.ShowDialog();
-            if (result == true)
-            {
-                LoadReviews();
+                _context.LogError(user, "ReviewPerformanceReview", ex);
             }
         }
 
@@ -137,25 +143,35 @@ namespace HumanResourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private void Delete(PerformanceReviewDisplayModel reviewModel)
+        private void DeletePerformanceReview(PerformanceReviewDisplayModel reviewModel)
         {
-            if (reviewModel == null)
-                return;
-
-            MessageBoxResult result = MessageBox.Show(
-                "Are you sure you want to delete this performance review?",
-                "Confirm Delete",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
+            try
             {
-                var review = _context.GetPerformanceReviewById(reviewModel.ReviewId);
-                if (review != null)
+                if (reviewModel == null) throw new Exception("No review selected.");
+
+                MessageBoxResult result = MessageBox.Show(
+                    "Are you sure you want to delete this performance review?",
+                    "Confirm Delete",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (result == MessageBoxResult.Yes)
                 {
-                    _context.DeletePerformanceReview(review);
-                    LoadReviews();
+                    var review = _context.GetPerformanceReviewById(reviewModel.ReviewId);
+                    if (review != null)
+                    {
+                        _context.DeletePerformanceReview(user, review);
+                        LoadReviews();
+                    }
+                    else
+                    {
+                        throw new Exception("The selected performance review could not be found.");
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _context.LogError(user, "DeletePerformanceReview", ex);
             }
         }
     }

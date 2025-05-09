@@ -110,26 +110,33 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void EditCriteria(PerformanceCriterion criteria)
         {
-            if (criteria == null) return;
-
-            IsAddingOrEditing = true;
-            IsEditing = true;
-            FormTitle = "Edit Performance Criteria";
-
-            // Create a copy for editing
-            NewCriteria = new PerformanceCriterion
+            try
             {
-                CriteriaId = criteria.CriteriaId,
-                CriteriaName = criteria.CriteriaName,
-                Description = criteria.Description,
-                Category = criteria.Category,
-                WeightPercentage = criteria.WeightPercentage,
-                IsActive = criteria.IsActive,
-                CreatedAt = criteria.CreatedAt
-            };
+                if (criteria == null) throw new Exception("Performance criteria not found.");
 
-            // Set the text representation of the weight percentage
-            WeightPercentageText = NewCriteria.WeightPercentage?.ToString("F2", CultureInfo.InvariantCulture) ?? "";
+                IsAddingOrEditing = true;
+                IsEditing = true;
+                FormTitle = "Edit Performance Criteria";
+
+                // Create a copy for editing
+                NewCriteria = new PerformanceCriterion
+                {
+                    CriteriaId = criteria.CriteriaId,
+                    CriteriaName = criteria.CriteriaName,
+                    Description = criteria.Description,
+                    Category = criteria.Category,
+                    WeightPercentage = criteria.WeightPercentage,
+                    IsActive = criteria.IsActive,
+                    CreatedAt = criteria.CreatedAt
+                };
+
+                // Set the text representation of the weight percentage
+                WeightPercentageText = NewCriteria.WeightPercentage?.ToString("F2", CultureInfo.InvariantCulture) ?? "";
+            }
+            catch (Exception ex)
+            {
+                _context.LogError(user, "EditPerformanceCriteria", ex);
+            }
         }
 
         [RelayCommand]
@@ -165,7 +172,7 @@ namespace HumanResourcesApp.ViewModels
             {
                 if (IsEditing)
                 {
-                    _context.UpdatePerformanceCriterion(NewCriteria);
+                    _context.UpdatePerformanceCriterion(user, NewCriteria);
                 }
                 else
                 {
@@ -177,7 +184,7 @@ namespace HumanResourcesApp.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving performance criteria: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(user, "SavePerformanceCriterion", ex);
             }
         }
 
@@ -192,40 +199,41 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void DeleteCriteria(PerformanceCriterion criteria)
         {
-            if (criteria == null) return;
-
-            // Check if criteria has associated performance scores
-            int scoreCount = criteria.PerformanceScores.Count;
-            if (scoreCount > 0)
-            {
-                var result = MessageBox.Show(
-                    $"This performance criteria has {scoreCount} associated performance scores. Deleting it will also delete all related score data.\n\nDo you want to continue?",
-                    "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.No)
-                {
-                    return;
-                }
-            }
-            else
-            {
-                var result = MessageBox.Show($"Are you sure you want to delete the performance criteria '{criteria.CriteriaName}'?",
-                    "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.No)
-                {
-                    return;
-                }
-            }
-
             try
             {
-                _context.DeletePerformanceCriteria(criteria);
+                if (criteria == null) throw new Exception("Performance criteria not found.");
+
+                // Check if criteria has associated performance scores
+                int scoreCount = criteria.PerformanceScores.Count;
+                if (scoreCount > 0)
+                {
+                    var result = MessageBox.Show(
+                        $"This performance criteria has {scoreCount} associated performance scores. Deleting it will also delete all related score data.\n\nDo you want to  continue?",
+                        "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    var result = MessageBox.Show($"Are you sure you want to delete the performance criteria '{criteria.CriteriaName}'?",
+                        "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        return;
+                    }
+                }
+
+            
+                _context.DeletePerformanceCriteria(user, criteria);
                 PerformanceCriteria.Remove(criteria);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting performance criteria: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(user, "DeletePerformanceCriteria", ex);
             }
         }
     }

@@ -142,7 +142,7 @@ namespace HumanResourcesApp.ViewModels
                 // Save role
                 if (IsEditMode)
                 {
-                    _context.UpdateRole(Role);
+                    _context.UpdateRole(user, Role);
                 }
                 else
                 {

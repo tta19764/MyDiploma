@@ -193,11 +193,11 @@
                                     <StackPanel Grid.RowSpan="4" Grid.Column="1" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10,0,0,0">
                                         <Button Content="Review"
                                             Style="{StaticResource ReviewButton}"
-                                            Command="{Binding DataContext.ReviewCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                            Command="{Binding DataContext.ReviewPerformanceReviewCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                             CommandParameter="{Binding}" />
                                         <Button Content="Delete"
                                             Style="{StaticResource DeleteButton}"
-                                            Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                            Command="{Binding DataContext.DeletePerformanceReviewCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                             CommandParameter="{Binding}" />
                                     </StackPanel>
                                 </Grid>
@@ -289,7 +289,7 @@
                                             CommandParameter="{Binding}" />
                                         <Button Content="Delete"
                                             Style="{StaticResource DeleteButton}"
-                                            Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                            Command="{Binding DataContext.DeletePerformanceReviewCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                             CommandParameter="{Binding}" />
                                     </StackPanel>
                                 </Grid>

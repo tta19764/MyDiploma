@@ -16,9 +16,9 @@ namespace HumanResourcesApp.ViewModels
         private readonly HumanResourcesDB _context;
         private readonly User user;
         [ObservableProperty] private Employee employee;
-        [ObservableProperty] private string userIdString;
+        [ObservableProperty] private string userIdString = string.Empty;
 
-        private string salaryString;
+        private string salaryString = string.Empty;
         public string SalaryString
         {
             get => salaryString;
@@ -41,17 +41,12 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        [ObservableProperty]
-        private string windowTitle;
-
-        [ObservableProperty]
-        private ObservableCollection<Department> departments;
-
-        [ObservableProperty]
-        private ObservableCollection<Position> positions;
+        [ObservableProperty] private string windowTitle;
+        [ObservableProperty] private ObservableCollection<Department> departments = new ObservableCollection<Department>();
+        [ObservableProperty] private ObservableCollection<Position> positions = new ObservableCollection<Position>();
 
         // Event used to communicate with the view
-        public event EventHandler<bool> RequestClose;
+        public event EventHandler<bool>? RequestClose;
 
         private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
         private static readonly Regex PhoneRegex = new(@"^\+?[0-9\s\-]{7,15}$", RegexOptions.Compiled);
@@ -142,7 +137,7 @@ namespace HumanResourcesApp.ViewModels
                 }
                 else
                 {
-                    _context.UpdateEmployee(Employee);
+                    _context.UpdateEmployee(user, Employee);
                 }
 
                 CloseWindow(true);

@@ -53,24 +53,31 @@ namespace HumanResourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private void Edit(RoleDisplayModel roleDisplayModel)
+        private void EditRole(RoleDisplayModel roleDisplayModel)
         {
-            if (roleDisplayModel == null) return;
-
-            var role = _context.GetRoleById(roleDisplayModel.RoleId);
-            if (role == null) return;
-
-            var viewModel = new RoleFormViewModel(user, role);
-            var window = new RoleFormWindow { DataContext = viewModel };
-
-            if (window.ShowDialog() == true)
+            try
             {
-                LoadRoles();
+                if (roleDisplayModel == null) throw new Exception("Role display model was not found");
+
+                var role = _context.GetRoleById(roleDisplayModel.RoleId);
+                if (role == null) throw new Exception("Role was not found");
+
+                var viewModel = new RoleFormViewModel(user, role);
+                var window = new RoleFormWindow { DataContext = viewModel };
+
+                if (window.ShowDialog() == true)
+                {
+                    LoadRoles();
+                }
+            }
+            catch (Exception ex)
+            {
+                _context.LogError(user, "EditRole", ex);
             }
         }
 
         [RelayCommand]
-        private void Delete(RoleDisplayModel roleDisplayModel)
+        private void DeleteRole(RoleDisplayModel roleDisplayModel)
         {
             try
             {
@@ -92,19 +99,17 @@ namespace HumanResourcesApp.ViewModels
                     var role = _context.GetRoleById(roleDisplayModel.RoleId);
                     if (role != null)
                     {
-                        _context.DeleteRole(role);
+                        _context.DeleteRole(user, role);
                     }
                     else
                     {
-                        MessageBox.Show("The role could not be found.",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        throw new Exception("Role not found");
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred: {ex.Message}",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(user, "DeleteRole", ex);
             }
             finally
             {

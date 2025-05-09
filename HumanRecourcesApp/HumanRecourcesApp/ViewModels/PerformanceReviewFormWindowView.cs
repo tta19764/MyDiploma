@@ -26,7 +26,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private List<string> reviewStatuses;
         [ObservableProperty] private string selectedStatus;
 
-        public event EventHandler<bool> RequestClose;
+        public event EventHandler<bool>? RequestClose;
 
         public PerformanceReviewFormViewModel(User _user)
         {

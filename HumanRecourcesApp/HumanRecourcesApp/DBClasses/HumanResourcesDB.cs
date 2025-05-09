@@ -1,4 +1,5 @@
-﻿using HumanResourcesApp.Classes;
+﻿using Castle.DynamicProxy.Generators;
+using HumanResourcesApp.Classes;
 using HumanResourcesApp.Models;
 using HumanResourcesApp.Views;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace HumanResourcesApp.DBClasses
 {
@@ -27,32 +29,9 @@ namespace HumanResourcesApp.DBClasses
             return user.Role.RolePermissions.Any(rp => rp.Permission.PermissionName == permissionName);
         }
 
-        private object TrimForLog(object entity)
-        {
-            // Create a shallow copy and null out navigation properties to avoid cycles
-            var type = entity.GetType();
-            var clone = Activator.CreateInstance(type);
+        
 
-            foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-            {
-                if (!prop.CanRead || !prop.CanWrite) continue;
-
-                var value = prop.GetValue(entity);
-
-                // Exclude navigation properties (collections or other entities)
-                if (prop.PropertyType.Namespace?.StartsWith("HumanResourcesManagement.Models") == true && prop.PropertyType != typeof(string))
-                    continue;
-
-                if (typeof(System.Collections.IEnumerable).IsAssignableFrom(prop.PropertyType) && prop.PropertyType != typeof(string))
-                    continue;
-
-                prop.SetValue(clone, value);
-            }
-
-            return clone!;
-        }
-
-        private void LogOperation(User user, string action, string entityType, int? entityId, object? oldValues, object? newValues)
+        public void LogOperation(User user, string action, string entityType, int? entityId, object? oldValues, object? newValues)
         {
             try
             {
@@ -65,8 +44,8 @@ namespace HumanResourcesApp.DBClasses
                     Action = action,
                     EntityType = entityType,
                     EntityId = entityId,
-                    OldValues = oldValues != null ? JsonSerializer.Serialize(TrimForLog(oldValues)) : null,
-                    NewValues = newValues != null ? JsonSerializer.Serialize(TrimForLog(newValues)) : null,
+                    OldValues = oldValues != null ? JsonSerializer.Serialize(JSONLoggerHelper.TrimForLog(oldValues)) : null,
+                    NewValues = newValues != null ? JsonSerializer.Serialize(JSONLoggerHelper.TrimForLog(newValues)) : null,
                     IpAddress = IpAddress.GetLocalIpAddress(),
                     UserAgent = Environment.MachineName
                 };
@@ -74,17 +53,70 @@ namespace HumanResourcesApp.DBClasses
                 _context.SystemLogs.Add(log);
                 _context.SaveChanges();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // You can optionally log this to a file or show a message in development
-                //MessageBox.Show($"Error logging operation: {ex.Message}", "Logging Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                TryFallbackLogging(user, action, entityType, entityId, ex);
             }
         }
-
-        private void LogError(User user, string sourceMethod, Exception ex)
+        private void TryFallbackLogging(User user, string action, string entityType, int? entityId, Exception originalException)
         {
             try
             {
+                // Create a simpler log entry without the problematic values
+                var log = new SystemLog
+                {
+                    UserId = user.UserId,
+                    LogDate = DateTime.Now,
+                    LogLevel = "Warning",
+                    LogSource = "HumanResourcesDB",
+                    Action = action,
+                    EntityType = entityType,
+                    EntityId = entityId,
+                    OldValues = "Serialization failed",
+                    NewValues = $"Logging error: {originalException.Message}",
+                    IpAddress = IpAddress.GetLocalIpAddress(),
+                    UserAgent = Environment.MachineName
+                };
+
+                _context.SystemLogs.Add(log);
+                _context.SaveChanges();
+            }
+            catch
+            {
+                // Could write to file or event log here
+            }
+        }
+
+        public void LogError(User user, string sourceMethod, Exception ex)
+        {
+            try
+            {
+                // Create JSON serializer options
+                var options = new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                };
+
+                // Create a dictionary to store exception details
+                var exceptionDetails = new Dictionary<string, string>
+                {
+                    ["ExceptionType"] = ex.GetType().FullName ?? "",
+                    ["Message"] = ex.Message,
+                    ["StackTrace"] = ex.StackTrace ?? "",
+                    ["Source"] = ex.Source ?? "",
+                };
+
+                // Add inner exception details if present
+                if (ex.InnerException != null)
+                {
+                    exceptionDetails["InnerExceptionType"] = ex.InnerException.GetType().FullName ?? "";
+                    exceptionDetails["InnerMessage"] = ex.InnerException.Message;
+                    exceptionDetails["InnerStackTrace"] = ex.InnerException.StackTrace ?? "";
+                }
+
+                // Convert to proper JSON string
+                string jsonException = JsonSerializer.Serialize(exceptionDetails, options);
+
                 var log = new SystemLog
                 {
                     UserId = user.UserId,
@@ -95,17 +127,42 @@ namespace HumanResourcesApp.DBClasses
                     EntityType = null,
                     EntityId = null,
                     OldValues = null,
-                    NewValues = ex.ToString(),
+                    NewValues = jsonException, // Now properly formatted JSON
                     IpAddress = IpAddress.GetLocalIpAddress(),
                     UserAgent = Environment.MachineName
                 };
                 _context.SystemLogs.Add(log);
                 _context.SaveChanges();
             }
-            catch (Exception)
+            catch (Exception fallbackEx)
             {
-                // Fallback if logging fails
-                //MessageBox.Show($"Error logging operation: {ex.Message}", "Logging Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                // Fallback if logging fails - write to console or file
+                Console.WriteLine($"Failed to log error: {fallbackEx.Message}");
+
+                try
+                {
+                    // Try a minimal log entry without the problematic JSON
+                    var simpleLog = new SystemLog
+                    {
+                        UserId = user?.UserId ?? 0,
+                        LogDate = DateTime.Now,
+                        LogLevel = "Critical",
+                        LogSource = $"HRMS::{sourceMethod}",
+                        Action = "ExceptionLoggingFailed",
+                        EntityType = null,
+                        EntityId = null,
+                        OldValues = null,
+                        NewValues = JsonSerializer.Serialize(new { ErrorMessage = "Failed to log original error" }),
+                        IpAddress = IpAddress.GetLocalIpAddress(),
+                        UserAgent = Environment.MachineName
+                    };
+                    _context.SystemLogs.Add(simpleLog);
+                    _context.SaveChanges();
+                }
+                catch
+                {
+                    // Could write to file or event log here
+                }
             }
         }
 
@@ -792,7 +849,7 @@ namespace HumanResourcesApp.DBClasses
         {
             try
             {
-                if (!HasPermission(user, "ManageLeaves"))
+                if (!HasPermission(user, "ManageLeaves") || user.Employee != null && user.Employee.EmployeeId == request.EmployeeId)
                     throw new UnauthorizedAccessException("You do not have permission to manage time off requests.");
 
                 _context.TimeOffRequests.Add(request);
@@ -991,73 +1048,75 @@ namespace HumanResourcesApp.DBClasses
             }
         }
 
-        public void UpdateRole(User user, Role role)
-        {
-            using (var context = new HumanResourcesDbContext())
-            {
-                var local = context.Users.Local.FirstOrDefault(e => e.UserId == user.UserId);
-                if (local != null)
-                {
-                    context.Entry(local).State = EntityState.Detached;
-                }
-
-                user.Role = role;
-                context.Entry(user).State = EntityState.Modified;
-                context.SaveChanges();
-            }
-        }
-
         // Department Update Operations
-        public void UpdateDepartment(Department department)
+        public void UpdateDepartment(User user, Department updated)
         {
-            using (var context = new HumanResourcesDbContext())
+            try
             {
-                var local = context.Departments.Local
-                    .FirstOrDefault(e => e.DepartmentId == department.DepartmentId);
+                if (!HasPermission(user, "SystemSettings"))
+                    throw new UnauthorizedAccessException("You do not have permission to update departments.");
 
-                if (local != null)
+                var existing = _context.Departments.Find(updated.DepartmentId);
+                if (existing != null)
                 {
-                    context.Entry(local).State = EntityState.Detached;
-                }
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
 
-                context.Entry(department).State = EntityState.Modified;
-                context.SaveChanges();
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(Department), existing.DepartmentId, oldValues, updated);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "UpdateDepartment", ex);
             }
         }
 
         // Employee Update Operations
-        public void UpdateEmployee(Employee employee)
+        public void UpdateEmployee(User user, Employee updated)
         {
-            using (var context = new HumanResourcesDbContext())
+            try
             {
-                var local = context.Employees.Local
-                    .FirstOrDefault(e => e.EmployeeId == employee.EmployeeId);
+                if (!HasPermission(user, "EditEmployees"))
+                    throw new UnauthorizedAccessException("You do not have permission to update positions.");
 
-                if (local != null)
+                var existing = _context.Employees.Find(updated.EmployeeId);
+                if (existing != null)
                 {
-                    context.Entry(local).State = EntityState.Detached;
-                }
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
 
-                context.Entry(employee).State = EntityState.Modified;
-                context.SaveChanges();
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(Employee), existing.EmployeeId, oldValues, updated);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "UpdateEmployee", ex);
             }
         }
 
         // Position Update Operations
-        public void UpdatePosition(Position position)
+        public void UpdatePosition(User user, Position updated)
         {
-            using (var context = new HumanResourcesDbContext())
+            try
             {
-                var local = context.Positions.Local
-                    .FirstOrDefault(e => e.PositionId == position.PositionId);
+                if (!HasPermission(user, "SystemSettings"))
+                    throw new UnauthorizedAccessException("You do not have permission to update positions.");
 
-                if (local != null)
+                var existing = _context.Positions.Find(updated.PositionId);
+                if (existing != null)
                 {
-                    context.Entry(local).State = EntityState.Detached;
-                }
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
 
-                context.Entry(position).State = EntityState.Modified;
-                context.SaveChanges();
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(Position), existing.PositionId, oldValues, updated);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "UpdatePosition", ex);
             }
         }
 
@@ -1065,461 +1124,486 @@ namespace HumanResourcesApp.DBClasses
 
         // TimeOffTypes Update Operations
 
-        public void UpdateTimeOffType(TimeOffType timeOffType)
+        public void UpdateTimeOffType(User user, TimeOffType updated)
         {
-            using (var context = new HumanResourcesDbContext())
+            try
             {
-                var local = context.Set<TimeOffType>()
-                    .Local
-                    .FirstOrDefault(e => e.TimeOffTypeId == timeOffType.TimeOffTypeId);
+                if (!HasPermission(user, "ManageLeaves"))
+                    throw new UnauthorizedAccessException("You do not have permission to update time off types.");
 
-                // If entity is tracked, detach it
-                if (local != null)
+                var existing = _context.TimeOffTypes.Find(updated.TimeOffTypeId);
+                if (existing != null)
                 {
-                    context.Entry(local).State = EntityState.Detached;
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(TimeOffType), existing.TimeOffTypeId, oldValues, updated);
                 }
-
-                // Attach and mark as modified
-                context.Entry(timeOffType).State = EntityState.Modified;
-
-                // Save changes
-                context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "UpdateTimeOffType", ex);
             }
         }
 
         // TimeOffRequests Update Operations
-
-        public void UpdateTimeOffRequest(TimeOffRequest timeOffRequest)
+        public void UpdateTimeOffRequest(User user, TimeOffRequest timeOffRequest)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ManageLeaves"))
+                    throw new UnauthorizedAccessException("You do not have permission to update time off requests.");
+
+                // Fetch existing entity from DB and clone it for logging
+                var existing = _context.TimeOffRequests
+                    .AsNoTracking()
+                    .FirstOrDefault(e => e.TimeOffRequestId == timeOffRequest.TimeOffRequestId);
+
+                if (existing == null)
+                    throw new InvalidOperationException("TimeOffRequest not found.");
+
+                var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                // Detach local tracked entity if it exists
+                var local = _context.Set<TimeOffRequest>()
+                    .Local
+                    .FirstOrDefault(e => e.TimeOffRequestId == timeOffRequest.TimeOffRequestId);
+
+                if (local != null)
                 {
-                    var local = context.Set<TimeOffRequest>()
-                        .Local
-                        .FirstOrDefault(e => e.TimeOffRequestId == timeOffRequest.TimeOffRequestId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(timeOffRequest).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    _context.Entry(local).State = EntityState.Detached;
                 }
+
+                _context.Entry(timeOffRequest).State = EntityState.Modified;
+                _context.SaveChanges();
+
+                LogOperation(user, "Update", nameof(TimeOffRequest), timeOffRequest.TimeOffRequestId, oldValues, timeOffRequest);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating TimeOffRequest: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdateTimeOffRequest", ex);
             }
         }
+
 
         // TimeOffBalance Update Operations
-
-        public void UpdateTimeOffBalance(TimeOffBalance timeOffBalance)
+        public void UpdateTimeOffBalance(User user, TimeOffBalance timeOffBalance)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ManageLeaves"))
+                    throw new UnauthorizedAccessException("You do not have permission to update time off balances.");
+
+                // Fetch existing entity from DB and clone it for logging
+                var existing = _context.TimeOffBalances
+                    .AsNoTracking()
+                    .FirstOrDefault(e => e.TimeOffBalanceId == timeOffBalance.TimeOffBalanceId);
+
+                if (existing == null)
+                    throw new InvalidOperationException("TimeOffBalance not found.");
+
+                var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                // Detach local tracked entity if it exists
+                var local = _context.Set<TimeOffBalance>()
+                    .Local
+                    .FirstOrDefault(e => e.TimeOffBalanceId == timeOffBalance.TimeOffBalanceId);
+
+                if (local != null)
                 {
-                    var local = context.Set<TimeOffBalance>()
-                        .Local
-                        .FirstOrDefault(e => e.TimeOffBalanceId == timeOffBalance.TimeOffBalanceId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(timeOffBalance).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    _context.Entry(local).State = EntityState.Detached;
                 }
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show($"Error updating TimeOffBalance: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            
-        }
 
-        public void UpdateTimeOffBalancePeriod(TimeOffType type, string period)
-        {
-            try
-            {
-                using (var context = new HumanResourcesDbContext())
-                {
-                    using var transaction = context.Database.BeginTransaction();
+                _context.Entry(timeOffBalance).State = EntityState.Modified;
+                _context.SaveChanges();
 
-                    var balances = context.TimeOffBalances
-                        .Where(b => b.TimeOffTypeId == type.TimeOffTypeId)
-                        .ToList();
-
-                    foreach (var balance in balances)
-                    {
-                        balance.Period = period;
-                        context.TimeOffBalances.Update(balance);
-                    }
-
-                    context.SaveChanges();
-                    transaction.Commit();
-                }
+                LogOperation(user, "Update", nameof(TimeOffBalance), timeOffBalance.TimeOffBalanceId, oldValues, timeOffBalance);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating TimeOffBalance period: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdateTimeOffBalance", ex);
+            }
+        }
+
+
+        public void UpdateTimeOffBalancePeriod(User user, TimeOffType type, string period)
+        {
+            try
+            {
+                if (!HasPermission(user, "ManageLeaves"))
+                    throw new UnauthorizedAccessException("You do not have permission to update time off balances.");
+
+                using var transaction = _context.Database.BeginTransaction();
+
+                var balances = _context.TimeOffBalances
+                    .Where(b => b.TimeOffTypeId == type.TimeOffTypeId)
+                    .ToList();
+
+                foreach (var balance in balances)
+                {
+                    balance.Period = period;
+                    _context.TimeOffBalances.Update(balance);
+                }
+
+                _context.SaveChanges();
+                transaction.Commit();
+
+                LogOperation(user, "Update", nameof(TimeOffBalance), null, null, $"Updated period to '{period}' for TimeOffTypeId {type.TimeOffTypeId}");
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "UpdateTimeOffBalancePeriod", ex);
             }
         }
 
         // Role Update Operations
-        public void UpdateRole(Role role)
+        public void UpdateRole(User user, Role updated)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ManageRoles"))
+                    throw new UnauthorizedAccessException("You do not have permission to update roles.");
+
+                var existing = _context.Roles.Find(updated.RoleId);
+                if (existing != null)
                 {
-                    using var transaction = context.Database.BeginTransaction();
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
 
-                    // Find the existing role with its permissions
-                    var existingRole = context.Roles
-                        .Include(r => r.RolePermissions)
-                        .FirstOrDefault(r => r.RoleId == role.RoleId);
-
-                    if (existingRole != null)
-                    {
-                        // Update basic role properties
-                        existingRole.RoleName = role.RoleName;
-                        existingRole.Description = role.Description;
-
-                        // Remove all existing role permissions
-                        context.RolePermissions.RemoveRange(existingRole.RolePermissions);
-
-                        // Add the new role permissions
-                        foreach (var permission in role.RolePermissions)
-                        {
-                            context.RolePermissions.Add(new RolePermission
-                            {
-                                RoleId = existingRole.RoleId,
-                                PermissionId = permission.PermissionId,
-                                CreatedAt = DateTime.Now
-                            });
-                        }
-
-                        context.SaveChanges();
-                        transaction.Commit();
-                    }
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(Role), existing.RoleId, oldValues, updated);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdateRole", ex);
             }
         }
 
         // User Update Operations
-        public void UpdateUser(User user)
+        public void UpdateUser(User user, User updated)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ManageUsers"))
+                    throw new UnauthorizedAccessException("You do not have permission to update users.");
+
+                using var transaction = _context.Database.BeginTransaction();
+
+                var localUser = _context.Users.Local
+                    .FirstOrDefault(e => e.UserId == updated.UserId);
+                if (localUser != null)
                 {
-                    using var transaction = context.Database.BeginTransaction();
 
-                    // Detach local User
-                    var localUser = context.Users.Local
-                        .FirstOrDefault(e => e.UserId == user.UserId);
-                    if (localUser != null)
-                    {
-                        context.Entry(localUser).State = EntityState.Detached;
-                    }
-
-                    // Remove the UserId from any other Employee that might already be linked to this UserId
-                    int? currentEmployeeId = user.Employee?.EmployeeId;
-
-                    var existingEmployeeWithUser = context.Employees
-                        .FirstOrDefault(e => e.UserId == user.UserId && e.EmployeeId != currentEmployeeId);
-
-
-                    if (existingEmployeeWithUser != null)
-                    {
-                        existingEmployeeWithUser.UserId = null;
-                        context.Entry(existingEmployeeWithUser).State = EntityState.Modified;
-                    }
-
-                    // Handle Employee
-                    if (user.Employee != null)
-                    {
-                        var localEmployee = context.Employees.Local
-                            .FirstOrDefault(e => e.EmployeeId == user.Employee.EmployeeId);
-                        if (localEmployee != null)
-                        {
-                            context.Entry(localEmployee).State = EntityState.Detached;
-                        }
-
-                        user.Employee.UserId = user.UserId;
-
-                        context.Attach(user.Employee);
-                        context.Entry(user.Employee).State = EntityState.Modified;
-                    }
-
-                    // Update User
-                    context.Attach(user);
-                    context.Entry(user).State = EntityState.Modified;
-
-                    context.SaveChanges();
-                    transaction.Commit();
+                    _context.Entry(localUser).State = EntityState.Detached;
                 }
+
+                int? currentEmployeeId = updated.Employee?.EmployeeId;
+                var existingEmployeeWithUser = _context.Employees
+                    .FirstOrDefault(e => e.UserId == updated.UserId && e.EmployeeId != currentEmployeeId);
+
+                if (existingEmployeeWithUser != null)
+                {
+                    existingEmployeeWithUser.UserId = null;
+                    _context.Entry(existingEmployeeWithUser).State = EntityState.Modified;
+                }
+
+                if (updated.Employee != null)
+                {
+                    var localEmployee = _context.Employees.Local
+                        .FirstOrDefault(e => e.EmployeeId == updated.Employee.EmployeeId);
+                    if (localEmployee != null)
+                    {
+                        _context.Entry(localEmployee).State = EntityState.Detached;
+                    }
+
+                    updated.Employee.UserId = updated.UserId;
+                    _context.Attach(updated.Employee);
+                    _context.Entry(updated.Employee).State = EntityState.Modified;
+                }
+
+                _context.Attach(updated);
+                _context.Entry(updated).State = EntityState.Modified;
+
+                _context.SaveChanges();
+                transaction.Commit();
+
+                LogOperation(user, "Update", nameof(User), updated.UserId, null, updated);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdateUser", ex);
             }
         }
 
         // PayPeriod Update Operations
-
-        public void UpdatePayPeriod(PayPeriod payPeriod)
+        public void UpdatePayPeriod(User user, PayPeriod updated)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to update pay periods.");
+
+                var existing = _context.PayPeriods.Find(updated.PayPeriodId);
+                if (existing != null)
                 {
-                    var local = context.Set<PayPeriod>()
-                        .Local
-                        .FirstOrDefault(e => e.PayPeriodId == payPeriod.PayPeriodId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(payPeriod).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(PayPeriod), existing.PayPeriodId, oldValues, updated);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating PayPeriod: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdatePayPeriod", ex);
             }
         }
 
         // PerformanceCriteria Update Operations
 
-        public void UpdatePerformanceCriterion(PerformanceCriterion performanceCriterion)
+        public void UpdatePerformanceCriterion(User user, PerformanceCriterion performanceCriterion)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ManagePerformance"))
+                    throw new UnauthorizedAccessException("You do not have permission to update performance criteria.");
+
+                // Retrieve the current values from the database (not tracked)
+                var existing = _context.PerformanceCriteria
+                    .AsNoTracking()
+                    .FirstOrDefault(e => e.CriteriaId == performanceCriterion.CriteriaId);
+
+                if (existing == null)
+                    throw new InvalidOperationException("PerformanceCriterion not found.");
+
+                var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                // Detach local tracked instance if it exists
+                var local = _context.Set<PerformanceCriterion>()
+                    .Local
+                    .FirstOrDefault(e => e.CriteriaId == performanceCriterion.CriteriaId);
+
+                if (local != null)
                 {
-                    var local = context.Set<PerformanceCriterion>()
-                        .Local
-                        .FirstOrDefault(e => e.CriteriaId == performanceCriterion.CriteriaId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(performanceCriterion).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    _context.Entry(local).State = EntityState.Detached;
                 }
+
+                _context.Entry(performanceCriterion).State = EntityState.Modified;
+                _context.SaveChanges();
+
+                LogOperation(user, "Update", nameof(PerformanceCriterion), performanceCriterion.CriteriaId, oldValues, performanceCriterion);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating PerformanceCriterion: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdatePerformanceCriterion", ex);
             }
         }
 
+
         // PerformanceReview Update Operations
-        public void UpdatePerformanceReview(PerformanceReview performanceReview)
+        public void UpdatePerformanceReview(User user, PerformanceReview updated)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ManagePerformance"))
+                    throw new UnauthorizedAccessException("You do not have permission to update performance reviews.");
+
+                var existing = _context.PerformanceReviews.Find(updated.ReviewId);
+                if (existing != null)
                 {
-                    var local = context.Set<PerformanceReview>()
-                        .Local
-                        .FirstOrDefault(e => e.ReviewId == performanceReview.ReviewId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(performanceReview).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(PerformanceReview), existing.ReviewId, oldValues, updated);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating PerformanceReview: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdatePerformanceReview", ex);
             }
         }
 
         // PerformanceScore Update Operations
-        public void UpdatePerformanceScore(PerformanceScore performanceScore)
+        public void UpdatePerformanceScore(User user, PerformanceScore performanceScore)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ManagePerformance"))
+                    throw new UnauthorizedAccessException("You do not have permission to update performance scores.");
+
+                // Retrieve the current values from the database (not tracked)
+                var existing = _context.PerformanceScores
+                    .AsNoTracking()
+                    .FirstOrDefault(e => e.ScoreId == performanceScore.ScoreId);
+
+                if (existing == null)
+                    throw new InvalidOperationException("PerformanceScore not found.");
+
+                var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                // Detach local tracked instance if it exists
+                var local = _context.Set<PerformanceScore>()
+                    .Local
+                    .FirstOrDefault(e => e.ScoreId == performanceScore.ScoreId);
+
+                if (local != null)
                 {
-                    var local = context.Set<PerformanceScore>()
-                        .Local
-                        .FirstOrDefault(e => e.ScoreId == performanceScore.ScoreId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(performanceScore).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    _context.Entry(local).State = EntityState.Detached;
                 }
+
+                _context.Entry(performanceScore).State = EntityState.Modified;
+                _context.SaveChanges();
+
+                LogOperation(user, "Update", nameof(PerformanceScore), performanceScore.ScoreId, oldValues, performanceScore);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating PerformanceScore: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdatePerformanceScore", ex);
             }
         }
 
+
         // PayrollItems Update Operations
-        public void UpdatePayrollItem(PayrollItem payrollItem)
+        public void UpdatePayrollItem(User user, PayrollItem updated)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to update payroll items.");
+
+                var existing = _context.PayrollItems.Find(updated.PayrollItemId);
+                if (existing != null)
                 {
-                    var local = context.Set<PayrollItem>()
-                        .Local
-                        .FirstOrDefault(e => e.PayrollItemId == payrollItem.PayrollItemId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(payrollItem).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(PayrollItem), existing.PayrollItemId, oldValues, updated);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating PayrollItem: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdatePayrollItem", ex);
             }
         }
 
         // EmployeePayroll Update Operations
 
-        public void UpdateEmployeePayroll(EmployeePayroll employeePayroll)
+        public void UpdateEmployeePayroll(User user, EmployeePayroll employeePayroll)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to update payrolls.");
+
+                // Retrieve the current values from the database (not tracked)
+                var existing = _context.EmployeePayrolls
+                    .AsNoTracking()
+                    .FirstOrDefault(e => e.PayrollId == employeePayroll.PayrollId);
+
+                if (existing == null)
+                    throw new InvalidOperationException("EmployeePayroll not found.");
+
+                var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                var local = _context.Set<EmployeePayroll>()
+                    .Local
+                    .FirstOrDefault(e => e.PayrollId == employeePayroll.PayrollId);
+                if (local != null)
                 {
-                    var local = context.Set<EmployeePayroll>()
-                        .Local
-                        .FirstOrDefault(e => e.PayrollId == employeePayroll.PayrollId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(employeePayroll).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    _context.Entry(local).State = EntityState.Detached;
                 }
+
+                _context.Entry(employeePayroll).State = EntityState.Modified;
+                _context.SaveChanges();
+                LogOperation(user, "Update", nameof(EmployeePayroll), employeePayroll.PayrollId, oldValues, employeePayroll);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating EmployeePayroll: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdateEmployeePayroll", ex);
             }
         }
 
-        public void UpdatePayrollDetail(PayrollDetail payrollDetail)
+        public void UpdatePayrollDetail(User user, PayrollDetail payrollDetail)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to update payroll details.");
+
+                // Retrieve the current values from the database (not tracked)
+                var existing = _context.PayrollDetails
+                    .AsNoTracking()
+                    .FirstOrDefault(e => e.PayrollDetailId == payrollDetail.PayrollDetailId);
+
+                if (existing == null)
+                    throw new InvalidOperationException("PerformanceScore not found.");
+
+                var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                var local = _context.Set<PayrollDetail>()
+                    .Local
+                    .FirstOrDefault(e => e.PayrollDetailId == payrollDetail.PayrollDetailId);
+                if (local != null)
                 {
-                    var local = context.Set<PayrollDetail>()
-                        .Local
-                        .FirstOrDefault(e => e.PayrollDetailId == payrollDetail.PayrollDetailId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(payrollDetail).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    _context.Entry(local).State = EntityState.Detached;
                 }
+
+                _context.Entry(payrollDetail).State = EntityState.Modified;
+                _context.SaveChanges();
+                LogOperation(user, "Update", nameof(PayrollDetail), payrollDetail.PayrollDetailId, oldValues, payrollDetail);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating PayrollDetail: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdatePayrollDetail", ex);
             }
         }
+
 
         // Attendance Update Operations
-
-        public void UpdateAttendance(Attendance attendance)
+        public void UpdateAttendance(User user, Attendance updated)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                if (!HasPermission(user, "ManageAttendance"))
+                    throw new UnauthorizedAccessException("You do not have permission to update attendance records.");
+
+                var existing = _context.Attendances.Find(updated.AttendanceId);
+                if (existing != null)
                 {
-                    var local = context.Set<Attendance>()
-                        .Local
-                        .FirstOrDefault(e => e.AttendanceId == attendance.AttendanceId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(attendance).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
+
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(Attendance), existing.AttendanceId, oldValues, updated);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating Attendance: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "UpdateAttendance", ex);
             }
         }
 
-        public void CheckOut(User user, Attendance attendance)
+        public void CheckOut(User user, Attendance updated)
         {
             try
             {
-                using (var context = new HumanResourcesDbContext())
+                var existing = _context.Attendances.Find(updated.AttendanceId);
+                if (existing != null)
                 {
-                    var local = context.Set<Attendance>()
-                        .Local
-                        .FirstOrDefault(e => e.AttendanceId == attendance.AttendanceId);
-                    // If entity is tracked, detach it
-                    if (local != null)
-                    {
-                        context.Entry(local).State = EntityState.Detached;
-                    }
-                    // Attach and mark as modified
-                    context.Entry(attendance).State = EntityState.Modified;
-                    // Save changes
-                    context.SaveChanges();
-                    LogOperation(user, "Update", nameof(Attendance), attendance.AttendanceId, null, attendance);
+                    var oldValues = JSONLoggerHelper.TrimForLog(existing);
+                    
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
+                    _context.SaveChanges();
+                    LogOperation(user, "Update", nameof(Attendance), existing.AttendanceId, oldValues, updated);
                 }
             }
             catch (Exception ex)
             {
-                LogError(user, "AddAttendance", ex);
+                LogError(user, "UpdateAttendance", ex);
             }
         }
 
@@ -1528,21 +1612,35 @@ namespace HumanResourcesApp.DBClasses
         // =====================================
 
         // Department Delete Operations
-        public void DeleteDepartment(Department department)
+        public void DeleteDepartment(User user, Department department)
         {
-            var existingDepartment = _context.Departments.Find(department.DepartmentId);
-            if (existingDepartment != null)
+            try
             {
-                _context.Departments.Remove(existingDepartment);
-                _context.SaveChanges();
+                if (!HasPermission(user, "SystemSettings"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete departments.");
+
+                var existing = _context.Departments.Find(department.DepartmentId);
+                if (existing != null)
+                {
+                    _context.Departments.Remove(existing);
+                    _context.SaveChanges();
+                    LogOperation(user, "Delete", nameof(Department), existing.DepartmentId, existing, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "DeleteDepartment", ex);
             }
         }
 
         // Employee Delete Operations
-        public void DeleteEmployee(Employee employee)
+        public void DeleteEmployee(User user, Employee employee)
         {
             try
             {
+                if (!HasPermission(user, "DeleteEmployees"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete employees.");
+
                 using (var context = new HumanResourcesDbContext())
                 {
                     using var transaction = context.Database.BeginTransaction();
@@ -1550,264 +1648,292 @@ namespace HumanResourcesApp.DBClasses
                     if (!CanDeleteEmployee(employee.EmployeeId))
                         throw new InvalidOperationException("This employee cannot be deleted due to dependencies.");
 
-                    var existingEmployee = context.Employees.Find(employee.EmployeeId);
-                    if (existingEmployee != null)
+                    var existing = context.Employees
+                        .Include(e => e.TimeOffBalances)
+                        .Include(e => e.TimeOffRequestEmployees)
+                        .Include(e => e.Attendances)
+                        .Include(e => e.EmployeePayrolls)
+                        .Include(e => e.PerformanceReviewEmployees)
+                        .FirstOrDefault(e => e.EmployeeId == employee.EmployeeId);
+
+                    if (existing != null)
                     {
+                        context.TimeOffBalances.RemoveRange(existing.TimeOffBalances);
+                        context.TimeOffRequests.RemoveRange(existing.TimeOffRequestEmployees);
+                        context.Attendances.RemoveRange(existing.Attendances);
+                        context.EmployeePayrolls.RemoveRange(existing.EmployeePayrolls);
+                        context.PerformanceReviews.RemoveRange(existing.PerformanceReviewEmployees);
 
-                        foreach (var timeOffBalance in existingEmployee.TimeOffBalances)
-                        {
-                            context.TimeOffBalances.Remove(timeOffBalance);
-                        }
-
-                        existingEmployee.TimeOffBalances.Clear();
-
-                        foreach (var request in existingEmployee.TimeOffRequestEmployees)
-                        {
-                            context.TimeOffRequests.Remove(request);
-                        }
-
-                        existingEmployee.TimeOffRequestEmployees.Clear();
-
-                        foreach (var attendance in existingEmployee.Attendances)
-                        {
-                            context.Attendances.Remove(attendance);
-                        }
-
-                        existingEmployee.Attendances.Clear();
-
-                        foreach (var payroll in existingEmployee.EmployeePayrolls)
-                        {
-                            context.EmployeePayrolls.Remove(payroll);
-                        }
-
-                        existingEmployee.EmployeePayrolls.Clear();
-
-                        foreach (var performanceReview in existingEmployee.PerformanceReviewEmployees)
-                        {
-                            context.PerformanceReviews.Remove(performanceReview);
-                        }
-
-                        existingEmployee.PerformanceReviewEmployees.Clear();
-
-                        // Finally delete the employee
-                        context.Employees.Remove(existingEmployee);
+                        context.Employees.Remove(existing);
                         context.SaveChanges();
                         transaction.Commit();
+
+                        LogOperation(user, "Delete", nameof(Employee), existing.EmployeeId, existing, null);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting employee: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "DeleteEmployee", ex);
             }
         }
 
+
         // Position Delete Operations
-        public void DeletePosition(Position position)
+        public void DeletePosition(User user, Position position)
         {
-            var existingPosition = _context.Positions.Find(position.PositionId);
-            if (existingPosition != null)
+            try
             {
-                _context.Positions.Remove(existingPosition);
-                _context.SaveChanges();
+                if (!HasPermission(user, "SystemSettings"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete positions.");
+
+                var existing = _context.Positions.Find(position.PositionId);
+                if (existing != null)
+                {
+                    _context.Positions.Remove(existing);
+                    _context.SaveChanges();
+                    LogOperation(user, "Delete", nameof(Position), existing.PositionId, existing, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "DeletePosition", ex);
             }
         }
 
         // Attendance Delete Operations
-        public void DeleteAttendance(Attendance attendance)
+        public void DeleteAttendance(User user, Attendance attendance)
         {
-            var existingAttendance = _context.Attendances.Find(attendance.AttendanceId);
-            if (existingAttendance != null)
+            try
             {
-                _context.Attendances.Remove(existingAttendance);
-                _context.SaveChanges();
+                if (!HasPermission(user, "ManageAttendance"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete attendance records.");
+
+                var existing = _context.Attendances.Find(attendance.AttendanceId);
+                if (existing != null)
+                {
+                    _context.Attendances.Remove(existing);
+                    _context.SaveChanges();
+                    LogOperation(user, "Delete", nameof(Attendance), existing.AttendanceId, existing, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "DeleteAttendance", ex);
             }
         }
 
         // TimeOffTypes Delete Operations
-        public void DeleteTimeOffType(TimeOffType timeOffType)
+        public void DeleteTimeOffType(User user, TimeOffType type)
         {
-            var existingTimeOffType = _context.TimeOffTypes.Find(timeOffType.TimeOffTypeId);
-            if (existingTimeOffType != null)
+            try
             {
-                _context.TimeOffTypes.Remove(existingTimeOffType);
-                _context.SaveChanges();
+                if (!HasPermission(user, "ManageLeaves"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete time off types.");
+
+                var existing = _context.TimeOffTypes.Find(type.TimeOffTypeId);
+                if (existing != null)
+                {
+                    _context.TimeOffTypes.Remove(existing);
+                    _context.SaveChanges();
+                    LogOperation(user, "Delete", nameof(TimeOffType), existing.TimeOffTypeId, existing, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "DeleteTimeOffType", ex);
             }
         }
 
         // TimeOffRequests Delete Operations
-        public void DeleteTimeOffRequest(TimeOffRequest timeOffRequest)
+        public void DeleteTimeOffRequest(User user, TimeOffRequest request)
         {
-            var existingTimeOffRequest = _context.TimeOffRequests.Find(timeOffRequest.TimeOffRequestId);
-            if (existingTimeOffRequest != null)
+            try
             {
-                _context.TimeOffRequests.Remove(existingTimeOffRequest);
-                _context.SaveChanges();
+                if (!HasPermission(user, "ManageLeaves") || !(user.Employee != null && user.Employee.EmployeeId == request.EmployeeId))
+                    throw new UnauthorizedAccessException("You do not have permission to delete time off requests.");
+
+                var existing = _context.TimeOffRequests.Find(request.TimeOffRequestId);
+                if (existing != null)
+                {
+                    _context.TimeOffRequests.Remove(existing);
+                    _context.SaveChanges();
+                    LogOperation(user, "Delete", nameof(TimeOffRequest), existing.TimeOffRequestId, existing, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "DeleteTimeOffRequest", ex);
             }
         }
 
         // Roles Delete Operations
-        public void DeleteRole(Role role)
+        public void DeleteRole(User user, Role role)
         {
             try
             {
+                if (!HasPermission(user, "ManageRoles"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete roles.");
+
                 using (var context = new HumanResourcesDbContext())
                 {
                     using var transaction = context.Database.BeginTransaction();
 
-                    // Find the role with its related permissions
-                    var existingRole = context.Roles
-                        .Include(r => r.RolePermissions)
-                        .FirstOrDefault(r => r.RoleId == role.RoleId);
-
-                    if (existingRole != null)
+                    var existing = context.Roles.Include(r => r.RolePermissions).FirstOrDefault(r => r.RoleId == role.RoleId);
+                    if (existing != null)
                     {
-                        // First remove all role permissions
-                        context.RolePermissions.RemoveRange(existingRole.RolePermissions);
-
-                        // Then remove the role itself
-                        context.Roles.Remove(existingRole);
-
+                        context.RolePermissions.RemoveRange(existing.RolePermissions);
+                        context.Roles.Remove(existing);
                         context.SaveChanges();
                         transaction.Commit();
+
+                        LogOperation(user, "Delete", nameof(Role), existing.RoleId, existing, null);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting role: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "DeleteRole", ex);
             }
         }
 
         // User Delete Operations
-        public void DeleteUser(User user)
+        public void DeleteUser(User user, User targetUser)
         {
             try
             {
+                if (!HasPermission(user, "ManageUsers"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete users.");
+
                 using (var context = new HumanResourcesDbContext())
                 {
                     using var transaction = context.Database.BeginTransaction();
 
-                    var existingUser = context.Users.Find(user.UserId);
-                    if (existingUser != null)
+                    var existing = context.Users.Find(targetUser.UserId);
+                    if (existing != null)
                     {
-                        // Set UserId to null in related system logs
-                        var relatedLogs = context.SystemLogs.Where(log => log.UserId == user.UserId).ToList();
-                        foreach (var log in relatedLogs)
-                        {
-                            log.UserId = null;
-                        }
+                        context.SystemLogs.Where(log => log.UserId == targetUser.UserId).ToList().ForEach(log => log.UserId = null);
+                        context.EmployeePayrolls.Where(p => p.ProcessedBy == targetUser.UserId).ToList().ForEach(p => p.ProcessedBy = null);
+                        context.Employees.Where(e => e.UserId == targetUser.UserId).ToList().ForEach(e => e.UserId = null);
 
-                        // Set UserId to null in related payroll items
-                        var relatedPayrolls = context.EmployeePayrolls.Where(p => p.ProcessedBy == user.UserId).ToList();
-                        foreach (var payroll in relatedPayrolls)
-                        {
-                            payroll.ProcessedBy = null;
-
-                        }
-
-                        var relatedEmployees = context.Employees.Where(p => p.UserId == user.UserId).ToList();
-                        foreach (var employee in relatedEmployees)
-                        {
-                            employee.UserId = null;
-
-                        }
-
-                        // Delete the user
-                        context.Users.Remove(existingUser);
+                        context.Users.Remove(existing);
                         context.SaveChanges();
                         transaction.Commit();
+
+                        LogOperation(user, "Delete", nameof(User), existing.UserId, existing, null);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "DeleteUser", ex);
             }
         }
 
         // PayPeriod Delete Operations
-
-        public void DeletePayPeriod(PayPeriod payPeriod)
+        public void DeletePayPeriod(User user, PayPeriod period)
         {
             try
             {
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete pay periods.");
+
                 using (var context = new HumanResourcesDbContext())
                 {
                     using var transaction = context.Database.BeginTransaction();
 
-                    var existingPayPeriod = context.PayPeriods.Find(payPeriod.PayPeriodId);
-                    if (existingPayPeriod != null && CanDeletePayPeriod(existingPayPeriod))
+                    var existing = context.PayPeriods.Find(period.PayPeriodId);
+                    if (existing != null && CanDeletePayPeriod(existing))
                     {
-                        var relatedEmployeePayrolls = context.EmployeePayrolls.Where(ep => ep.PayPeriodId == existingPayPeriod.PayPeriodId).ToList();
-                        foreach (var payroll in relatedEmployeePayrolls)
-                        {
-                            context.RemoveRange(payroll.PayrollDetails);
-                        }
-                        context.RemoveRange(relatedEmployeePayrolls);
+                        var payrolls = context.EmployeePayrolls.Where(p => p.PayPeriodId == existing.PayPeriodId).ToList();
+                        payrolls.ForEach(p => context.RemoveRange(p.PayrollDetails));
+                        context.EmployeePayrolls.RemoveRange(payrolls);
 
-                        context.PayPeriods.Remove(existingPayPeriod);
+                        context.PayPeriods.Remove(existing);
                         context.SaveChanges();
                         transaction.Commit();
+
+                        LogOperation(user, "Delete", nameof(PayPeriod), existing.PayPeriodId, existing, null);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "DeletePayPeriod", ex);
             }
         }
 
         // PerformanceCriteria Delete Operations
-
-        public void DeletePerformanceCriteria(PerformanceCriterion performanceCriterion)
+        public void DeletePerformanceCriteria(User user, PerformanceCriterion criterion)
         {
-            var existingPerformanceCriterion = _context.PerformanceCriteria.Find(performanceCriterion.CriteriaId);
-            if (existingPerformanceCriterion != null && !IsPerformanceCriterionUsedInScores(existingPerformanceCriterion.CriteriaId))
+            try
             {
-                _context.PerformanceCriteria.Remove(existingPerformanceCriterion);
-                _context.SaveChanges();
+                if (!HasPermission(user, "ManagePerformance"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete performance criteria.");
+
+                var existing = _context.PerformanceCriteria.Find(criterion.CriteriaId);
+                if (existing != null && !IsPerformanceCriterionUsedInScores(existing.CriteriaId))
+                {
+                    _context.PerformanceCriteria.Remove(existing);
+                    _context.SaveChanges();
+                    LogOperation(user, "Delete", nameof(PerformanceCriterion), existing.CriteriaId, existing, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "DeletePerformanceCriteria", ex);
             }
         }
 
         // PerformanceReview Delete Operations
-
-        public void DeletePerformanceReview(PerformanceReview performanceReview)
+        public void DeletePerformanceReview(User user, PerformanceReview review)
         {
             try
             {
+                if (!HasPermission(user, "ManagePerformance"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete performance reviews.");
+
                 using (var context = new HumanResourcesDbContext())
                 {
                     using var transaction = context.Database.BeginTransaction();
 
-                    // Find the role with its related permissions
-                    var existingPerformanceReview = context.PerformanceReviews.Find(performanceReview.ReviewId);
-
-                    if (existingPerformanceReview != null)
+                    var existing = context.PerformanceReviews.Include(r => r.PerformanceScores).FirstOrDefault(r => r.ReviewId == review.ReviewId);
+                    if (existing != null)
                     {
-                        context.PerformanceScores.RemoveRange(existingPerformanceReview.PerformanceScores);
-
-                        context.PerformanceReviews.Remove(existingPerformanceReview);
-
+                        context.PerformanceScores.RemoveRange(existing.PerformanceScores);
+                        context.PerformanceReviews.Remove(existing);
                         context.SaveChanges();
                         transaction.Commit();
+
+                        LogOperation(user, "Delete", nameof(PerformanceReview), existing.ReviewId, existing, null);
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting performance review: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                LogError(user, "DeletePerformanceReview", ex);
             }
         }
 
         // PayrollItems Delete Operations
-        public void DeletePayrollItem(PayrollItem payrollItem)
+        public void DeletePayrollItem(User user, PayrollItem item)
         {
-            var existingPayrollItem = _context.PayrollItems.Find(payrollItem.PayrollItemId);
-            if (existingPayrollItem != null)
+            try
             {
-                _context.PayrollItems.Remove(existingPayrollItem);
-                _context.SaveChanges();
+                if (!HasPermission(user, "ProcessPayroll"))
+                    throw new UnauthorizedAccessException("You do not have permission to delete payroll items.");
+
+                var existing = _context.PayrollItems.Find(item.PayrollItemId);
+                if (existing != null)
+                {
+                    _context.PayrollItems.Remove(existing);
+                    _context.SaveChanges();
+                    LogOperation(user, "Delete", nameof(PayrollItem), existing.PayrollItemId, existing, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError(user, "DeletePayrollItem", ex);
             }
         }
     }

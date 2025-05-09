@@ -18,15 +18,15 @@ namespace HumanRecourcesApp.ViewModels
         private readonly HumanResourcesDB _context;
         private readonly User user;
         [ObservableProperty] private bool isEditMode;
-        [ObservableProperty] private string formTitle;
-        [ObservableProperty] private string departmentName;
-        [ObservableProperty] private string description;
+        [ObservableProperty] private string formTitle = string.Empty;
+        [ObservableProperty] private string departmentName = string.Empty;
+        [ObservableProperty] private string description = string.Empty;
         private DateTime? _createdAt;
-        [ObservableProperty] private EmployeeDisplayModel selectedManager;
-        [ObservableProperty] private ObservableCollection<Position> positions;
-        private Position _selectedPosition;
-        [ObservableProperty] private string validationMessage;
-        [ObservableProperty] private ObservableCollection<EmployeeDisplayModel> managers;
+        [ObservableProperty] private EmployeeDisplayModel selectedManager = new EmployeeDisplayModel();
+        [ObservableProperty] private ObservableCollection<Position> positions = new ObservableCollection<Position>();
+        private Position _selectedPosition = new Position();
+        [ObservableProperty] private string validationMessage = string.Empty;
+        [ObservableProperty] private ObservableCollection<EmployeeDisplayModel> managers = new ObservableCollection<EmployeeDisplayModel>();
 
         // Properties
 
@@ -69,18 +69,21 @@ namespace HumanRecourcesApp.ViewModels
                         if(IsEditMode && Department.ManagerId != null)
                         {
                             var currentManager = _context.GetEmployeeById(Department.ManagerId.Value);
-                            Managers.Add(new EmployeeDisplayModel
+                            if (currentManager != null)
                             {
-                                EmployeeId = currentManager.EmployeeId,
-                                FirstName = currentManager.FirstName,
-                                LastName = currentManager.LastName,
-                                Position = currentManager.Position
-                            });
-                            SelectedManager = Managers.FirstOrDefault(m => m.EmployeeId == Department.ManagerId) ?? new EmployeeDisplayModel();
+                                Managers.Add(new EmployeeDisplayModel
+                                {
+                                    EmployeeId = currentManager.EmployeeId,
+                                    FirstName = currentManager.FirstName,
+                                    LastName = currentManager.LastName,
+                                    Position = currentManager.Position
+                                });
+                                SelectedManager = Managers.FirstOrDefault(m => m.EmployeeId == Department.ManagerId) ?? new EmployeeDisplayModel();
+                            }
                         }
                         else
                         {
-                            SelectedManager = null;
+                            SelectedManager = new EmployeeDisplayModel();
                         }
                         
                     }
@@ -105,6 +108,7 @@ namespace HumanRecourcesApp.ViewModels
             {
                 CreatedAt = DateTime.Now
             };
+            SelectedManager = new EmployeeDisplayModel();
             IsEditMode = false;
 
             FormTitle = "Add New Department";
@@ -154,11 +158,11 @@ namespace HumanRecourcesApp.ViewModels
                 
 
                 // Set selected manager if in edit mode
-                if (IsEditMode && Department.ManagerId.HasValue)
+                if (IsEditMode && Department.Manager != null)
                 {
-                    int positionId = _context.GetDepartmentById(Department.DepartmentId).Manager.PositionId;
-                    SelectedPosition = Positions.FirstOrDefault(p => p.PositionId == positionId);
-                    SelectedManager = Managers.FirstOrDefault(m => m.EmployeeId == Department.ManagerId);
+                    int positionId = Department.Manager.PositionId;
+                    SelectedPosition = Positions.FirstOrDefault(p => p.PositionId == positionId) ?? new Position();
+                    SelectedManager = Managers.FirstOrDefault(m => m.EmployeeId == Department.ManagerId) ?? new EmployeeDisplayModel();
                 }
             }
             catch (Exception ex)
@@ -168,7 +172,7 @@ namespace HumanRecourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private void Save(object parameter)
+        private void SaveDepartment(object parameter)
         {
             if (ValidateForm())
             {
@@ -177,7 +181,7 @@ namespace HumanRecourcesApp.ViewModels
 
                     if (IsEditMode)
                     {
-                        _context.UpdateDepartment(Department);
+                        _context.UpdateDepartment(user, Department);
                     }
                     else
                     {
@@ -194,7 +198,7 @@ namespace HumanRecourcesApp.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    ValidationMessage = $"Error saving department: {ex.Message}";
+                    _context.LogError(user, "SaveDepartment", ex);
                 }
             }
         }

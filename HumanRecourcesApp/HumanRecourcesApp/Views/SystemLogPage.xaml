@@ -256,16 +256,20 @@
                                                 ToolTip="View Old Values"
                                                 Command="{Binding DataContext.ShowOldValuesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}"
+                                                Background="#E03E3E"
+                                                Width="Auto"
                                                 Visibility="{Binding OldValues, Converter={StaticResource StringToVisibilityConverter}}">
-                                                <Image Source="{Binding DataContext.NewValueIcon, RelativeSource={RelativeSource AncestorType=DataGrid}}" Width="16" Height="16"/>
+                                            <TextBlock Text="Old" FontSize="12" Foreground="White"/>
                                         </Button>
                                         <Button Style="{StaticResource ActionButtonStyle}"
                                                 Grid.Column="1"
                                                 ToolTip="View New Values"
                                                 Command="{Binding DataContext.ShowNewValuesCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
                                                 CommandParameter="{Binding}"
+                                                Background="#4CAF50"
+                                                Width="Auto"
                                                 Visibility="{Binding NewValues, Converter={StaticResource StringToVisibilityConverter}}">
-                                                <Image Source="{Binding DataContext.OldValueIcon, RelativeSource={RelativeSource AncestorType=DataGrid}}" Width="16" Height="16"/>
+                                            <TextBlock Text="New" FontSize="12" Foreground="White"/>
                                         </Button>
                                     </Grid>
                                 </StackPanel>

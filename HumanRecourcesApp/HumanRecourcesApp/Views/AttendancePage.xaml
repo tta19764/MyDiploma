@@ -275,7 +275,7 @@
                     Margin="0,10,20, 0" 
                     HorizontalAlignment="Right">
                     <Button Content="Save" 
-                        Command="{Binding SaveNewCommand}" 
+                        Command="{Binding SaveNewAttendanceCommand}" 
                         Style="{StaticResource SaveButton}"
                         Width="100" 
                         Margin="0,0,10,0"

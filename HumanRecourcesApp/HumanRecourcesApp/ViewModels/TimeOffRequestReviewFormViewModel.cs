@@ -12,6 +12,7 @@ namespace HumanResourcesApp.ViewModels
     public partial class TimeOffRequestReviewFormViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
+        private readonly User user;
         public TimeOffRequest Request { get; }
 
         [ObservableProperty] private string formTitle;
@@ -22,12 +23,13 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private int totalDays;
         [ObservableProperty] private string reason;
         [ObservableProperty] private string comments;
-        [ObservableProperty] private string validationMessage;
-        public event EventHandler<bool> RequestClose;
+        [ObservableProperty] private string validationMessage = string.Empty;
+        public event EventHandler<bool>? RequestClose;
 
-        public TimeOffRequestReviewFormViewModel(TimeOffRequest request)
+        public TimeOffRequestReviewFormViewModel(User _user, TimeOffRequest request)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             Request = request;
 
             FormTitle = $"Review Request #{request.TimeOffRequestId}";
@@ -36,8 +38,8 @@ namespace HumanResourcesApp.ViewModels
             StartDate = request.StartDate.ToDateTime(TimeOnly.MinValue);
             EndDate = request.EndDate.ToDateTime(TimeOnly.MinValue);
             TotalDays = request.TotalDays;
-            Reason = request.Reason;
-            Comments = request.Comments;
+            Reason = request.Reason ?? string.Empty;
+            Comments = request.Comments ?? string.Empty;
         }
 
         [RelayCommand]
@@ -55,10 +57,10 @@ namespace HumanResourcesApp.ViewModels
                 {
                     balance.UsedDays = (balance.UsedDays ?? 0) + Request.TotalDays;
                     balance.RemainingDays = balance.TotalDays - (balance.UsedDays ?? 0);
-                    _context.UpdateTimeOffBalance(balance);
+                    _context.UpdateTimeOffBalance(user, balance);
                 }
 
-                _context.UpdateTimeOffRequest(Request);
+                _context.UpdateTimeOffRequest(user, Request);
 
                 CloseWindow(true);
             }
@@ -78,7 +80,7 @@ namespace HumanResourcesApp.ViewModels
                 Request.ApprovedBy = 1; // TODO: Replace with logged-in approver ID
                 Request.Comments = Comments;
 
-                _context.UpdateTimeOffRequest(Request);
+                _context.UpdateTimeOffRequest(user, Request);
 
                 CloseWindow(true);
             }

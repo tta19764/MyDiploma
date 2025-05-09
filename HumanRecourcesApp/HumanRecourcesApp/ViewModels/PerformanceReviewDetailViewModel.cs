@@ -14,33 +14,20 @@ namespace HumanResourcesApp.ViewModels
     public partial class PerformanceReviewDetailViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
+        private readonly User user;
+        [ObservableProperty] private PerformanceReview review;
+        [ObservableProperty] private string employeeName;
+        [ObservableProperty] private string reviewerName;
+        [ObservableProperty] private ObservableCollection<PerformanceScore> performanceScores;
+        [ObservableProperty] private List<string> reviewStatuses = new List<string>();
+        [ObservableProperty] private string selectedStatus = string.Empty;
+        [ObservableProperty] private bool showAcknowledgement;
+        public event EventHandler<bool>? RequestClose;
 
-        [ObservableProperty]
-        private PerformanceReview review;
-
-        [ObservableProperty]
-        private string employeeName;
-
-        [ObservableProperty]
-        private string reviewerName;
-
-        [ObservableProperty]
-        private ObservableCollection<PerformanceScore> performanceScores;
-
-        [ObservableProperty]
-        private List<string> reviewStatuses;
-
-        [ObservableProperty]
-        private string selectedStatus;
-
-        [ObservableProperty]
-        private bool showAcknowledgement;
-
-        public event EventHandler<bool> RequestClose;
-
-        public PerformanceReviewDetailViewModel(PerformanceReview review)
+        public PerformanceReviewDetailViewModel(User _user, PerformanceReview review)
         {
             _context = new HumanResourcesDB();
+            user = _user;
             Review = review;
             EmployeeName = $"{review.Employee.FirstName} {review.Employee.LastName}";
             ReviewerName = $"{review.Reviewer.FirstName} {review.Reviewer.LastName}";
@@ -111,11 +98,11 @@ namespace HumanResourcesApp.ViewModels
                     {
                       existingScore.Score = score.Score;
                       existingScore.Comments = score.Comments;
-                      _context.UpdatePerformanceScore(existingScore);
+                      _context.UpdatePerformanceScore(user, existingScore);
                     }
                 }
 
-                _context.UpdatePerformanceReview(Review);
+                _context.UpdatePerformanceReview(user, Review);
 
                 MessageBox.Show("Performance review updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 RequestClose?.Invoke(this, true);
@@ -136,7 +123,7 @@ namespace HumanResourcesApp.ViewModels
                 Review.AcknowledgementDate = DateTime.Now;
 
                 // Update in database
-                _context.UpdatePerformanceReview(Review);
+                _context.UpdatePerformanceReview(user, Review);
 
                 MessageBox.Show("Performance review acknowledged successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 RequestClose?.Invoke(this, true);

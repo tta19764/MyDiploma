@@ -198,7 +198,7 @@
                                         </Button>
                                         <Button Content="Delete"
                             Style="{StaticResource DeleteButton}"
-                            Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                            Command="{Binding DataContext.DeleteTimeOffRequestCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                             CommandParameter="{Binding}" />
                                     </StackPanel>
                                 </Grid>

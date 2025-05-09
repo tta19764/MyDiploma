@@ -1,16 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HumanResourcesApp.Models;
-using HumanResourcesApp.Views;
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System.Windows.Controls;
 using HumanResourcesApp.DBClasses;
 
 namespace HumanRecourcesApp.ViewModels
@@ -22,57 +15,23 @@ namespace HumanRecourcesApp.ViewModels
         private readonly int employeeId;
         private readonly int payPeriodId;
 
-        [ObservableProperty]
-        private int payrollId;
-
-        [ObservableProperty]
-        private string employeeName;
-
-        [ObservableProperty]
-        private string position;
-
-        [ObservableProperty]
-        private decimal baseSalary;
-
-        [ObservableProperty]
-        private string payPeriodName;
-
-        [ObservableProperty]
-        private DateOnly startDate;
-
-        [ObservableProperty]
-        private DateOnly endDate;
-
-        [ObservableProperty]
-        private DateOnly paymentDate;
-
-        [ObservableProperty]
-        private string status;
-
-        [ObservableProperty]
-        private decimal grossSalary;
-
-        [ObservableProperty]
-        private decimal totalDeductions;
-
-        [ObservableProperty]
-        private decimal netSalary;
-
-        [ObservableProperty]
-        private ObservableCollection<PayrollDetailDisplayModel> earningsItems;
-
-        [ObservableProperty]
-        private ObservableCollection<PayrollDetailDisplayModel> benefitsAndAllowancesItems;
-
-        [ObservableProperty]
-        private ObservableCollection<PayrollDetailDisplayModel> deductionItems;
-
-        [ObservableProperty]
-        private ObservableCollection<PayrollDetailDisplayModel> taxItems;
-
-        [ObservableProperty]
-        private bool isActive;
-
+        [ObservableProperty] private int payrollId;
+        [ObservableProperty] private string employeeName = string.Empty;
+        [ObservableProperty] private string position = string.Empty;
+        [ObservableProperty] private decimal baseSalary;
+        [ObservableProperty] private string payPeriodName = string.Empty;
+        [ObservableProperty] private DateOnly startDate;
+        [ObservableProperty] private DateOnly endDate;
+        [ObservableProperty] private DateOnly paymentDate;
+        [ObservableProperty] private string status = string.Empty;
+        [ObservableProperty] private decimal grossSalary;
+        [ObservableProperty] private decimal totalDeductions;
+        [ObservableProperty] private decimal netSalary;
+        [ObservableProperty] private ObservableCollection<PayrollDetailDisplayModel> earningsItems;
+        [ObservableProperty] private ObservableCollection<PayrollDetailDisplayModel> benefitsAndAllowancesItems;
+        [ObservableProperty] private ObservableCollection<PayrollDetailDisplayModel> deductionItems;
+        [ObservableProperty] private ObservableCollection<PayrollDetailDisplayModel> taxItems;
+        [ObservableProperty] private bool isActive;
         private readonly User user;
 
         public PayrollDetailsWindowViewModel(User _user, int payPeriodId, int employeeId)
@@ -117,7 +76,7 @@ namespace HumanRecourcesApp.ViewModels
             }
         }
 
-        private void PayrollItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        private void PayrollItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName == nameof(PayrollDetailDisplayModel.Amount))
             {
@@ -147,9 +106,10 @@ namespace HumanRecourcesApp.ViewModels
                 return;
             }
 
-            if(_context.GetEmployeePayrollByEmployeeAndPayPeriodId(payPeriodId, employeeId) != null)
+            EmployeePayroll? employeePayroll = _context.GetEmployeePayrollByEmployeeAndPayPeriodId(payPeriodId, employeeId);
+            if (employeePayroll != null)
             {
-                PayrollId = _context.GetEmployeePayrollByEmployeeAndPayPeriodId(payPeriodId, employeeId).PayrollId;
+                PayrollId = employeePayroll.PayrollId;
             }
             else
             {
@@ -391,7 +351,7 @@ namespace HumanRecourcesApp.ViewModels
                         existingPayroll.GrossSalary = GrossSalary;
                         existingPayroll.TotalDeductions = TotalDeductions;
                         existingPayroll.NetSalary = NetSalary;
-                        _context.UpdateEmployeePayroll(existingPayroll);
+                        _context.UpdateEmployeePayroll(user, existingPayroll);
                     }
                 }
                 else
@@ -438,7 +398,7 @@ namespace HumanRecourcesApp.ViewModels
                             PayrollItemId = detail.PayrollItemId,
                             Amount = detail.Amount
                         };
-                        _context.UpdatePayrollDetail(existingDetail);
+                        _context.UpdatePayrollDetail(user, existingDetail);
                     }
                 }
 

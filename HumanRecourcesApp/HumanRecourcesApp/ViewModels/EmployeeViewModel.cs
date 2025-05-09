@@ -63,47 +63,55 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void EditEmployee(Employee employee)
         {
-            if (employee == null) return;
-
-            var formWindow = new Views.EmployeeFormWindow(user);
-            var viewModel = new EmployeeFormViewModel(user, employee);
-            formWindow.DataContext = viewModel;
-
-            viewModel.RequestClose += (sender, result) =>
+            try
             {
-                formWindow.DialogResult = result;
-                formWindow.Close();
-            };
+                if (employee == null) throw new Exception("Employee not found.");
 
-            bool? result = formWindow.ShowDialog();
-            if (result == true)
+                var formWindow = new Views.EmployeeFormWindow(user);
+                var viewModel = new EmployeeFormViewModel(user, employee);
+                formWindow.DataContext = viewModel;
+
+                viewModel.RequestClose += (sender, result) =>
+                {
+                    formWindow.DialogResult = result;
+                    formWindow.Close();
+                };
+
+                bool? result = formWindow.ShowDialog();
+                if (result == true)
+                {
+                    LoadEmployees(); // Reload employees after editing
+                }
+            }
+            catch (Exception ex)
             {
-                LoadEmployees(); // Reload employees after editing
+                _context.LogError(user, "EditEmployee", ex);
             }
         }
 
         [RelayCommand]
         private void DeleteEmployee(Employee employee)
         {
-            if (employee == null) return;
-
-            var result = MessageBox.Show(
-                $"Are you sure you want to delete {employee.FirstName} {employee.LastName}?",
-                "Confirm Delete",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            
+            try
             {
-                try
+                if (employee == null) throw new Exception("Employee not found.");
+
+                var result = MessageBox.Show(
+                    $"Are you sure you want to delete {employee.FirstName} {employee.LastName}?",
+                    "Confirm Delete",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
                 {
-                    _context.DeleteEmployee(employee);
+                    _context.DeleteEmployee(user, employee);
                     Employees.Remove(employee);
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error deleting employee: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+            }
+            catch (Exception ex)
+            {
+                _context.LogError(user, "DeleteEmployee", ex);
             }
         }
     }

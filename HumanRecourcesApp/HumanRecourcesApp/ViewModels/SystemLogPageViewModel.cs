@@ -24,32 +24,6 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private bool isLoading;
         private readonly User user;
 
-        public ImageSource NewValueIcon
-        {
-            get
-            {
-                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "new.ico");
-
-                if (!File.Exists(path))
-                    return new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "no-document.ico"), UriKind.Absolute));
-
-                return new BitmapImage(new Uri(path, UriKind.Absolute));
-            }
-        }
-
-        public ImageSource OldValueIcon
-        {
-            get
-            {
-                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "old.ico");
-
-                if (!File.Exists(path))
-                    return new BitmapImage(new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "no-document.ico"), UriKind.Absolute));
-
-                return new BitmapImage(new Uri(path, UriKind.Absolute));
-            }
-        }
-
         public ImageSource DetailsIcon
         {
             get

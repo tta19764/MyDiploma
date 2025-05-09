@@ -124,7 +124,7 @@
                     Height="30" 
                     Background="#2E75B6"
                     Foreground="White"
-                    Command="{Binding SaveCommand}"
+                    Command="{Binding SaveDepartmentCommand}"
                     CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"/>
         </StackPanel>
     </Grid>

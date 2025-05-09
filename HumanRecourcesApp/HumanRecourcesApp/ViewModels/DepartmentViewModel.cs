@@ -157,7 +157,7 @@ namespace HumanRecourcesApp.ViewModels
 
                     if (departmentEntity != null)
                     {
-                        _context.DeleteDepartment(departmentEntity);
+                        _context.DeleteDepartment(user, departmentEntity);
 
                         // Refresh the grid  
                         LoadDepartments();
@@ -172,9 +172,7 @@ namespace HumanRecourcesApp.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    StatusMessage = $"Error deleting department: {ex.Message}";
-                    MessageBox.Show($"Error deleting department: {ex.Message}",
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    _context.LogError(user, "DeleteDepartment", ex);
                 }
             }
         }

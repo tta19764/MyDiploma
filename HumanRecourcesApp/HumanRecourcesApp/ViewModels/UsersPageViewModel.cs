@@ -72,12 +72,12 @@ namespace HumanResourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private void Edit(User user)
+        private void EditUser(User user)
         {
-            if (user == null) return;
-
             try
             {
+                if (user == null) throw new Exception("User was not found");
+
                 var window = new UserForm(_user, user);
 
                 if (window.ShowDialog() == true)
@@ -87,17 +87,16 @@ namespace HumanResourcesApp.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error editing user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(_user, "EditUser", ex);
             }
         }
 
         [RelayCommand]
-        private void Delete(User user)
-        {
-            if (user == null) return;
-
+        private void DeleteUser(User user)
+        { 
             try
             {
+                if (user == null) throw new Exception("User was not found");
                 // Confirm deletion with the user
                 var result = MessageBox.Show($"Are you sure you want to delete user {user.Username}?",
                     "Confirm Deletion", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
@@ -108,7 +107,7 @@ namespace HumanResourcesApp.ViewModels
                     var userToDelete = _context.GetUserById(user.UserId);
                     if (userToDelete != null)
                     {
-                        _context.DeleteUser(userToDelete);
+                        _context.DeleteUser(_user, userToDelete);
 
                         // Remove the user from the collection
                         Users.Remove(user);
@@ -118,7 +117,7 @@ namespace HumanResourcesApp.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting user: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(_user, "DeleteUser", ex);
             }
         }
     }

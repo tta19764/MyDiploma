@@ -28,7 +28,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private bool isAddingNew;
         [ObservableProperty] private string checkInTimeText = "08:00";
         [ObservableProperty] private string checkOutTimeText = "17:00";
-        private EmployeeDisplayModel selectedEmployee;
+        private EmployeeDisplayModel selectedEmployee = new EmployeeDisplayModel();
         public EmployeeDisplayModel SelectedEmployee
         {
             get => selectedEmployee;
@@ -48,7 +48,7 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        private Department selectedDepartment;
+        private Department selectedDepartment = new Department();
         public Department SelectedDepartment
         {
             get => selectedDepartment;
@@ -59,7 +59,7 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        private string status;
+        private string status = string.Empty;
         public string Status
         {
             get => status;
@@ -79,7 +79,7 @@ namespace HumanResourcesApp.ViewModels
             _context = new HumanResourcesDB();
             _user = _context.GetUserById(user.UserId) ?? new User();
             IsEmployee = _user.Employee != null;
-            if (IsEmployee && _context.GetAllAttendances().Where(a => a.EmployeeId == _user.Employee.EmployeeId && a.CheckInTime.HasValue && a.CheckInTime.Value.Date == DateTime.Now.Date).Count() > _context.GetAllAttendances().Where(a => a.EmployeeId == _user.Employee.EmployeeId && a.CheckOutTime.HasValue && a.CheckOutTime.Value.Date == DateTime.Now.Date).Count())
+            if (IsEmployee && _user.Employee != null && _context.GetAllAttendances().Where(a => a.EmployeeId == _user.Employee.EmployeeId && a.CheckInTime.HasValue && a.CheckInTime.Value.Date == DateTime.Now.Date).Count() > _context.GetAllAttendances().Where(a => a.EmployeeId == _user.Employee.EmployeeId && a.CheckOutTime.HasValue && a.CheckOutTime.Value.Date == DateTime.Now.Date).Count())
             {
                 CheckAction = "Check Out";
             }
@@ -197,7 +197,7 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void Check()
         {
-            if(CheckAction == "Check In")
+            if(CheckAction == "Check In" && _user.Employee != null)
             {
                 var attendance = new Attendance
                 {
@@ -210,7 +210,7 @@ namespace HumanResourcesApp.ViewModels
                 LoadAttendances();
                 CheckAction = "Check Out";
             }
-            else
+            else if(CheckAction == "Check Out" && _user.Employee != null)
             {
                 var attendance = _context.GetAttendancesByEmployeeId(_user.Employee.EmployeeId)
                     .Where(at => at.CheckInTime.HasValue && at.CheckInTime.Value.Date == DateTime.Now.Date && !at.CheckOutTime.HasValue).FirstOrDefault();
@@ -218,7 +218,8 @@ namespace HumanResourcesApp.ViewModels
                 {
                     attendance.CheckOutTime = DateTime.Now;
                     attendance.Status = "Checked Out";
-                    attendance.WorkHours = CalculateWorkHours((DateTime)attendance.CheckInTime, (DateTime)attendance.CheckOutTime);
+                    DateTime checkInTime = attendance.CheckInTime ?? DateTime.Now;
+                    attendance.WorkHours = CalculateWorkHours(checkInTime, (DateTime)attendance.CheckOutTime);
                     _context.CheckOut(_user, attendance);
                     LoadAttendances();
                     CheckAction = "Check In";
@@ -230,29 +231,33 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void AddAttendance()
         {
-            IsAddingNew = true;
-            string employeeName = string.Empty;
-            if (_user.Employee != null)
+            try
             {
-                SelectedDepartment = Departments.FirstOrDefault(d => d.DepartmentId == _user.Employee.DepartmentId);
-                employeeName = $"{_user.Employee.FirstName} {_user.Employee.LastName}";
-                SelectedEmployee = Employees.FirstOrDefault(e => e.EmployeeId == _user.Employee.EmployeeId);
+                IsAddingNew = true;
+                string employeeName = string.Empty;
+                if (_user.Employee != null)
+                {
+                    var employeeDepartment = Departments.FirstOrDefault(d => d.DepartmentId == _user.Employee.DepartmentId);
+                    if (employeeDepartment != null) SelectedDepartment = employeeDepartment;
+                    employeeName = $"{_user.Employee.FirstName} {_user.Employee.LastName}";
+                    var attendanceEmployee = Employees.FirstOrDefault(e => e.EmployeeId == _user.Employee.EmployeeId);
+                    if (attendanceEmployee != null) SelectedEmployee = attendanceEmployee;
+                }
+
+                NewAttendance = new AttendanceDisplayModel
+                {
+                    EmployeeFullName = employeeName,
+                    EmployeeId = _user.Employee?.EmployeeId ?? 0,
+                    Notes = string.Empty,
+                    Status = string.Empty,
+                    WorkHours = 0,
+                    CreatedAt = DateTime.Now
+                };
             }
-            else
+            catch (Exception ex)
             {
-                SelectedDepartment = null;
-                SelectedEmployee = null;
+                _context.LogError(_user, "AddAttendance", ex);
             }
-            
-            SelectedAttendance = null;
-            NewAttendance = new AttendanceDisplayModel
-            {
-                EmployeeFullName = employeeName,
-                Notes = string.Empty,
-                Status = string.Empty,
-                WorkHours = 0,
-                CreatedAt = DateTime.Now
-            };
         }
 
         private decimal CalculateWorkHours(DateTime checkIn, DateTime checkOut)
@@ -262,7 +267,7 @@ namespace HumanResourcesApp.ViewModels
         }   
 
         [RelayCommand]
-        private void SaveNew()
+        private void SaveNewAttendance()
         {
             if (IsAddingNew)
             {
@@ -314,8 +319,7 @@ namespace HumanResourcesApp.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"Error processing date/time values: {ex.Message}");
-                    return;
+                    _context.LogError(_user, "SaveNewAttendance", ex);
                 }
 
                 // Create and save the attendance record
@@ -332,9 +336,16 @@ namespace HumanResourcesApp.ViewModels
 
                 if (_context.IsAttendanceTimeValid(attendance))
                 {
-                    _context.AddAttendance(_user, attendance);
-                    LoadAttendances();
-                    IsAddingNew = false;
+                    try
+                    {
+                        _context.AddAttendance(_user, attendance);
+                        LoadAttendances();
+                        IsAddingNew = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        _context.LogError(_user, "SaveNewAttendance", ex);
+                    }
                 }
                 else
                 {
@@ -361,15 +372,28 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void DeleteAttendance(AttendanceDisplayModel attendance)
         {
-            if (attendance == null) return;
-
-            var result = MessageBox.Show($"Are you sure you want to delete attendance info for '{SelectedAttendance.EmployeeFullName}'?",
-                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            try
             {
-                _context.DeleteAttendance(_context.GetAttendanceById(SelectedAttendance.AttendanceId));
-                Attendances.Remove(attendance);
+                var attendanceToDelete = _context.GetAttendanceById(attendance.AttendanceId);
+                if (attendanceToDelete == null)
+                {
+                    throw new Exception("Attendance record not found.");
+                }
+                else
+                {
+                    var result = MessageBox.Show($"Are you sure you want to delete attendance info for '{attendance.EmployeeFullName}'?",
+                    "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        _context.DeleteAttendance(_user, attendanceToDelete);
+                        Attendances.Remove(attendance);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _context.LogError(_user, "DeleteAttendance", ex);
             }
         }
     }

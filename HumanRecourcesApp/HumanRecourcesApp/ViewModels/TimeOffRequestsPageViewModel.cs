@@ -33,6 +33,7 @@ namespace HumanResourcesApp.ViewModels
         {
             _context = new HumanResourcesDB();
             TimeOffRequests = new ObservableCollection<TimeOffRequestDisplayModel>();
+            TimeOffRequestsView = new ListCollectionView(TimeOffRequests);
             user = _user;
             LoadRequests();
         }
@@ -91,7 +92,7 @@ namespace HumanResourcesApp.ViewModels
             }
 
             var formWindow = new TimeOffRequestReviewFormWindow();
-            var viewModel = new TimeOffRequestReviewFormViewModel(request);
+            var viewModel = new TimeOffRequestReviewFormViewModel(user, request);
             formWindow.DataContext = viewModel;
 
             viewModel.RequestClose += (sender, result) =>
@@ -111,26 +112,48 @@ namespace HumanResourcesApp.ViewModels
         private void Edit(TimeOffRequestDisplayModel requestDisplay)
         {
             var request = _context.GetTimeOffRequestById(requestDisplay.TimeOffRequestId);
-
-            if (request != null)
+            try
             {
-                var form = new TimeOffRequestFormWindow(user, request);
-                if (form.ShowDialog() == true)
-                    LoadRequests();
+                if (request != null)
+                {
+                    var form = new TimeOffRequestFormWindow(user, request);
+                    if (form.ShowDialog() == true)
+                        LoadRequests();
+                }
+                else
+                {
+                    throw new Exception("Request not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _context.LogError(user, "EditTimeOffRequest", ex);
             }
         }
 
         [RelayCommand]
-        private void Delete(TimeOffRequestDisplayModel requestDisplay)
+        private void DeleteTimeOffRequest(TimeOffRequestDisplayModel requestDisplay)
         {
             if (MessageBox.Show("Are you sure you want to delete this request?", "Confirm", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 var request = _context.GetTimeOffRequestById(requestDisplay.TimeOffRequestId);
-                if (request != null)
+                try
                 {
-                    _context.DeleteTimeOffRequest(request);
-                    LoadRequests();
+                    if (request != null)
+                    {
+                        _context.DeleteTimeOffRequest(user, request);
+                        LoadRequests();
+                    }
+                    else
+                    {
+                        throw new Exception("Request not found.");
+                    }
                 }
+                catch (Exception ex)
+                {
+                    _context.LogError(user, "DeleteTimeOffRequest", ex);
+                }
+                
             }
         }
 

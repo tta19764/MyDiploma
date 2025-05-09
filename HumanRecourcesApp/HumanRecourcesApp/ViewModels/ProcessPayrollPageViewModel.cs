@@ -21,19 +21,11 @@ namespace HumanResourcesApp.ViewModels
         private readonly MainWindowViewModel _window;
         private readonly User user;
 
-        [ObservableProperty]
-        private ObservableCollection<PayPeriodDisplayModel> payPeriods;
-
-        [ObservableProperty]
-        private ObservableCollection<PayrollEmployeeDisplayModel> payrollEmployees;
-
-        [ObservableProperty]
-        private ObservableCollection<PayrollEmployeeDisplayModel> displayPayrollEmployees;
-
-        [ObservableProperty]
-        private PayrollEmployeeDisplayModel selectedEmployee;
-
-        private PayPeriodDisplayModel selectedPayPeriod;
+        [ObservableProperty] private ObservableCollection<PayPeriodDisplayModel> payPeriods;
+        [ObservableProperty] private ObservableCollection<PayrollEmployeeDisplayModel> payrollEmployees;
+        [ObservableProperty] private ObservableCollection<PayrollEmployeeDisplayModel> displayPayrollEmployees;
+        [ObservableProperty] private PayrollEmployeeDisplayModel selectedEmployee = new PayrollEmployeeDisplayModel();
+        private PayPeriodDisplayModel selectedPayPeriod = new PayPeriodDisplayModel();
         public PayPeriodDisplayModel SelectedPayPeriod
         {
             get => selectedPayPeriod;
@@ -44,25 +36,13 @@ namespace HumanResourcesApp.ViewModels
             }
         }
 
-        [ObservableProperty]
-        private string selectedPayPeriodStatus;
-
-        [ObservableProperty]
-        private DateOnly selectedPayPeriodStartDate;
-
-        [ObservableProperty]
-        private DateOnly selectedPayPeriodEndDate;
-
-        [ObservableProperty]
-        private DateOnly selectedPayPeriodPaymentDate;
-
-        [ObservableProperty]
-        private bool isPayPeriodSelected;
-
-        [ObservableProperty]
-        private bool canProcessPayroll;
-
-        private string searchText;
+        [ObservableProperty] private string selectedPayPeriodStatus = string.Empty;
+        [ObservableProperty] private DateOnly selectedPayPeriodStartDate;
+        [ObservableProperty] private DateOnly selectedPayPeriodEndDate;
+        [ObservableProperty] private DateOnly selectedPayPeriodPaymentDate;
+        [ObservableProperty] private bool isPayPeriodSelected;
+        [ObservableProperty] private bool canProcessPayroll;
+        private string searchText = string.Empty;
         public string SearchText
         {
             get => searchText;
@@ -110,7 +90,7 @@ namespace HumanResourcesApp.ViewModels
             var openPeriod = PayPeriods.FirstOrDefault(p => p.Status == "Active");
             if (openPeriod != null)
             {
-                SelectedPayPeriod = PayPeriods.FirstOrDefault(pp => pp.PayPeriodId == openPeriod.PayPeriodId);
+                SelectedPayPeriod = PayPeriods.FirstOrDefault(pp => pp.PayPeriodId == openPeriod.PayPeriodId) ?? new PayPeriodDisplayModel();
             }
             else if (PayPeriods.Any())
             {
@@ -299,16 +279,16 @@ namespace HumanResourcesApp.ViewModels
                             ProcessedDate = DateTime.Now
                         };
 
-                        _context.UpdateEmployeePayroll(existingPayroll);
+                        _context.UpdateEmployeePayroll(user, existingPayroll);
                     }
                 }
 
                 // Update pay period status
                 if(payPeriod.Status == "Active")
                 {
-                    PayPeriod curPayPeriod = _context.GetPayPeriodById(payPeriod.PayPeriodId);
+                    PayPeriod curPayPeriod = _context.GetPayPeriodById(payPeriod.PayPeriodId) ?? new PayPeriod();
                     curPayPeriod.Status = "Completed";
-                    _context.UpdatePayPeriod(curPayPeriod);
+                    _context.UpdatePayPeriod(user, curPayPeriod);
                 }
 
                 // Reload data

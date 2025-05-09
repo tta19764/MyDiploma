@@ -101,7 +101,7 @@ namespace HumanResourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private void Save()
+        private void SaveTimeOffType()
         {
             try
             {
@@ -171,8 +171,8 @@ namespace HumanResourcesApp.ViewModels
 
                         var period = SelectedTimeOffType.DefaultPeriod;
 
-                        _context.UpdateTimeOffType(existingType);
-                        _context.UpdateTimeOffBalancePeriod(existingType, SelectedTimeOffType.DefaultPeriod);
+                        _context.UpdateTimeOffType(user, existingType);
+                        _context.UpdateTimeOffBalancePeriod(user, existingType, SelectedTimeOffType.DefaultPeriod);
 
                         // Update in collection
                         var existingItem = TimeOffTypes.FirstOrDefault(t => t.TimeOffTypeId == existingType.TimeOffTypeId);
@@ -200,11 +200,7 @@ namespace HumanResourcesApp.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                            ex.Message,
-                            "Error saving time off type",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Warning);
+                _context.LogError(user, "SaveTimeOffType", ex);
             }
         }
 
@@ -263,7 +259,7 @@ namespace HumanResourcesApp.ViewModels
                         return;
                     }
 
-                    _context.DeleteTimeOffType(typeToDelete);
+                    _context.DeleteTimeOffType(user, typeToDelete);
 
                     // Remove from collection
                     TimeOffTypes.Remove(timeOffType);
@@ -277,11 +273,7 @@ namespace HumanResourcesApp.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                        ex.Message,
-                        "Error deleting time off type",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
+                _context.LogError(user, "DeleteTimeOffType", ex);
             }
             finally
             {

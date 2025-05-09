@@ -85,32 +85,39 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void EditPayPeriod(PayPeriodDisplayModel payPeriod)
         {
-            if (payPeriod == null) return;
-
-            // Check if the payPeriod is editable (Draft status)
-            if (!payPeriod.IsEditable)
+            try
             {
-                MessageBox.Show("Only pay periods with 'Draft' status can be edited.",
-                    "Cannot Edit", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
+                if (payPeriod == null) throw new Exception("Pay period not found.");
+
+                // Check if the payPeriod is editable (Draft status)
+                if (!payPeriod.IsEditable)
+                {
+                    MessageBox.Show("Only pay periods with 'Draft' status can be edited.",
+                        "Cannot Edit", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                IsAddingOrEditing = true;
+                IsEditing = true;
+                FormTitle = "Edit Pay Period";
+
+                // Create a copy for editing
+                NewPayPeriod = new PayPeriodDisplayModel
+                {
+                    PayPeriodId = payPeriod.PayPeriodId,
+                    StartDate = payPeriod.StartDate,
+                    EndDate = payPeriod.EndDate,
+                    PaymentDate = payPeriod.PaymentDate,
+                    Status = payPeriod.Status,
+                    CreatedAt = payPeriod.CreatedAt,
+                    PayrollCount = payPeriod.PayrollCount,
+                    IsEditable = payPeriod.IsEditable
+                };
             }
-
-            IsAddingOrEditing = true;
-            IsEditing = true;
-            FormTitle = "Edit Pay Period";
-
-            // Create a copy for editing
-            NewPayPeriod = new PayPeriodDisplayModel
+            catch (Exception ex)
             {
-                PayPeriodId = payPeriod.PayPeriodId,
-                StartDate = payPeriod.StartDate,
-                EndDate = payPeriod.EndDate,
-                PaymentDate = payPeriod.PaymentDate,
-                Status = payPeriod.Status,
-                CreatedAt = payPeriod.CreatedAt,
-                PayrollCount = payPeriod.PayrollCount,
-                IsEditable = payPeriod.IsEditable
-            };
+                _context.LogError(user, "EditPayPeriod", ex);
+            }
         }
 
         [RelayCommand]
@@ -156,7 +163,7 @@ namespace HumanResourcesApp.ViewModels
                         return;
                     }
 
-                    _context.UpdatePayPeriod(payPeriod);
+                    _context.UpdatePayPeriod(user, payPeriod);
                 }
                 else
                 {
@@ -176,7 +183,7 @@ namespace HumanResourcesApp.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving pay period: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(user, "SavePayPeriod", ex);
             }
         }
 
@@ -190,50 +197,56 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void DeletePayPeriod(PayPeriodDisplayModel payPeriod)
         {
-            if (payPeriod == null) return;
-
-            // Check if the payPeriod is editable (Draft status)
-            if (!payPeriod.IsDeletable)
-            {
-                MessageBox.Show("Only pay periods that don't have 'Completed' status can be deleted.",
-                    "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
-            // Check if period has associated payrolls
-            if (payPeriod.PayrollCount > 0)
-            {
-                var result = MessageBox.Show(
-                    $"This pay period has {payPeriod.PayrollCount} associated payroll records. Deleting it will also delete all related payroll data.\n\nDo you want to continue?",
-                    "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-                if (result == MessageBoxResult.No)
-                {
-                    return;
-                }
-            }
-            else
-            {
-                var result = MessageBox.Show($"Are you sure you want to delete this pay period?",
-                    "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (result == MessageBoxResult.No)
-                {
-                    return;
-                }
-            }
-
             try
             {
+                if (payPeriod == null) throw new Exception("Pay period not found.");
+
+                // Check if the payPeriod is editable (Draft status)
+                if (!payPeriod.IsDeletable)
+                {
+                    MessageBox.Show("Only pay periods that don't have 'Completed' status can be deleted.",
+                        "Cannot Delete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                // Check if period has associated payrolls
+                if (payPeriod.PayrollCount > 0)
+                {
+                    var result = MessageBox.Show(
+                        $"This pay period has {payPeriod.PayrollCount} associated payroll records. Deleting it will also delete all related payroll data.\n\nDo you want to     continue?",
+                        "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    var result = MessageBox.Show($"Are you sure you want to delete this pay period?",
+                        "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.No)
+                    {
+                        return;
+                    }
+                }
+
+            
                 PayPeriod? payPeriodToDelete = _context.GetPayPeriodById(payPeriod.PayPeriodId);
                 if (payPeriodToDelete != null)
                 {
-                    _context.DeletePayPeriod(payPeriodToDelete);
+                    _context.DeletePayPeriod(user, payPeriodToDelete);
                     PayPeriods.Remove(payPeriod);
-                }            }
+                }
+                else
+                {
+                    throw new Exception("Pay period not found.");
+                }
+            }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting pay period: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(user, "DeletePayPeriod", ex);
             }
         }
     }

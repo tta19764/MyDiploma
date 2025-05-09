@@ -101,10 +101,7 @@ namespace HumanResourcesApp.ViewModels
             // Get employee distribution by department
             var employeeDistribution = new List<(int DepartmentId, string DepartmentName, int Count)>();
 
-            if (user.Role.RoleName == "Admin")
-            {
-                // For admin, get distribution across all departments
-                employeeDistribution = _context.GetAllActiveEmployees()
+            employeeDistribution = _context.GetAllActiveEmployees()
                     .GroupBy(e => e.DepartmentId)
                     .Select(g => (
                         DepartmentId: g.Key,
@@ -112,20 +109,6 @@ namespace HumanResourcesApp.ViewModels
                         Count: g.Count()
                     ))
                     .ToList();
-            }
-            else if (user?.Employee != null)
-            {
-                // For department managers, only show their department
-                employeeDistribution = _context.GetAllActiveEmployees()
-                    .Where(e => e.DepartmentId == user.Employee.DepartmentId)
-                    .GroupBy(e => e.DepartmentId)
-                    .Select(g => (
-                        DepartmentId: g.Key,
-                        DepartmentName: departments.FirstOrDefault(d => d.DepartmentId == g.Key)?.DepartmentName ?? "Unknown",
-                        Count: g.Count()
-                    ))
-                    .ToList();
-            }
 
             // Calculate total for percentages
             int totalEmployees = employeeDistribution.Sum(d => d.Count);
@@ -244,7 +227,7 @@ namespace HumanResourcesApp.ViewModels
                 previousMonthCount = _context.GetAllActiveEmployees()
                 .Where(e => user.Employee.DepartmentId == e.DepartmentId && e.HireDate < DateOnly.FromDateTime(DateTime.Now.AddMonths(-1))).Count();
 
-                currentMonthCount = _context.GetAllActiveEmployees().Count();
+                currentMonthCount = _context.GetAllActiveEmployees().Where(e => user.Employee.DepartmentId == e.DepartmentId).Count();
             }
 
 

@@ -154,11 +154,11 @@
                                                Margin="10,0,0,0">
                                         <Button Content="Edit"
                                                 Style="{StaticResource EditButton}"
-                                                Command="{Binding DataContext.EditCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                Command="{Binding DataContext.EditRoleCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                 CommandParameter="{Binding}"/>
                                         <Button Content="Delete"
                                                 Style="{StaticResource DeleteButton}"
-                                                Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                Command="{Binding DataContext.DeleteRoleCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                 CommandParameter="{Binding}" />
                                     </StackPanel>
                                 </Grid>

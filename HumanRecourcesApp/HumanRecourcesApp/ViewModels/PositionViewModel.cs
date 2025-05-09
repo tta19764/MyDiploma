@@ -82,7 +82,7 @@ namespace HumanResourcesApp.ViewModels
 
                     if(_context.IsUniquePositionTitle(positionToUpdate))
                     {
-                        _context.UpdatePosition(positionToUpdate);
+                        _context.UpdatePosition(user, positionToUpdate);
                     }
                     else
                     {
@@ -163,34 +163,54 @@ namespace HumanResourcesApp.ViewModels
         }
 
         [RelayCommand]
-        private void Edit(PositionDisplayModel position)
+        private void EditPosition(PositionDisplayModel position)
         {
-            if (position == null) return;
+            try
+            {
+                if (position == null) throw new Exception("Position not found.");
 
-            // Store the selected position and enter edit mode
-            SelectedPosition = position;
-            SelectedPosition.IsEdditing = true;
+                // Store the selected position and enter edit mode
+                SelectedPosition = position;
+                SelectedPosition.IsEdditing = true;
+            }
+            catch (Exception ex)
+            {
+                _context.LogError(user, "EditPosition", ex);
+            }
         }
 
         [RelayCommand]
-        private void Delete(PositionDisplayModel position)
+        private void DeletePosition(PositionDisplayModel position)
         {
-            if (position == null) return;
-
-            // Check if the position is in use
-            if (_context.IsPositionUsedInEmployees(position.PositionId))
+            try
             {
-                MessageBox.Show("Cannot delete this position as it is currently in use.");
-                return;
+                var positionToDelete = _context.GetPositionById(position.PositionId);
+                if (positionToDelete == null)
+                {
+                    throw new Exception("Position not found.");
+                }
+                else
+                {
+                    // Check if the position is in use
+                    if (_context.IsPositionUsedInEmployees(positionToDelete.PositionId))
+                    {
+                        MessageBox.Show("Cannot delete this position as it is currently in use.");
+                        return;
+                    }
+
+                    var result = MessageBox.Show($"Are you sure you want to delete position '{positionToDelete.PositionTitle}'?",
+                        "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                    if (result == MessageBoxResult.Yes)
+                    {
+                        _context.DeletePosition(user, positionToDelete);
+                        Positions.Remove(position);
+                    }
+                }
             }
-
-            var result = MessageBox.Show($"Are you sure you want to delete position '{position.PositionTitle}'?",
-                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            catch (Exception ex)
             {
-                _context.DeletePosition(new Position { PositionId = position.PositionId });
-                Positions.Remove(position);
+                _context.LogError(user, "DeletePosition", ex);
             }
         }
     }
