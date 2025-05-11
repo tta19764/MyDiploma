@@ -228,6 +228,7 @@
                             <lvc:PieChart Grid.Row="0"
                                 Series="{Binding DepartmentSeries}"
                                 LegendLocation="None"
+                                MinHeight="200"
                                 InnerRadius="0"
                                 Margin="0,0,0,10"
                                 DataTooltip="{x:Null}">
@@ -280,7 +281,8 @@
                         Padding="20" 
                         Margin="10,0,0,0"
                         BorderBrush="#EEEEEE"
-                        BorderThickness="1">
+                        BorderThickness="1"
+                        Visibility="{Binding HasAnyQuickActionPermission, Converter={StaticResource BoolToVisConverter}}">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -288,18 +290,10 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="49*"/>
-                                <ColumnDefinition Width="400*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Grid.Column="0" 
-                                       Text="Quick Actions" 
-                                       FontWeight="SemiBold" 
-                                       FontSize="16" Grid.ColumnSpan="2"/>
-                        </Grid>
+                        <TextBlock Grid.Row="0" 
+                                   Text="Quick Actions" 
+                                   FontWeight="SemiBold" 
+                                   FontSize="16"/>
 
                         <UniformGrid Grid.Row="1" 
                                      Rows="2" 
@@ -312,7 +306,8 @@
                                     Background="#F8F9FA" 
                                     BorderThickness="1" 
                                     BorderBrush="#EEEEEE" 
-                                    Command="{Binding AddEmployeeCommand}">
+                                    Command="{Binding AddEmployeeCommand}"
+                                    Visibility="{Binding CanAddEmployee, Converter={StaticResource BoolToVisConverter}}">
                                 <StackPanel>
                                     <TextBlock Text="👤" 
                                                FontSize="20" 
@@ -330,7 +325,8 @@
                                     Background="#F8F9FA" 
                                     BorderThickness="1" 
                                     BorderBrush="#EEEEEE" 
-                                    Command="{Binding ApproveTimeOffCommand}">
+                                    Command="{Binding ApproveTimeOffCommand}"
+                                    Visibility="{Binding CanApproveTimeOff, Converter={StaticResource BoolToVisConverter}}">
                                 <StackPanel>
                                     <TextBlock Text="📅" 
                                                FontSize="20" 
@@ -348,7 +344,8 @@
                                     Background="#F8F9FA" 
                                     BorderThickness="1" 
                                     BorderBrush="#EEEEEE" 
-                                    Command="{Binding ScheduleReviewCommand}">
+                                    Command="{Binding ScheduleReviewCommand}"
+                                    Visibility="{Binding CanScheduleReview, Converter={StaticResource BoolToVisConverter}}">
                                 <StackPanel>
                                     <TextBlock Text="📝" 
                                                FontSize="20" 
@@ -366,7 +363,8 @@
                                     Background="#F8F9FA" 
                                     BorderThickness="1" 
                                     BorderBrush="#EEEEEE" 
-                                    Command="{Binding ProcessPayrollCommand}">
+                                    Command="{Binding ProcessPayrollCommand}"
+                                    Visibility="{Binding CanProcessPayroll, Converter={StaticResource BoolToVisConverter}}">
                                 <StackPanel>
                                     <TextBlock Text="💰" 
                                                FontSize="20" 

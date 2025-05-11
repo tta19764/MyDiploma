@@ -4,51 +4,21 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:HumanResourcesApp.Controls"
-             x:Name="Root"
              mc:Ignorable="d" 
-             Height="45"
-             Margin="3,2">
+             d:DesignHeight="40" d:DesignWidth="220">
 
-    <UserControl.Resources>
-        <!-- Base Button Style -->
-        <Style x:Key="NavButtonBaseStyle" TargetType="Button">
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Border" 
-                                CornerRadius="3"
-                                Background="{TemplateBinding Background}"
-                                BorderThickness="0">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                             Margin="{TemplateBinding Padding}"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#2c3e50" TargetName="Border"/>
-                                <Setter Property="Cursor" Value="Hand"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#1a2530" TargetName="Border"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Padding" Value="10,0"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="#DDDDDD"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0"/>
-        </Style>
-    </UserControl.Resources>
-
-    <Button x:Name="MainButton"
-            Style="{StaticResource NavButtonBaseStyle}"
-            Command="{Binding ElementName=Root, Path=Command}"
-            CommandParameter="{Binding ElementName=Root, Path=CommandParameter}">
-        <TextBlock Text="{Binding ElementName=Root, Path=Text}" 
+    <Button x:Name="MainButton" 
+            Height="40" 
+            Padding="15,0" 
+            HorizontalContentAlignment="Left" 
+            VerticalContentAlignment="Center"
+            BorderThickness="0"
+            Background="Transparent"
+            Foreground="#DDDDDD"
+            Cursor="Hand"
+            Command="{Binding Command, RelativeSource={RelativeSource AncestorType=UserControl}}"
+            CommandParameter="{Binding CommandParameter, RelativeSource={RelativeSource AncestorType=UserControl}}">
+        <TextBlock Text="{Binding Text, RelativeSource={RelativeSource AncestorType=UserControl}}"
                    TextTrimming="CharacterEllipsis"/>
     </Button>
 </UserControl>

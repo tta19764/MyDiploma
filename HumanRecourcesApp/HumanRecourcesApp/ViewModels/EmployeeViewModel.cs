@@ -17,11 +17,17 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private ObservableCollection<Employee> employees;
         private readonly User user;
         [ObservableProperty] private Employee selectedEmployee;
+        [ObservableProperty] private bool canCreateEmployees = false;
+        [ObservableProperty] private bool canEditEmployees = false;
+        [ObservableProperty] private bool canDeleteEmployees = false;
 
         public EmployeeViewModel(User _user)
         {
             _context = new HumanResourcesDB();
             user = _user;
+            CanCreateEmployees = _context.HasPermission(user, "CreateEmployees");
+            canEditEmployees = _context.HasPermission(user, "EditEmployees");
+            canDeleteEmployees = _context.HasPermission(user, "DeleteEmployees");
             SelectedEmployee = new Employee();
             Employees = new ObservableCollection<Employee>();
             LoadEmployees();

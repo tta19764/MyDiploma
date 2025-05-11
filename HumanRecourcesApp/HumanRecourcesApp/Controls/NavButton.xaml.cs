@@ -12,9 +12,10 @@ namespace HumanResourcesApp.Controls
         {
             InitializeComponent();
             UpdateButtonStyle();
-        }
 
-        #region DependencyProperties
+            // Register for loaded event to check permissions after the control has been fully initialized
+            this.Loaded += UserControl_Loaded;
+        }
 
         // Text Property
         public static readonly DependencyProperty TextProperty =
@@ -39,7 +40,7 @@ namespace HumanResourcesApp.Controls
 
         private static void OnIsActiveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is NavButton control) // Use pattern matching to avoid null check and cast explicitly  
+            if (d is NavButton control)
             {
                 control.UpdateButtonStyle();
             }
@@ -65,7 +66,43 @@ namespace HumanResourcesApp.Controls
             set { SetValue(CommandParameterProperty, value); }
         }
 
-        #endregion
+        // RequiredPermission Property
+        public static readonly DependencyProperty RequiredPermissionProperty =
+            DependencyProperty.Register("RequiredPermission", typeof(string), typeof(NavButton),
+                new PropertyMetadata(string.Empty, OnRequiredPermissionChanged));
+
+        public string RequiredPermission
+        {
+            get { return (string)GetValue(RequiredPermissionProperty); }
+            set { SetValue(RequiredPermissionProperty, value); }
+        }
+
+        private static void OnRequiredPermissionChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is NavButton control)
+            {
+                control.CheckPermissions();
+            }
+        }
+
+        // PermissionSource Property
+        public static readonly DependencyProperty PermissionSourceProperty =
+            DependencyProperty.Register("PermissionSource", typeof(IPermissionContext), typeof(NavButton),
+                new PropertyMetadata(null, OnPermissionSourceChanged));
+
+        public IPermissionContext PermissionSource
+        {
+            get { return (IPermissionContext)GetValue(PermissionSourceProperty); }
+            set { SetValue(PermissionSourceProperty, value); }
+        }
+
+        private static void OnPermissionSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is NavButton control)
+            {
+                control.CheckPermissions();
+            }
+        }
 
         // Updates the button styling based on active state
         private void UpdateButtonStyle()
@@ -85,6 +122,34 @@ namespace HumanResourcesApp.Controls
                     MainButton.FontWeight = FontWeights.Normal;
                 }
             }
+        }
+
+        // Check if the user has the required permission
+        private void CheckPermissions()
+        {
+            // If no permission is required, always show the button
+            if (string.IsNullOrEmpty(RequiredPermission))
+            {
+                this.Visibility = Visibility.Visible;
+                return;
+            }
+
+            // If no permission source is provided, hide the button
+            if (PermissionSource == null)
+            {
+                this.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            // Check if user has access
+            bool hasAccess = PermissionSource.UserHasAccess(RequiredPermission);
+            this.Visibility = hasAccess ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // Update permissions when loaded
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            CheckPermissions();
         }
     }
 }

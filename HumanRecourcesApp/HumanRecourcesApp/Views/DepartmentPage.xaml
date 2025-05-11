@@ -6,10 +6,15 @@
       xmlns:local="clr-namespace:HumanResourcesApp.Views"
       xmlns:vm="clr-namespace:HumanResourcesApp.ViewModels"
       xmlns:controls="clr-namespace:HumanResourcesApp.Controls"
+      xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
       mc:Ignorable="d" 
       d:DesignHeight="600" d:DesignWidth="800"
       Title="Department Management">
 
+    <Page.Resources>
+        <classes:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+    </Page.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -35,7 +40,8 @@
                         DockPanel.Dock="Right"
                         ButtonContent="Add New Department"
                         ButtonCommand="{Binding AddDepartmentCommand}"
-                        ButtonPadding="12,8"/>
+                        ButtonPadding="12,8"
+                        Visibility="{Binding CanManageDepartments, Converter={StaticResource BoolToVisConverter}}"/>
             </Grid>
         </Border>
 
@@ -110,7 +116,8 @@
                                     <Button Content="Edit" 
                                             Width="60" 
                                             Margin="5,0" 
-                                            Padding="8,3" 
+                                            Padding="8,3"
+                                            Visibility="{Binding DataContext.CanManageDepartments, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Converter={StaticResource BoolToVisConverter}}"
                                             Command="{Binding DataContext.EditDepartmentCommand, 
                                                      RelativeSource={RelativeSource AncestorType=Page}}"
                                             CommandParameter="{Binding}"/>
@@ -119,6 +126,7 @@
                                             Margin="5,0" 
                                             Padding="8,3"
                                             Background="#FFCDD2"
+                                            Visibility="{Binding DataContext.CanManageDepartments, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}, Converter={StaticResource BoolToVisConverter}}"
                                             Command="{Binding DataContext.DeleteDepartmentCommand,
                                                      RelativeSource={RelativeSource AncestorType=Page}}"
                                             CommandParameter="{Binding}"/>

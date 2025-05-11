@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -25,10 +26,14 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private ObservableCollection<AttendanceDisplayModel> attendances;
         [ObservableProperty] private AttendanceDisplayModel selectedAttendance;
         [ObservableProperty] private AttendanceDisplayModel newAttendance;
-        [ObservableProperty] private bool isAddingNew;
+        [ObservableProperty] private bool isAddingNewOrEditing = false;
+        [ObservableProperty] private bool isEditing = false;
         [ObservableProperty] private string checkInTimeText = "08:00";
         [ObservableProperty] private string checkOutTimeText = "17:00";
         private EmployeeDisplayModel selectedEmployee = new EmployeeDisplayModel();
+        [ObservableProperty] private List<string?> statuses = new List<string?>() { "Checked In", "Checked Out", "On Leave", "Absent", "Late" };
+
+        [ObservableProperty] private bool canManageAttendances = false;
         public EmployeeDisplayModel SelectedEmployee
         {
             get => selectedEmployee;
@@ -102,6 +107,8 @@ namespace HumanResourcesApp.ViewModels
             SelectedEmployee = new EmployeeDisplayModel();
             SelectedDepartment = new Department();
             Status = string.Empty;
+
+            CanManageAttendances = _context.HasPermission(_user, "ManageAttendance");
 
             // Load data
             LoadAttendances();
@@ -233,7 +240,11 @@ namespace HumanResourcesApp.ViewModels
         {
             try
             {
-                IsAddingNew = true;
+                IsAddingNewOrEditing = true;
+
+                CheckInTimeText = "08:00";
+                CheckOutTimeText = "17:00";
+
                 string employeeName = string.Empty;
                 if (_user.Employee != null)
                 {
@@ -249,7 +260,6 @@ namespace HumanResourcesApp.ViewModels
                     EmployeeFullName = employeeName,
                     EmployeeId = _user.Employee?.EmployeeId ?? 0,
                     Notes = string.Empty,
-                    Status = string.Empty,
                     WorkHours = 0,
                     CreatedAt = DateTime.Now
                 };
@@ -257,6 +267,61 @@ namespace HumanResourcesApp.ViewModels
             catch (Exception ex)
             {
                 _context.LogError(_user, "AddAttendance", ex);
+            }
+        }
+
+        [RelayCommand]
+        private void EditAttendance(AttendanceDisplayModel attendance)
+        {
+
+            try
+            {
+                var attendanceToEdit = _context.GetAttendanceById(attendance.AttendanceId);
+                if (attendance == null || attendanceToEdit == null) throw new Exception("Attendance record not found.");
+
+                IsAddingNewOrEditing = true;
+                IsEditing = true;
+
+                // Load the department for this employee
+                if (attendanceToEdit.Employee != null && attendanceToEdit.Employee.DepartmentId > 0)
+                {
+                    var employeeDepartment = Departments.FirstOrDefault(d => d.DepartmentId == attendanceToEdit.Employee.DepartmentId);
+                    if (employeeDepartment != null) SelectedDepartment = employeeDepartment;
+                }
+
+                // Set selected employee
+                var attendanceEmployee = Employees.FirstOrDefault(e => e.EmployeeId == attendanceToEdit.EmployeeId);
+                if (attendanceEmployee != null) SelectedEmployee = attendanceEmployee;
+
+                // Create a copy for editing
+                NewAttendance = new AttendanceDisplayModel
+                {
+                    AttendanceId = attendanceToEdit.AttendanceId,
+                    EmployeeId = attendanceToEdit.EmployeeId,
+                    EmployeeFullName = $"{attendanceToEdit.Employee?.FirstName} {attendanceToEdit.Employee?.LastName}",
+                    CheckInTime = attendanceToEdit.CheckInTime,
+                    CheckOutTime = attendanceToEdit.CheckOutTime,
+                    Status = Statuses.FirstOrDefault(s => s == attendanceToEdit.Status),
+                    Notes = attendanceToEdit.Notes,
+                    WorkHours = attendanceToEdit.WorkHours,
+                    Employee = attendanceToEdit.Employee ?? new Employee(),
+                    CreatedAt = attendanceToEdit.CreatedAt
+                };
+
+                // Set time text fields for the form
+                if (attendanceToEdit.CheckInTime.HasValue)
+                {
+                    CheckInTimeText = attendanceToEdit.CheckInTime.Value.ToString("HH:mm");
+                }
+
+                if (attendanceToEdit.CheckOutTime.HasValue)
+                {
+                    CheckOutTimeText = attendanceToEdit.CheckOutTime.Value.ToString("HH:mm");
+                }
+            }
+            catch (Exception ex)
+            {
+                _context.LogError(_user, "EditAttendance", ex);
             }
         }
 
@@ -269,7 +334,7 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void SaveNewAttendance()
         {
-            if (IsAddingNew)
+            if (IsAddingNewOrEditing)
             {
                 // Validate employee selection
                 if (NewAttendance.Employee == null)
@@ -334,13 +399,27 @@ namespace HumanResourcesApp.ViewModels
                     CreatedAt = NewAttendance.CreatedAt
                 };
 
-                if (_context.IsAttendanceTimeValid(attendance))
+                if (IsEditing)
+                {
+                    attendance.AttendanceId = NewAttendance.AttendanceId;
+                }
+
+
+                    if (_context.IsAttendanceTimeValid(attendance))
                 {
                     try
                     {
-                        _context.AddAttendance(_user, attendance);
+                        if (IsEditing)
+                        {
+                            _context.UpdateAttendance(_user, attendance);
+                        }
+                        else
+                        {
+                            _context.AddAttendance(_user, attendance);
+                        }
                         LoadAttendances();
-                        IsAddingNew = false;
+                        IsAddingNewOrEditing = false;
+                        IsEditing = false;
                     }
                     catch (Exception ex)
                     {
@@ -362,9 +441,10 @@ namespace HumanResourcesApp.ViewModels
         [RelayCommand]
         private void Cancel()
         {
-            if (IsAddingNew)
+            if (IsAddingNewOrEditing)
             {
-                IsAddingNew = false;
+                IsEditing = false;
+                IsAddingNewOrEditing = false;
                 NewAttendance = new AttendanceDisplayModel();
             }
         }

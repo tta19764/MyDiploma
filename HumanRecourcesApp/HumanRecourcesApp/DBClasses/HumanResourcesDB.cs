@@ -24,7 +24,7 @@ namespace HumanResourcesApp.DBClasses
             _context = new HumanResourcesDbContext();
         }
 
-        private bool HasPermission(User user, string permissionName)
+        public bool HasPermission(User user, string permissionName)
         {
             return user.Role.RolePermissions.Any(rp => rp.Permission.PermissionName == permissionName);
         }
@@ -357,7 +357,7 @@ namespace HumanResourcesApp.DBClasses
             // Query for any overlapping attendance records for this employee
             var overlappingAttendances = _context.Attendances
                 .AsNoTracking()
-                .Where(a => a.EmployeeId == attendance.EmployeeId)
+                .Where(a => a.EmployeeId == attendance.EmployeeId && attendance.AttendanceId != a.AttendanceId)
                 // Exclude the current attendance record if we're updating an existing one
                 .Where(a =>
                     (attendance.CheckInTime >= a.CheckInTime && attendance.CheckInTime < a.CheckOutTime) ||

@@ -16,17 +16,15 @@ namespace HumanResourcesApp.ViewModels
         private readonly HumanResourcesDB _context;
         private readonly User user;
         [ObservableProperty] private ObservableCollection<EmployeeDisplayModel> employees;
-        [ObservableProperty] private EmployeeDisplayModel selectedEmployee;
-        [ObservableProperty] private EmployeeDisplayModel selectedReviewer;
-        [ObservableProperty] private string reviewPeriod;
+        [ObservableProperty] private EmployeeDisplayModel selectedEmployee = new EmployeeDisplayModel();
+        [ObservableProperty] private EmployeeDisplayModel selectedReviewer = new EmployeeDisplayModel();
+        [ObservableProperty] private string reviewPeriod = string.Empty;
         [ObservableProperty] private DateTime reviewDate;
         [ObservableProperty] private decimal overallRating = 3.0m;
-        [ObservableProperty] private string comments;
-        [ObservableProperty] private ObservableCollection<PerformanceCriteriaDisplayModel> performanceCriteria;
+        [ObservableProperty] private string comments = string.Empty;
+        [ObservableProperty] private ObservableCollection<PerformanceCriteriaDisplayModel> performanceCriteria = new ObservableCollection<PerformanceCriteriaDisplayModel>();
         [ObservableProperty] private List<string> reviewStatuses;
         [ObservableProperty] private string selectedStatus;
-
-        public event EventHandler<bool>? RequestClose;
 
         public PerformanceReviewFormViewModel(User _user)
         {
@@ -64,8 +62,8 @@ namespace HumanResourcesApp.ViewModels
                 {
                     CriteriaId = c.CriteriaId,
                     CriteriaName = c.CriteriaName,
-                    Description = c.Description,
-                    Category = c.Category,
+                    Description = c.Description ?? string.Empty,
+                    Category = c.Category ?? string.Empty,
                     WeightPercentage = c.WeightPercentage ?? 0,
                     Score = 3.0m,
                     Comments = string.Empty

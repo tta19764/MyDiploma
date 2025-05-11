@@ -23,7 +23,7 @@ namespace HumanRecourcesApp.ViewModels
         [ObservableProperty] private string statusMessage = string.Empty;
         [ObservableProperty] private int totalCount;
         private readonly User user;
-
+        [ObservableProperty] private bool canManageDepartments;
 
         public Department? SelectedDepartment // Changed to nullable  
         {
@@ -42,6 +42,8 @@ namespace HumanRecourcesApp.ViewModels
             _context = new HumanResourcesDB();
             Departments = new ObservableCollection<DepartmentDisplayModel>();
             user = _user;
+
+            CanManageDepartments = _context.HasPermission(user, "SystemSettings");
 
             // Load data  
             LoadDepartments();

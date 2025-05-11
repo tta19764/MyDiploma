@@ -40,7 +40,11 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private SeriesCollection departmentSeries;
         [ObservableProperty] private ObservableCollection<DepartmentLegendItem> departmentLegendItems;
 
-        // Commands for quick action
+        [ObservableProperty] private bool canAddEmployee;
+        [ObservableProperty] private bool canApproveTimeOff;
+        [ObservableProperty] private bool canScheduleReview;
+        [ObservableProperty] private bool canProcessPayroll;
+        [ObservableProperty] private bool hasAnyQuickActionPermission;
 
         public DashboardViewModel(MainWindowViewModel mainWindowViewModel, User user)
         {
@@ -56,11 +60,25 @@ namespace HumanResourcesApp.ViewModels
             DepartmentSeries = new SeriesCollection();
             DepartmentLegendItems = new ObservableCollection<DepartmentLegendItem>();
 
+            LoadPermissions();
+
             // Load dashboard data
             LoadDashboardData();
 
             // Load department chart data
             LoadDepartmentChart();
+        }
+
+        private void LoadPermissions()
+        {
+            // Check individual permissions
+            CanAddEmployee = _context.HasPermission(user, "CreateEmployees");
+            CanApproveTimeOff = _context.HasPermission(user, "ManageLeaves");
+            CanScheduleReview = _context.HasPermission(user, "ManagePerformance");
+            CanProcessPayroll = _context.HasPermission(user, "ProcessPayroll");
+
+            // Check if user has any permissions for quick actions
+            HasAnyQuickActionPermission = CanAddEmployee || CanApproveTimeOff || CanScheduleReview || CanProcessPayroll;
         }
 
         private void LoadDashboardData()
@@ -152,7 +170,10 @@ namespace HumanResourcesApp.ViewModels
             AlertTitle = "";
             IsAlert = false;
 
-
+            if(user.Role.RoleName == "Employee")
+            {
+                return;
+            }
 
             if (user.Role.RoleName == "Admin" && _context.GetAllPerformanceReviews()
                     .Where(r => r.Status == "Pending" && r.ReviewDate <= DateOnly.FromDateTime(DateTime.Now.AddDays(14))).Any())
@@ -289,6 +310,11 @@ namespace HumanResourcesApp.ViewModels
             {
                 return 0;
             }
+            else if (!_context.HasPermission(user, "ManageLeaves"))
+            {
+                return _context.GetAllTimeOffRequests()
+                .Where(r => r.Employee.EmployeeId == user.Employee.EmployeeId && r.Status == "Pending" && r.StartDate <= DateOnly.FromDateTime(DateTime.Now.AddDays(30))).Count();
+            }
             else
             {
                 return _context.GetAllTimeOffRequests()
@@ -306,6 +332,11 @@ namespace HumanResourcesApp.ViewModels
             else if (user == null || user.Employee == null || user.Employee.Departments.Count == 0)
             {
                 return 0;
+            }
+            else if (!_context.HasPermission(user, "ManageReviews"))
+            {
+                return _context.GetAllPerformanceReviews()
+                .Where(r => r.Employee.EmployeeId == user.Employee.EmployeeId && r.Status == "Pending" && r.ReviewDate <= DateOnly.FromDateTime(DateTime.Now.AddDays(30))).Count();
             }
             else
             {

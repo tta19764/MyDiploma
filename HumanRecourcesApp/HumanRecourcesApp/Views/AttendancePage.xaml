@@ -100,26 +100,27 @@
         <!-- Header with Title and Button -->
         <Border Grid.Row="0" Background="#2E75B6" Padding="15">
             <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-            
-            <TextBlock Text="Attendances" 
+
+                <TextBlock Text="Attendances" 
                 FontSize="22" 
                 FontWeight="Bold"
                 Foreground="White" Grid.ColumnSpan="2"/>
 
                 <controls:ActionButtonControl
-                        Grid.Column="1"
-                        DockPanel.Dock="Right"
-                        ButtonContent="Add Attendance"
-                        ButtonCommand="{Binding AddAttendanceCommand}"
-                        ButtonPadding="12,8"/>
+                    Grid.Column="1"
+                    DockPanel.Dock="Right"
+                    ButtonContent="Add Attendance"
+                    ButtonCommand="{Binding AddAttendanceCommand}"
+                    ButtonPadding="12,8"
+                    Visibility="{Binding CanManageAttendances, Converter={StaticResource BoolToVisConverter}}"/>
 
                 <controls:ActionButtonControl
-                    Margin="10,0,0,0"
+                        Margin="10,0,0,0"
                         Grid.Column="2"
                         DockPanel.Dock="Right"
                         Visibility="{Binding IsEmployee, Converter={StaticResource BoolToVisConverter}}"
@@ -128,8 +129,8 @@
                         ButtonPadding="12,8"/>
             </Grid>
         </Border>
-        
-        
+
+
 
         <!-- Attendance Table -->
         <Border Grid.Row="1" Background="White" CornerRadius="8">
@@ -149,57 +150,74 @@
                       GridLinesVisibility="Horizontal"
                       HeadersVisibility="Column"
                       HorizontalGridLinesBrush="#E3E3E3"
+                      MinRowHeight="35"
                       ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
                 <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="Employee" Width="1*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid Margin="4,4">
-                                    <TextBlock Text="{Binding EmployeeFullName}" VerticalAlignment="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Check In" Width="1*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid Margin="4,4">
-                                    <TextBlock Text="{Binding CheckInTime}" VerticalAlignment="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Check Out" Width="1*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid Margin="4,4">
-                                    <TextBlock Text="{Binding CheckOutTime}" VerticalAlignment="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Status" Width="1*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid Margin="4,4">
-                                    <TextBlock Text="{Binding Status}" VerticalAlignment="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
-                    <DataGridTemplateColumn Header="Notes" Width="1*">
-                        <DataGridTemplateColumn.CellTemplate>
-                            <DataTemplate>
-                                <Grid Margin="4,4">
-                                    <TextBlock Text="{Binding Notes}" VerticalAlignment="Center"/>
-                                </Grid>
-                            </DataTemplate>
-                        </DataGridTemplateColumn.CellTemplate>
-                    </DataGridTemplateColumn>
+                    <!-- Changed to DataGridTextColumn for sorting -->
+                    <DataGridTextColumn Header="Employee" Width="1*" 
+                                        Binding="{Binding EmployeeFullName}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- Changed to DataGridTextColumn for sorting with 24-hour time format -->
+                    <DataGridTextColumn Header="Check In" Width="1*" 
+                                       Binding="{Binding CheckInTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <!-- Changed to DataGridTextColumn for sorting with 24-hour time format -->
+                    <DataGridTextColumn Header="Check Out" Width="1*" 
+                                       Binding="{Binding CheckOutTime, StringFormat='{}{0:yyyy-MM-dd HH:mm}'}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+
+                    <DataGridTextColumn Header="Status" Width="1*" 
+                    Binding="{Binding Status}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                    <DataGridTextColumn Header="Notes" Width="1*" 
+                    Binding="{Binding Notes}">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Padding" Value="10,0"/>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
                     <DataGridTemplateColumn Header="Actions" Width="auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Grid Margin="4,4">
+                                <StackPanel Orientation="Horizontal" Margin="4,4"
+                                            Visibility="{Binding DataContext.CanManageAttendances, 
+                                            RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, 
+                                            Converter={StaticResource BoolToVisConverter}}">
+                                    <Button Width="70" 
+                                        Content="Edit" 
+                                        Style="{StaticResource ActionButton}"
+                                        Height="30"
+                                        Command="{Binding DataContext.EditAttendanceCommand, 
+                                        RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
+                                        CommandParameter="{Binding}"/>
                                     <Button Width="70" 
                                         Content="Delete" 
                                         Style="{StaticResource DeleteButton}"
@@ -207,7 +225,7 @@
                                         Command="{Binding DataContext.DeleteAttendanceCommand, 
                                   RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"
                                         CommandParameter="{Binding}"/>
-                                </Grid>
+                                </StackPanel>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -217,7 +235,7 @@
 
         <!-- Add Attendance Form -->
         <Border Background="White"  Padding="20" CornerRadius="8" Margin="15 20 15 15" Grid.Row="2"
-                Visibility="{Binding IsAddingNew, Converter={StaticResource BoolToVisConverter}}">
+                Visibility="{Binding IsAddingNewOrEditing, Converter={StaticResource BoolToVisConverter}}">
             <StackPanel Orientation="Vertical" Width="450">
                 <TextBlock Text="Add Attendance" FontSize="18" FontWeight="Bold" Margin="0 0 0 10"/>
 
@@ -257,12 +275,15 @@
 
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Text="Status:" Width="120" VerticalAlignment="Center"/>
-                    <ComboBox Text="{Binding NewAttendance.Status}" Width="300">
-                        <ComboBoxItem Content="Checked In"/>
-                        <ComboBoxItem Content="Checked Out"/>
-                        <ComboBoxItem Content="Late"/>
-                        <ComboBoxItem Content="On Leave"/>
-                    </ComboBox>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="300"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox Width="300" Grid.Column="0"
+                            ItemsSource="{Binding Statuses}"
+                            SelectedItem="{Binding NewAttendance.Status}"/>
+                    </Grid>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0 5">

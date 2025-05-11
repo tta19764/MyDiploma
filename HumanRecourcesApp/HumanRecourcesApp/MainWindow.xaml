@@ -46,98 +46,118 @@
                     <controls:NavButton Text="Dashboard"
                                         IsActive="True"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="Dashboard"/>
+                                        CommandParameter="Dashboard"
+                                        RequiredPermission=""
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <!-- Employees Section -->
-                    <TextBlock Text="EMPLOYEE MANAGEMENT" 
-                               Foreground="#999999" 
-                               FontSize="11" 
-                               FontWeight="SemiBold" 
-                               Margin="15,20,15,5"/>
+                    <controls:SectionHeader Text="EMPLOYEE MANAGEMENT"
+                                       Permissions="{Binding EmployeeSectionPermissions}"
+                                       PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Employees"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="Employees"/>
+                                        CommandParameter="Employees"
+                                        RequiredPermission="ViewEmployees"
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Departments"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="Departments"/>
+                                        CommandParameter="Departments"
+                                        RequiredPermission=""
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Positions"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="Positions"/>
+                                        CommandParameter="Positions"
+                                        RequiredPermission="EditEmployees"
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <!-- Time Management Section -->
-                    <TextBlock Text="TIME MANAGEMENT" 
-                               Foreground="#999999" 
-                               FontSize="11" 
-                               FontWeight="SemiBold" 
-                               Margin="15,20,15,5"/>
+                    <controls:SectionHeader Text="TIME MANAGEMENT"
+                                       Permissions="{Binding TimeSectionPermissions}"
+                                       PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Attendance"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="Attendance"/>
+                                        CommandParameter="Attendance"
+                                        RequiredPermission=""
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Time Off Requests"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="TimeOffRequests"/>
+                                        CommandParameter="TimeOffRequests"
+                                        RequiredPermission=""
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Time Off Types"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="TimeOffTypes"/>
+                                        CommandParameter="TimeOffTypes"
+                                        RequiredPermission=""
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <!-- Performance Section -->
-                    <TextBlock Text="PERFORMANCE" 
-                               Foreground="#999999" 
-                               FontSize="11" 
-                               FontWeight="SemiBold" 
-                               Margin="15,20,15,5"/>
+                    <controls:SectionHeader Text="PERFORMANCE"
+                                       Permissions="{Binding PerformanceSectionPermissions}"
+                                       PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Reviews"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="PerformanceReviews"/>
+                                        CommandParameter="ViewPerformance"
+                                        RequiredPermission=""
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Criteria"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="PerformanceCriteria"/>
+                                        CommandParameter="PerformanceCriteria"
+                                        RequiredPermission=""
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <!-- Payroll Section -->
-                    <TextBlock Text="PAYROLL" 
-                               Foreground="#999999" 
-                               FontSize="11" 
-                               FontWeight="SemiBold" 
-                               Margin="15,20,15,5"/>
+                    <controls:SectionHeader Text="PAYROLL"
+                                       Permissions="{Binding PayrollSectionPermissions}"
+                                       PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Pay Periods"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="PayPeriods"/>
+                                        CommandParameter="PayPeriods"
+                                        RequiredPermission="ProcessPayroll"
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Process Payroll"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="ProcessPayroll"/>
+                                        CommandParameter="ProcessPayroll"
+                                        RequiredPermission="ProcessPayroll"
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Payroll Items"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="PayrollItems"/>
+                                        CommandParameter="PayrollItems"
+                                        RequiredPermission="ProcessPayroll"
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <!-- System Section -->
-                    <TextBlock Text="SYSTEM" 
-                               Foreground="#999999" 
-                               FontSize="11" 
-                               FontWeight="SemiBold" 
-                               Margin="15,20,15,5"/>
+                    <controls:SectionHeader Text="SYSTEM"
+                                       Permissions="{Binding SystemSectionPermissions}"
+                                       PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Users"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="Users"/>
+                                        CommandParameter="Users"
+                                        RequiredPermission="ManageUsers"
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Roles"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="Roles"/>
+                                        CommandParameter="Roles"
+                                        RequiredPermission="ManageRoles"
+                                        PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="System Logs"
                                         Command="{Binding NavigateCommand}" 
-                                        CommandParameter="SystemLogs"/>
+                                        CommandParameter="SystemLogs"
+                                        RequiredPermission="SystemSettings"
+                                        PermissionSource="{Binding PermissionContext}"/>
                 </StackPanel>
             </ScrollViewer>
 

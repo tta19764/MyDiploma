@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Input;
 using HumanResourcesApp.DBClasses;
@@ -9,23 +11,29 @@ using CommunityToolkit.Mvvm.Input;
 using HumanResourcesApp.Views;
 using HumanResourcesApp;
 using System.Windows;
+using HumanResourcesApp.Controls;
 
 namespace HumanRecourcesApp.ViewModels
 {
-    public partial class MainWindowViewModel : ObservableObject
+    public partial class MainWindowViewModel : ObservableObject, IPermissionContext
     {
         private readonly HumanResourcesDB _context;
         private readonly User _user;
-        [ObservableProperty]
-        private string userFullName = string.Empty;
-        [ObservableProperty]
-        private string userRoleName = string.Empty;
-        [ObservableProperty]
-        private string userInitials = string.Empty;
-        [ObservableProperty]
-        private Role userRole;
-        [ObservableProperty]
-        private Page currentPage;
+        [ObservableProperty] private string userFullName = string.Empty;
+        [ObservableProperty] private string userRoleName = string.Empty;
+        [ObservableProperty] private string userInitials = string.Empty;
+        [ObservableProperty] private Role userRole;
+        [ObservableProperty] private Page currentPage;
+
+        // Section permissions lists
+        [ObservableProperty] private List<string> employeeSectionPermissions = new List<string>();
+        [ObservableProperty] private List<string> timeSectionPermissions = new List<string>();
+        [ObservableProperty] private List<string> performanceSectionPermissions = new List<string>();
+        [ObservableProperty] private List<string> payrollSectionPermissions = new List<string>();
+        [ObservableProperty] private List<string> systemSectionPermissions = new List<string>();
+
+        // Permission context property - self-reference since we implement IPermissionContext
+        public IPermissionContext PermissionContext => this;
 
         public MainWindowViewModel(User user)
         {
@@ -59,6 +67,65 @@ namespace HumanRecourcesApp.ViewModels
                 };
                 CurrentPage = new DashboardPage(this, _user);
             }
+
+            // Initialize permission lists for each section
+            InitializePermissionLists();
+        }
+
+        // Initialize permission lists for each section
+        private void InitializePermissionLists()
+        {
+            // Employee Management section permissions
+            EmployeeSectionPermissions = new List<string>
+            {
+                "ViewEmployees",
+                "",
+                "EditEmployees"
+            };
+
+            // Time Management section permissions
+            TimeSectionPermissions = new List<string>
+            {
+                "",
+                "",
+                ""
+            };
+
+            // Performance section permissions
+            PerformanceSectionPermissions = new List<string>
+            {
+                "",
+                ""
+            };
+
+            // Payroll section permissions
+            PayrollSectionPermissions = new List<string>
+            {
+                "ProcessPayroll",
+                "ProcessPayroll",
+                "ProcessPayroll"
+            };
+
+            // System section permissions
+            SystemSectionPermissions = new List<string>
+            {
+                "ManageUsers",
+                "ManageRoles",
+                "SystemSettings"
+            };
+        }
+
+        // Implement IPermissionContext interface
+        public bool UserHasAccess(string permission)
+        {
+            // If permission is empty, access is granted
+            if (string.IsNullOrEmpty(permission))
+            {
+                return true;
+            }
+
+            // Call the existing UserHasAccess method from your context
+            return _context.HasPermission(_user, permission);
         }
 
         [RelayCommand]
@@ -68,7 +135,7 @@ namespace HumanRecourcesApp.ViewModels
 
             if (pageName == null)
             {
-                CurrentPage = new DashboardPage(this, _user); // Replace null with a default Page instance  
+                CurrentPage = new DashboardPage(this, _user);
                 return;
             }
 
@@ -110,7 +177,7 @@ namespace HumanRecourcesApp.ViewModels
                 case "PerformanceCriteria":
                     CurrentPage = new PerformanceCriteriaPage(_user);
                     break;
-                case "PerformanceReviews":
+                case "ViewPerformance":
                     CurrentPage = new PerformanceReviewsPage(_user);
                     break;
                 case "PayrollItems":
@@ -120,7 +187,7 @@ namespace HumanRecourcesApp.ViewModels
                     CurrentPage = new ProcessPayrollPage(this, _user);
                     break;
                 default:
-                    CurrentPage = new DashboardPage(this, _user); // Replace null with a default Page instance  
+                    CurrentPage = new DashboardPage(this, _user);
                     break;
             }
         }
