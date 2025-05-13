@@ -42,6 +42,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private DateOnly selectedPayPeriodPaymentDate;
         [ObservableProperty] private bool isPayPeriodSelected;
         [ObservableProperty] private bool canProcessPayroll;
+        [ObservableProperty] private bool canViewPayroll;
         private string searchText = string.Empty;
         public string SearchText
         {
@@ -58,6 +59,8 @@ namespace HumanResourcesApp.ViewModels
             _context = new HumanResourcesDB();
             _window = window;
             user = _user;
+
+            CanViewPayroll = _context.HasPermission(user, "ViewPayroll");
 
             displayPayrollEmployees = new ObservableCollection<PayrollEmployeeDisplayModel>();
             PayPeriods = new ObservableCollection<PayPeriodDisplayModel>();
@@ -115,7 +118,7 @@ namespace HumanResourcesApp.ViewModels
             SelectedPayPeriodStartDate = payPeriod.StartDate;
             SelectedPayPeriodEndDate = payPeriod.EndDate;
             SelectedPayPeriodPaymentDate = payPeriod.PaymentDate;
-            CanProcessPayroll = payPeriod.Status == "Active";
+            CanProcessPayroll = payPeriod.Status == "Active" && _context.HasPermission(user, "ProcessPayroll");
 
             LoadEmployeePayroll();
         }
@@ -128,9 +131,20 @@ namespace HumanResourcesApp.ViewModels
             var employees = _context.GetAllEmplyees();
 
             // Get existing payroll records for this period
-            var payrollRecords = _context.GetAllEmployeePayrolls()
-                .Where(p => p.PayPeriodId == SelectedPayPeriod.PayPeriodId)
-                .ToList();
+            var payrollRecords = new List<EmployeePayroll>();
+
+            if(user.Employee != null && _context.HasPermission(user, "ViewPayroll") && user.Role.RoleName != "Admin")
+            {
+                payrollRecords = _context.GetAllEmployeePayrolls()
+                    .Where(p => p.PayPeriodId == SelectedPayPeriod.PayPeriodId && p.Employee.DepartmentId == user.Employee.DepartmentId)
+                    .ToList();
+            }
+            else if (user.Role.RoleName == "Admin")
+            {
+                payrollRecords = _context.GetAllEmployeePayrolls()
+                    .Where(p => p.PayPeriodId == SelectedPayPeriod.PayPeriodId)
+                    .ToList();
+            }
 
             foreach (var employee in employees)
             {

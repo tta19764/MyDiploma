@@ -133,7 +133,8 @@
                     DockPanel.Dock="Right"
                     ButtonContent="Add Pay Period"
                     ButtonCommand="{Binding AddPayPeriodCommand}"
-                    ButtonPadding="12,8"/>
+                    ButtonPadding="12,8"
+                    Visibility="{Binding CanProcessPayroll, Converter={StaticResource BoolToVisConverter}}"/>
             </Grid>
         </Border>
 
@@ -206,7 +207,10 @@
                     <DataGridTemplateColumn Header="Actions" Width="auto">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Margin="4,4">
+                                <StackPanel Orientation="Horizontal" Margin="4,4"
+                                            Visibility="{Binding DataContext.CanProcessPayroll, 
+                                                RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}, 
+                                                Converter={StaticResource BoolToVisConverter}}">
                                     <Button Width="70" 
                                         Content="Edit" 
                                         Style="{StaticResource ActionButton}"

@@ -29,6 +29,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private string status = "Pending";
         [ObservableProperty] private string? comments;
         [ObservableProperty] private string validationMessage = string.Empty;
+        [ObservableProperty] private bool cantManageTimeOffs = true;
 
         public TimeOffRequest Request { get; }
 
@@ -43,9 +44,19 @@ namespace HumanResourcesApp.ViewModels
             SelectedTimeOffType = new TimeOffType();
             Request = new TimeOffRequest { CreatedAt = DateTime.Now };
             _isEditMode = false;
+            CantManageTimeOffs = !_context.HasPermission(user, "ManageLeaves");
+            LoadData();
+            if (user.Employee != null)
+            {
+                SelectedEmployee = Employees.FirstOrDefault(e => e.EmployeeId == user.Employee.EmployeeId) ?? new Employee();
+            }
+            else
+            {
+                ValidationMessage = "User does not have an associated employee.";
+            }
 
             FormTitle = "New Time Off Request";
-            LoadData();
+            
         }
 
         // Edit mode
@@ -61,6 +72,7 @@ namespace HumanResourcesApp.ViewModels
             TimeOffTypes = new ObservableCollection<TimeOffType>();
             SelectedEmployee = new Employee();
             SelectedTimeOffType = new TimeOffType();
+            CantManageTimeOffs = !_context.HasPermission(user, "ManageLeaves");
 
             FormTitle = $"Edit Request #{request.TimeOffRequestId}";
             
@@ -77,7 +89,7 @@ namespace HumanResourcesApp.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error initializing TimeOffRequestFormViewModel: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                _context.LogError(user, "TimeOffsConstructor", ex);
             }
         }
 

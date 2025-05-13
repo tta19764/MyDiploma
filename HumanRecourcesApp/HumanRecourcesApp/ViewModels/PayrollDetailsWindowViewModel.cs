@@ -129,7 +129,7 @@ namespace HumanRecourcesApp.ViewModels
             Status = payPeriod.Status;
 
             // Set IsActive flag based on payroll status
-            IsActive = (Status == "Active");
+            IsActive = (Status == "Active") && _context.HasPermission(user, "ProcessPayroll");
         }
 
         private void LoadOrCreatePayrollDetails()

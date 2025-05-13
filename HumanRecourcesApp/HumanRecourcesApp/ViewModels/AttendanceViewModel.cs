@@ -32,6 +32,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private string checkOutTimeText = "17:00";
         private EmployeeDisplayModel selectedEmployee = new EmployeeDisplayModel();
         [ObservableProperty] private List<string?> statuses = new List<string?>() { "Checked In", "Checked Out", "On Leave", "Absent", "Late" };
+        [ObservableProperty] private string editAddHeader = string.Empty;
 
         [ObservableProperty] private bool canManageAttendances = false;
         public EmployeeDisplayModel SelectedEmployee
@@ -127,21 +128,66 @@ namespace HumanResourcesApp.ViewModels
         private void LoadAttendances()
         {
             Attendances.Clear();
-            var attenadnceList = _context.GetAllAttendances();
-            foreach (var attendance in attenadnceList)
+            if (_user.Employee != null && !_context.HasPermission(_user, "ManageAttendance"))
             {
-                Attendances.Add(new AttendanceDisplayModel {
-                    EmployeeId = attendance.EmployeeId,
-                    AttendanceId = attendance.AttendanceId,
-                    CheckInTime = attendance.CheckInTime, 
-                    CheckOutTime = attendance.CheckOutTime, 
-                    CreatedAt = attendance.CreatedAt, 
-                    Employee = attendance.Employee, 
-                    EmployeeFullName = $"{attendance.Employee.FirstName} {attendance.Employee.LastName}", 
-                    Notes = attendance.Notes, 
-                    Status = attendance.Status,
-                    WorkHours = attendance.WorkHours
-                });
+                var attendanceList = _context.GetAttendancesByEmployeeId(_user.Employee.EmployeeId);
+                foreach (var attendance in attendanceList)
+                {
+                    Attendances.Add(new AttendanceDisplayModel
+                    {
+                        EmployeeId = attendance.EmployeeId,
+                        AttendanceId = attendance.AttendanceId,
+                        CheckInTime = attendance.CheckInTime,
+                        CheckOutTime = attendance.CheckOutTime,
+                        CreatedAt = attendance.CreatedAt,
+                        Employee = attendance.Employee,
+                        EmployeeFullName = $"{attendance.Employee.FirstName} {attendance.Employee.LastName}",
+                        Notes = attendance.Notes,
+                        Status = attendance.Status,
+                        WorkHours = attendance.WorkHours
+                    });
+                }
+                return;
+            }
+            else if(_user.Employee != null && _context.HasPermission(_user, "ManageAttendance"))
+            {
+                var attendanceList = _context.GetAllAttendances().Where(a => a.Employee.DepartmentId == _user.Employee.DepartmentId);
+                foreach (var attendance in attendanceList)
+                {
+                    Attendances.Add(new AttendanceDisplayModel
+                    {
+                        EmployeeId = attendance.EmployeeId,
+                        AttendanceId = attendance.AttendanceId,
+                        CheckInTime = attendance.CheckInTime,
+                        CheckOutTime = attendance.CheckOutTime,
+                        CreatedAt = attendance.CreatedAt,
+                        Employee = attendance.Employee,
+                        EmployeeFullName = $"{attendance.Employee.FirstName} {attendance.Employee.LastName}",
+                        Notes = attendance.Notes,
+                        Status = attendance.Status,
+                        WorkHours = attendance.WorkHours
+                    });
+                }
+            }
+            else if((!IsEmployee || _user.Role.RoleName == "Admin") && _context.HasPermission(_user, "ManageAttendance"))
+            {
+                var attenadnceList = _context.GetAllAttendances();
+                foreach (var attendance in attenadnceList)
+                {
+                    Attendances.Add(new AttendanceDisplayModel
+                    {
+                        EmployeeId = attendance.EmployeeId,
+                        AttendanceId = attendance.AttendanceId,
+                        CheckInTime = attendance.CheckInTime,
+                        CheckOutTime = attendance.CheckOutTime,
+                        CreatedAt = attendance.CreatedAt,
+                        Employee = attendance.Employee,
+                        EmployeeFullName = $"{attendance.Employee.FirstName} {attendance.Employee.LastName}",
+                        Notes = attendance.Notes,
+                        Status = attendance.Status,
+                        WorkHours = attendance.WorkHours
+                    });
+                }
             }
         }
 
@@ -240,6 +286,8 @@ namespace HumanResourcesApp.ViewModels
         {
             try
             {
+                EditAddHeader = "Add Attendance";
+
                 IsAddingNewOrEditing = true;
 
                 CheckInTimeText = "08:00";
@@ -276,6 +324,8 @@ namespace HumanResourcesApp.ViewModels
 
             try
             {
+                EditAddHeader = "Edit Attendance";
+
                 var attendanceToEdit = _context.GetAttendanceById(attendance.AttendanceId);
                 if (attendance == null || attendanceToEdit == null) throw new Exception("Attendance record not found.");
 

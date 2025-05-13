@@ -208,13 +208,15 @@
                                                 Content="Edit" 
                                                 Style="{StaticResource ActionButton}"
                                                 Height="30"
-                                                Command="{Binding DataContext.EditPositionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}" 
+                                                Command="{Binding DataContext.EditPositionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                Visibility="{Binding DataContext.CanManagePositions, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisConverter}}"
                                                 CommandParameter="{Binding}"/>
                                         <Button Width="70" 
                                                 Content="Delete" 
                                                 Style="{StaticResource DeleteButton}"
                                                 Height="30"
                                                 Command="{Binding DataContext.DeletePositionCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                                Visibility="{Binding DataContext.CanManagePositions, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisConverter}}"
                                                 CommandParameter="{Binding}"/>
                                     </StackPanel>
 
@@ -249,14 +251,15 @@
                 </Grid.RowDefinitions>
 
                 <!-- Add Button -->
-                <Button Grid.Row="0" Content="Add New Position"
-                        Style="{StaticResource AddButton}"
-                        Command="{Binding AddCommand}"
-                        HorizontalAlignment="Left"
-                        Width="180"
-                        Margin="15,5,0,15"
-                        Visibility="{Binding IsAddingNew, Converter={StaticResource InverseBoolToVisConverter}}"/>
-
+                <StackPanel Visibility="{Binding CanManagePositions, Converter={StaticResource BoolToVisConverter}}">
+                    <Button Grid.Row="0" Content="Add New Position"
+                    Style="{StaticResource AddButton}"
+                    Command="{Binding AddCommand}"
+                    HorizontalAlignment="Left"
+                    Width="180"
+                    Margin="15,5,0,15"
+                    Visibility="{Binding IsAddingNew, Converter={StaticResource InverseBoolToVisConverter}}"/>
+                </StackPanel>
                 <!-- New Position Form -->
                 <Border Grid.Row="1" 
                         Visibility="{Binding IsAddingNew, Converter={StaticResource BoolToVisConverter}}"

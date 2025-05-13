@@ -109,7 +109,8 @@
                         DockPanel.Dock="Right"
                         ButtonContent="Add New User"
                         ButtonCommand="{Binding AddUserCommand}"
-                        ButtonPadding="12,8"/>
+                        ButtonPadding="12,8"
+                        Visibility="{Binding CanManageUsers, Converter={StaticResource BoolToVisConverter}}"/>
                 </Grid>
             </Border>
 
@@ -230,7 +231,7 @@
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Grid Margin="5">
-                                    <StackPanel Orientation="Vertical" VerticalAlignment="Top">
+                                    <StackPanel Orientation="Vertical" VerticalAlignment="Top" Visibility="{Binding DataContext.CanManageUsers, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisConverter}}">
                                         <Button Width="70" 
                                                 Content="Edit" 
                                                 Style="{StaticResource ActionButton}"

@@ -11,12 +11,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using System.Xml;
 
 namespace HumanResourcesApp.ViewModels
 {
     public partial class TimeOffRequestsPageViewModel : ObservableObject
     {
         private readonly HumanResourcesDB _context;
+        [ObservableProperty] private bool canManageTimeOffs = false;
 
         private ObservableCollection<TimeOffRequestDisplayModel> timeOffRequests = new ObservableCollection<TimeOffRequestDisplayModel>();
         public ObservableCollection<TimeOffRequestDisplayModel> TimeOffRequests
@@ -35,12 +37,25 @@ namespace HumanResourcesApp.ViewModels
             TimeOffRequests = new ObservableCollection<TimeOffRequestDisplayModel>();
             TimeOffRequestsView = new ListCollectionView(TimeOffRequests);
             user = _user;
+            CanManageTimeOffs = _context.HasPermission(user, "ManageLeaves");
             LoadRequests();
         }
 
         private void LoadRequests()
         {
-            var requests = _context.GetAllTimeOffRequests();
+            var requests = new List<TimeOffRequest>();
+            if(user.Employee != null && !_context.HasPermission(user, "ViewLeaves") && !_context.HasPermission(user, "ManageLeaves") && user.Role.RoleName != "Admin")
+            {
+                requests = _context.GetAllTimeOffRequests().Where(r => r.EmployeeId == user.Employee.EmployeeId).ToList();
+            }
+            else if (user.Role.RoleName == "Admin")
+            {
+                requests = _context.GetAllTimeOffRequests().ToList();
+            }
+            else if (user.Employee != null && _context.HasPermission(user, "ViewLeaves"))
+            {
+                requests = _context.GetAllTimeOffRequests().Where(r => r.Employee.DepartmentId == user.Employee.DepartmentId).ToList();
+            }
 
             TimeOffRequests = new ObservableCollection<TimeOffRequestDisplayModel>(
                 requests.Select(r => new TimeOffRequestDisplayModel

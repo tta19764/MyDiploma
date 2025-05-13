@@ -23,12 +23,14 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private bool isEditing;
         [ObservableProperty] private string formTitle;
         private readonly User user;
+        [ObservableProperty] private bool canProcessPayroll = false;
 
         public PayPeriodViewModel(User _user)
         {
             // Initialize context
             _context = new HumanResourcesDB();
             user = _user;
+            CanProcessPayroll = _context.HasPermission(user, "ProcessPayroll");
             // Initialize collections
             PayPeriods = new ObservableCollection<PayPeriodDisplayModel>();
             NewPayPeriod = new PayPeriodDisplayModel();

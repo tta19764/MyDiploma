@@ -37,8 +37,17 @@ namespace HumanResourcesApp.ViewModels
         {
             try
             {
-                var employeeList = _context.GetAllEmplyees();
-                Employees = new ObservableCollection<Employee>(employeeList);
+                Employees.Clear();
+                if (user.Employee != null && _context.HasPermission(user, "ViewEmployees") && user.Role.RoleName != "Admin")
+                {
+                    var employeeList = _context.GetAllEmplyees().Where(e => e.DepartmentId == user.Employee.DepartmentId);
+                    Employees = new ObservableCollection<Employee>(employeeList);
+                }
+                else
+                {
+                    var employeeList = _context.GetAllEmplyees();
+                    Employees = new ObservableCollection<Employee>(employeeList);
+                }
             }
             catch (Exception ex)
             {

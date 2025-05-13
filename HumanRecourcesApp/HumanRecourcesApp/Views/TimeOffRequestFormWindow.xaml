@@ -4,12 +4,16 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:HumanResourcesApp.Views"
+        xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
         mc:Ignorable="d"
         Title="Time Off Request Form" Height="650" Width="700"
         Background="#F4F6F9" WindowStartupLocation="CenterScreen">
 
-    
-    
+    <Window.Resources>
+        <classes:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <classes:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+    </Window.Resources>
+
     <Border Background="White" CornerRadius="10" Padding="20" Margin="20" BorderBrush="#DDD" BorderThickness="1">
         <Grid>
             <Grid.RowDefinitions>
@@ -35,7 +39,8 @@
                           SelectedItem="{Binding SelectedEmployee}"
                           Margin="0,0,0,12"
                           Padding="8"
-                          Background="#FAFAFA"/>
+                          Background="#FAFAFA"
+                          IsEnabled="{Binding CantManageTimeOffs, Converter={StaticResource InverseBooleanConverter}}"/>
 
                 <!-- Time Off Type -->
                 <TextBlock Text="Time Off Type" FontWeight="Bold" Foreground="#555" Margin="0,0,0,4"/>

@@ -17,6 +17,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private ObservableCollection<RoleDisplayModel> roles;
         private readonly HumanResourcesDB _context;
         private readonly User user;
+        [ObservableProperty] private bool canManageRoles = false;
 
         public RolesPageViewModel(User _user)
         {
@@ -24,6 +25,7 @@ namespace HumanResourcesApp.ViewModels
             roles = new ObservableCollection<RoleDisplayModel>();
             user = _user;
             LoadRoles();
+            CanManageRoles = _context.HasPermission(user, "ManageRoles");
         }
 
         private void LoadRoles()

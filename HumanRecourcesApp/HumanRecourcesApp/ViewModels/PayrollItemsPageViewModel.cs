@@ -27,6 +27,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private string formTitle;
         [ObservableProperty] private string defaultValueText = "";
         private readonly User user;
+        [ObservableProperty] private bool canProcessPayroll = false;
 
         public PayrollItemsViewModel(User _user)
         {
@@ -38,6 +39,9 @@ namespace HumanResourcesApp.ViewModels
             PayrollItems = new ObservableCollection<PayrollItem>();
             NewPayrollItem = new PayrollItem();
             SelectedPayrollItem = new PayrollItem();
+
+
+            CanProcessPayroll = _context.HasPermission(user, "ProcessPayroll");
 
             // Set default form title
             FormTitle = "Add Payroll Item";

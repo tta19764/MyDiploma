@@ -17,7 +17,8 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private ObservableCollection<PositionDisplayModel> positions;
         [ObservableProperty] private PositionDisplayModel selectedPosition;
         [ObservableProperty] private PositionDisplayModel newPosition;
-        [ObservableProperty] private bool isAddingNew;
+        [ObservableProperty] private bool isAddingNew = false;
+        [ObservableProperty] private bool canManagePositions = false;
         private readonly User user;
 
         public PositionViewModel(User _user)
@@ -30,6 +31,8 @@ namespace HumanResourcesApp.ViewModels
             NewPosition = new PositionDisplayModel();
             SelectedPosition = new PositionDisplayModel();
             user = _user;
+
+            CanManagePositions = _context.HasPermission(user, "EditEmployees");
 
             // Load data
             LoadPositions();

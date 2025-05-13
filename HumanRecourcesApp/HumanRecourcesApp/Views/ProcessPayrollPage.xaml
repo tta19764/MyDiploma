@@ -277,6 +277,7 @@
                     <Button Content="Process Payroll" 
                         Command="{Binding ProcessPayrollCommand}" 
                         Style="{StaticResource ProcessButton}"
+                        Visibility="{Binding CanProcessPayroll, Converter={StaticResource BoolToVisConverter}}"
                         Width="120"
                         Margin="5,0">
                         <Button.IsEnabled>
@@ -488,6 +489,7 @@
                                         Command="{Binding DataContext.ViewPayrollDetailsCommand, 
                                             RelativeSource={RelativeSource AncestorType=DataGrid}}" 
                                         CommandParameter="{Binding}"
+                                        Visibility="{Binding DataContext.CanViewPayroll, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisConverter}}"
                                         Width="80"
                                         Margin="2"/>
                                 </StackPanel>

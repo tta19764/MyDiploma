@@ -262,7 +262,7 @@
                     <DataGridTemplateColumn Header="Actions" Width="180">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <Grid Margin="5">
+                                <Grid Margin="5" Visibility="{Binding DataContext.CanManageLeaves, RelativeSource={RelativeSource AncestorType=DataGrid}, Converter={StaticResource BoolToVisConverter}}">
                                     <!-- Normal mode buttons (Edit & Delete) -->
                                     <StackPanel Orientation="Horizontal" 
                                                 Visibility="{Binding IsEdditing, Converter={StaticResource InverseBoolToVisConverter}}">
@@ -311,13 +311,15 @@
                 </Grid.RowDefinitions>
 
                 <!-- Add Button -->
-                <Button Grid.Row="0" Content="Add New Time Off Type"
-                        Style="{StaticResource AddButton}"
-                        Command="{Binding AddTimeOffTypeCommand}"
-                        HorizontalAlignment="Left"
-                        Width="180"
-                        Margin="15,5,0,15"
-                        Visibility="{Binding IsAddingNew, Converter={StaticResource InverseBoolToVisConverter}}"/>
+                <StackPanel Visibility="{Binding CanManageLeaves, Converter={StaticResource BoolToVisConverter}}">
+                    <Button Grid.Row="0" Content="Add New Time Off Type"
+                    Style="{StaticResource AddButton}"
+                    Command="{Binding AddTimeOffTypeCommand}"
+                    HorizontalAlignment="Left"
+                    Width="180"
+                    Margin="15,5,0,15"
+                    Visibility="{Binding IsAddingNew, Converter={StaticResource InverseBoolToVisConverter}}"/>
+                </StackPanel>
 
                 <!-- New Time Off Type Form -->
                 <Border Grid.Row="1" 

@@ -18,13 +18,14 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private ObservableCollection<User> users;
         private readonly User _user;
         [ObservableProperty] private User? selectedUser;
-
+        [ObservableProperty] private bool canManageUsers = false;
 
         public UsersPageViewModel(User _user)
         {
             _context = new HumanResourcesDB();
             Users = new ObservableCollection<User>();
             this._user = _user;
+            CanManageUsers = _context.HasPermission(_user, "ManageUsers");
             // Load users when the ViewModel is constructed
             LoadUsers();
         }

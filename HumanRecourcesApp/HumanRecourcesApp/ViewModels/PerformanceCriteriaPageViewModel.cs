@@ -28,6 +28,9 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private string weightPercentageText = "";
         private readonly User user;
 
+
+        [ObservableProperty] private bool canManagePerformance = false;
+
         public PerformanceCriteriaViewModel(User _user)
         {
             // Initialize context
@@ -42,6 +45,8 @@ namespace HumanResourcesApp.ViewModels
             // Set default form title
             FormTitle = "Add Performance Criteria";
 
+
+            CanManagePerformance = _context.HasPermission(user, "ManagePerformance");
             // Load data
             LoadPerformanceCriteria();
         }

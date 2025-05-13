@@ -18,6 +18,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private bool isAddingNew;
         private readonly User user;
         [ObservableProperty] private TimeOffTypeDisplayModel? newTimeOffType;
+        [ObservableProperty] private bool canManageLeaves = false;
 
         public ObservableCollection<string> PeriodOptions { get; } = new()
         {
@@ -34,6 +35,8 @@ namespace HumanResourcesApp.ViewModels
 
             TimeOffTypes = new ObservableCollection<TimeOffTypeDisplayModel>();
             SelectedTimeOffType = new TimeOffTypeDisplayModel(); // Initialize to avoid nullability issue  
+
+            CanManageLeaves = _context.HasPermission(user, "ManageLeaves");
 
             // Load data when the view model is created  
             LoadTimeOffTypes();

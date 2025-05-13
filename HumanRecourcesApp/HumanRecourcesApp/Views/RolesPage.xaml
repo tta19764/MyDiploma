@@ -5,12 +5,15 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:local="clr-namespace:HumanResourcesApp.Views"
       xmlns:controls="clr-namespace:HumanResourcesApp.Controls"
+      xmlns:classes="clr-namespace:HumanResourcesApp.Classes"
       mc:Ignorable="d"
       d:DesignHeight="600" d:DesignWidth="900"
       Title="Role Management"
       Background="#F5F7FA">
 
     <Page.Resources>
+        <classes:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        
         <Style x:Key="ActionButton" TargetType="Button">
             <Setter Property="Padding" Value="12,5"/>
             <Setter Property="Margin" Value="5"/>
@@ -92,6 +95,7 @@
                     DockPanel.Dock="Right"
                     ButtonContent="Add Role"
                     ButtonCommand="{Binding CreateCommand}"
+                    Visibility="{Binding CanManageRoles, Converter={StaticResource BoolToVisConverter}}"
                     ButtonPadding="12,8"/>
             </Grid>
         </Border>
@@ -155,10 +159,12 @@
                                         <Button Content="Edit"
                                                 Style="{StaticResource EditButton}"
                                                 Command="{Binding DataContext.EditRoleCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                Visibility="{Binding DataContext.CanManageRoles, RelativeSource={RelativeSource AncestorType=Page}, Converter={StaticResource BoolToVisConverter}}"
                                                 CommandParameter="{Binding}"/>
                                         <Button Content="Delete"
                                                 Style="{StaticResource DeleteButton}"
                                                 Command="{Binding DataContext.DeleteRoleCommand, RelativeSource={RelativeSource AncestorType=Page}}"
+                                                Visibility="{Binding DataContext.CanManageRoles, RelativeSource={RelativeSource AncestorType=Page}, Converter={StaticResource BoolToVisConverter}}"
                                                 CommandParameter="{Binding}" />
                                     </StackPanel>
                                 </Grid>

@@ -81,19 +81,19 @@
                     <controls:NavButton Text="Attendance"
                                         Command="{Binding NavigateCommand}" 
                                         CommandParameter="Attendance"
-                                        RequiredPermission=""
+                                        RequiredPermission="ViewAttendance"
                                         PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Time Off Requests"
                                         Command="{Binding NavigateCommand}" 
                                         CommandParameter="TimeOffRequests"
-                                        RequiredPermission=""
+                                        RequiredPermission="ViewAttendance"
                                         PermissionSource="{Binding PermissionContext}"/>
 
                     <controls:NavButton Text="Time Off Types"
                                         Command="{Binding NavigateCommand}" 
                                         CommandParameter="TimeOffTypes"
-                                        RequiredPermission=""
+                                        RequiredPermission="ViewAttendance"
                                         PermissionSource="{Binding PermissionContext}"/>
 
                     <!-- Performance Section -->

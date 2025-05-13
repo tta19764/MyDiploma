@@ -22,6 +22,7 @@ namespace HumanResourcesApp.ViewModels
         [ObservableProperty] private bool hasPendingReviews;
         [ObservableProperty] private bool hasAcknowledgedReviews;
         private readonly User user;
+        [ObservableProperty] private bool canManagePerformance = false;
 
         public PerformanceReviewsPageViewModel(User _user)
         {
@@ -30,12 +31,25 @@ namespace HumanResourcesApp.ViewModels
             PerformanceReviews = new ObservableCollection<PerformanceReviewDisplayModel>();
             PendingReviewsView = new ListCollectionView(PerformanceReviews);
             AcknowledgedReviewsView = new ListCollectionView(PerformanceReviews);
+            CanManagePerformance = _context.HasPermission(user, "ManagePerformance");
             LoadReviews();
         }
 
         private void LoadReviews()
         {
-            var reviews = _context.GetAllPerformanceReviews();
+            var reviews = new List<PerformanceReview>();
+            if(user.Employee != null && !_context.HasPermission(user, "ViewPerformance") && !_context.HasPermission(user, "ManagePerformance") && user.Role.RoleName != "Admin")
+            {
+                reviews = _context.GetAllPerformanceReviews().Where(r => r.EmployeeId == user.Employee.EmployeeId).ToList();
+            }
+            else if (user.Role.RoleName == "Admin")
+            {
+                reviews = _context.GetAllPerformanceReviews().ToList();
+            }
+            else if(user.Employee != null && _context.HasPermission(user, "ViewPerformance"))
+            {
+                reviews = _context.GetAllPerformanceReviews().Where(r => r.Employee.DepartmentId == user.Employee.DepartmentId).ToList();
+            }
 
             PerformanceReviews = new ObservableCollection<PerformanceReviewDisplayModel>(
                 reviews.Select(r => new PerformanceReviewDisplayModel

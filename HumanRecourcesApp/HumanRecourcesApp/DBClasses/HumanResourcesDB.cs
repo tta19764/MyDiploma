@@ -22,6 +22,77 @@ namespace HumanResourcesApp.DBClasses
         public HumanResourcesDB()
         {
             _context = new HumanResourcesDbContext();
+
+            _context.Database.Migrate();
+
+            SeedEssentialData();
+        }
+
+        private void SeedEssentialData()
+        {
+            if(_context.Users.Any()) return;
+
+            DateTime now = DateTime.Now;
+
+            if (!_context.Permissions.Any())
+            {
+                var permissions = new List<Permission>
+                {
+                    new Permission { PermissionName = "ViewEmployees", Description = "View employee records", CreatedAt = now },
+                    new Permission { PermissionName = "CreateEmployees", Description = "Create new employee records", CreatedAt = now },
+                    new Permission { PermissionName = "EditEmployees", Description = "Edit employee records", CreatedAt = now },
+                    new Permission { PermissionName = "DeleteEmployees", Description = "Delete employee records", CreatedAt = now },
+                    new Permission { PermissionName = "ViewPayroll", Description = "View payroll information", CreatedAt = now },
+                    new Permission { PermissionName = "ProcessPayroll", Description = "Process payroll", CreatedAt = now },
+                    new Permission { PermissionName = "ViewAttendance", Description = "View attendance records", CreatedAt = now },
+                    new Permission { PermissionName = "ManageAttendance", Description = "Manage attendance records", CreatedAt = now },
+                    new Permission { PermissionName = "ViewLeaves", Description = "View leave records", CreatedAt = now },
+                    new Permission { PermissionName = "ManageLeaves", Description = "Manage leave requests", CreatedAt = now },
+                    new Permission { PermissionName = "ViewPerformance", Description = "View performance reviews", CreatedAt = now },
+                    new Permission { PermissionName = "ManagePerformance", Description = "Manage performance reviews", CreatedAt = now },
+                    new Permission { PermissionName = "ViewReports", Description = "View reports", CreatedAt = now },
+                    new Permission { PermissionName = "ManageUsers", Description = "Manage user accounts", CreatedAt = now },
+                    new Permission { PermissionName = "ManageRoles", Description = "Manage roles and permissions", CreatedAt = now },
+                    new Permission { PermissionName = "SystemSettings", Description = "Manage system settings", CreatedAt = now }
+                };
+
+                _context.Permissions.AddRange(permissions);
+                _context.SaveChanges();
+            }
+
+            // --- Seed Admin Role ---
+            if (!_context.Roles.Any())
+            {
+                var adminRole = new Role
+                {
+                    RoleName = "Admin",
+                    Description = "System Administrator with full access",
+                    CreatedAt = now,
+                    RolePermissions = _context.Permissions
+                        .Select(p => new RolePermission { PermissionId = p.PermissionId })
+                        .ToList()
+                };
+
+                _context.Roles.Add(adminRole);
+                _context.SaveChanges();
+            }
+
+            // --- Seed Admin User ---
+            if (!_context.Users.Any())
+            {
+                var adminRoleId = _context.Roles.First(r => r.RoleName == "Admin").RoleId;
+
+                var adminUser = new User
+                {
+                    Username = "admin",
+                    PasswordHash = Login.HashPassword("admin"),
+                    IsActive = true,
+                    RoleId = adminRoleId
+                };
+
+                _context.Users.Add(adminUser);
+                _context.SaveChanges();
+            }
         }
 
         public bool HasPermission(User user, string permissionName)
@@ -849,7 +920,7 @@ namespace HumanResourcesApp.DBClasses
         {
             try
             {
-                if (!HasPermission(user, "ManageLeaves") || user.Employee != null && user.Employee.EmployeeId == request.EmployeeId)
+                if (!HasPermission(user, "ManageLeaves") && !(user.Employee != null && user.Employee.EmployeeId == request.EmployeeId))
                     throw new UnauthorizedAccessException("You do not have permission to manage time off requests.");
 
                 _context.TimeOffRequests.Add(request);
@@ -1152,7 +1223,7 @@ namespace HumanResourcesApp.DBClasses
         {
             try
             {
-                if (!HasPermission(user, "ManageLeaves"))
+                if (!HasPermission(user, "ManageLeaves") && !(user.Employee != null && user.Employee.EmployeeId == timeOffRequest.EmployeeId))
                     throw new UnauthorizedAccessException("You do not have permission to update time off requests.");
 
                 // Fetch existing entity from DB and clone it for logging
@@ -1750,7 +1821,7 @@ namespace HumanResourcesApp.DBClasses
         {
             try
             {
-                if (!HasPermission(user, "ManageLeaves") || !(user.Employee != null && user.Employee.EmployeeId == request.EmployeeId))
+                if (!HasPermission(user, "ManageLeaves") && !(user.Employee != null && user.Employee.EmployeeId == request.EmployeeId))
                     throw new UnauthorizedAccessException("You do not have permission to delete time off requests.");
 
                 var existing = _context.TimeOffRequests.Find(request.TimeOffRequestId);

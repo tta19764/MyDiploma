@@ -150,7 +150,7 @@
                       GridLinesVisibility="Horizontal"
                       HeadersVisibility="Column"
                       HorizontalGridLinesBrush="#E3E3E3"
-                      MinRowHeight="35"
+                      MinRowHeight="40"
                       ColumnHeaderStyle="{StaticResource DataGridColumnHeaderStyle}">
                 <DataGrid.Columns>
                     <!-- Changed to DataGridTextColumn for sorting -->
@@ -237,7 +237,7 @@
         <Border Background="White"  Padding="20" CornerRadius="8" Margin="15 20 15 15" Grid.Row="2"
                 Visibility="{Binding IsAddingNewOrEditing, Converter={StaticResource BoolToVisConverter}}">
             <StackPanel Orientation="Vertical" Width="450">
-                <TextBlock Text="Add Attendance" FontSize="18" FontWeight="Bold" Margin="0 0 0 10"/>
+                <TextBlock Text="{Binding EditAddHeader}" FontSize="18" FontWeight="Bold" Margin="0 0 0 10"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Text="Department:" Width="120" VerticalAlignment="Center"/>

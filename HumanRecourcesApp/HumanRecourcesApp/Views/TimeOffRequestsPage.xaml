@@ -12,6 +12,9 @@
       Background="#F5F7FA">
 
     <Page.Resources>
+        <classes:BooleanToVisibilityConverter x:Key="BoolToVisConverter"/>
+        <classes:PendingAndCanManageConverter x:Key="PendingAndCanManageConverter"/>
+        
         <Style x:Key="ActionButton" TargetType="Button">
             <Setter Property="Padding" Value="12,5"/>
             <Setter Property="Margin" Value="5"/>
@@ -189,7 +192,13 @@
                                                 <Style TargetType="Button" BasedOn="{StaticResource ReviewButton}">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Status}" Value="Pending">
+                                                        <DataTrigger Value="Visible">
+                                                            <DataTrigger.Binding>
+                                                                <MultiBinding Converter="{StaticResource PendingAndCanManageConverter}">
+                                                                    <Binding Path="Status"/>
+                                                                    <Binding Path="DataContext.CanManageTimeOffs" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                                                </MultiBinding>
+                                                            </DataTrigger.Binding>
                                                             <Setter Property="Visibility" Value="Visible"/>
                                                         </DataTrigger>
                                                     </Style.Triggers>

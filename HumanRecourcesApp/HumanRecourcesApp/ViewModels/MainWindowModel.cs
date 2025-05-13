@@ -86,9 +86,9 @@ namespace HumanRecourcesApp.ViewModels
             // Time Management section permissions
             TimeSectionPermissions = new List<string>
             {
-                "",
-                "",
-                ""
+                "ViewAttendance",
+                "ViewAttendance",
+                "ViewAttendance"
             };
 
             // Performance section permissions
@@ -101,9 +101,9 @@ namespace HumanRecourcesApp.ViewModels
             // Payroll section permissions
             PayrollSectionPermissions = new List<string>
             {
-                "ProcessPayroll",
-                "ProcessPayroll",
-                "ProcessPayroll"
+                "ViewPayroll",
+                "ViewPayroll",
+                "ViewPayroll"
             };
 
             // System section permissions
