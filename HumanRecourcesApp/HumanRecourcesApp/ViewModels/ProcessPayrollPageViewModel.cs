@@ -133,7 +133,7 @@ namespace HumanResourcesApp.ViewModels
             // Get existing payroll records for this period
             var payrollRecords = new List<EmployeePayroll>();
 
-            if(user.Employee != null && _context.HasPermission(user, "ViewPayroll") && user.Role.RoleName != "Admin")
+            if(user.Employee != null && _context.HasPermission(user, "ViewPayroll") && (user.Role.RoleName != "Admin" && user.Role.RoleName != "HR Manager" && user.Role.RoleName != "HR Staff"))
             {
                 payrollRecords = _context.GetAllEmployeePayrolls()
                     .Where(p => p.PayPeriodId == SelectedPayPeriod.PayPeriodId && p.Employee.DepartmentId == user.Employee.DepartmentId)

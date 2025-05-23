@@ -38,7 +38,7 @@ namespace HumanResourcesApp.ViewModels
         private void LoadReviews()
         {
             var reviews = new List<PerformanceReview>();
-            if(user.Employee != null && !_context.HasPermission(user, "ViewPerformance") && !_context.HasPermission(user, "ManagePerformance") && user.Role.RoleName != "Admin")
+            if(user.Employee != null && !_context.HasPermission(user, "ViewPerformance") && !_context.HasPermission(user, "ManagePerformance") && (user.Role.RoleName != "Admin" && user.Role.RoleName != "HR Manager" && user.Role.RoleName != "HR Staff"))
             {
                 reviews = _context.GetAllPerformanceReviews().Where(r => r.EmployeeId == user.Employee.EmployeeId).ToList();
             }

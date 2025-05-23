@@ -44,7 +44,7 @@ namespace HumanResourcesApp.ViewModels
         private void LoadRequests()
         {
             var requests = new List<TimeOffRequest>();
-            if(user.Employee != null && !_context.HasPermission(user, "ViewLeaves") && !_context.HasPermission(user, "ManageLeaves") && user.Role.RoleName != "Admin")
+            if(user.Employee != null && !_context.HasPermission(user, "ViewLeaves") && !_context.HasPermission(user, "ManageLeaves") && (user.Role.RoleName != "Admin" && user.Role.RoleName != "HR Manager" && user.Role.RoleName != "HR Staff"))
             {
                 requests = _context.GetAllTimeOffRequests().Where(r => r.EmployeeId == user.Employee.EmployeeId).ToList();
             }

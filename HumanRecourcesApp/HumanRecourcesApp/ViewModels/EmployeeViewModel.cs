@@ -38,7 +38,7 @@ namespace HumanResourcesApp.ViewModels
             try
             {
                 Employees.Clear();
-                if (user.Employee != null && _context.HasPermission(user, "ViewEmployees") && user.Role.RoleName != "Admin")
+                if (user.Employee != null && _context.HasPermission(user, "ViewEmployees") && (user.Role.RoleName != "Admin" && user.Role.RoleName != "HR Manager" && user.Role.RoleName != "HR Staff"))
                 {
                     var employeeList = _context.GetAllEmplyees().Where(e => e.DepartmentId == user.Employee.DepartmentId);
                     Employees = new ObservableCollection<Employee>(employeeList);
