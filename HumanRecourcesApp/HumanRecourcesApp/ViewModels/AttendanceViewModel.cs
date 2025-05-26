@@ -149,9 +149,9 @@ namespace HumanResourcesApp.ViewModels
                 }
                 return;
             }
-            else if(_user.Employee != null && _context.HasPermission(_user, "ManageAttendance"))
+            else if(_context.HasPermission(_user, "ViewAttendance") && (_user.Role.RoleName == "Admin" || _user.Role.RoleName == "HR Manager" || _user.Role.RoleName == "HR Staff"))
             {
-                var attendanceList = _context.GetAllAttendances().Where(a => a.Employee.DepartmentId == _user.Employee.DepartmentId);
+                var attendanceList = _context.GetAllAttendances();
                 foreach (var attendance in attendanceList)
                 {
                     Attendances.Add(new AttendanceDisplayModel
@@ -169,9 +169,9 @@ namespace HumanResourcesApp.ViewModels
                     });
                 }
             }
-            else if((!IsEmployee || _user.Role.RoleName == "Admin") && _context.HasPermission(_user, "ManageAttendance"))
+            else if(_user.Employee != null && _context.HasPermission(_user, "ViewAttendance"))
             {
-                var attenadnceList = _context.GetAllAttendances();
+                var attenadnceList = _context.GetAllAttendances().Where(e => e.Employee.DepartmentId == _user.Employee.DepartmentId);
                 foreach (var attendance in attenadnceList)
                 {
                     Attendances.Add(new AttendanceDisplayModel

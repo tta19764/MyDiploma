@@ -118,7 +118,7 @@ namespace HumanResourcesApp.Controls
                 else
                 {
                     MainButton.Background = new SolidColorBrush(Colors.Transparent);
-                    MainButton.Foreground = new SolidColorBrush(Color.FromRgb(221, 221, 221)); // #DDDDDD
+                    MainButton.Foreground = new SolidColorBrush(Colors.White); // #DDDDDD
                     MainButton.FontWeight = FontWeights.Normal;
                 }
             }
