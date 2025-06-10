@@ -18,7 +18,7 @@ namespace HumanResourcesApp.DBClasses
 {
     internal class HumanResourcesDB
     {
-        private HumanResourcesDbContext _context;
+        private readonly HumanResourcesDbContext _context;
         public HumanResourcesDB()
         {
             _context = new HumanResourcesDbContext();
@@ -1342,6 +1342,36 @@ namespace HumanResourcesApp.DBClasses
                     var oldValues = JSONLoggerHelper.TrimForLog(existing);
 
                     _context.Entry(existing).CurrentValues.SetValues(updated);
+
+                    // Handle RolePermissions collection properly
+                    if (updated.RolePermissions != null)
+                    {
+                        // Remove permissions that are no longer in the updated collection
+                        var permissionsToRemove = existing.RolePermissions
+                            .Where(ep => !updated.RolePermissions.Any(up => up.PermissionId == ep.PermissionId))
+                            .ToList();
+
+                        foreach (var permission in permissionsToRemove)
+                        {
+                            existing.RolePermissions.Remove(permission);
+                        }
+
+                        // Add new permissions that don't exist in the current collection
+                        foreach (var permission in updated.RolePermissions)
+                        {
+                            if (!existing.RolePermissions.Any(ep => ep.PermissionId == permission.PermissionId))
+                            {
+                                // Create new instance to avoid tracking issues
+                                existing.RolePermissions.Add(new RolePermission
+                                {
+                                    RoleId = existing.RoleId,
+                                    PermissionId = permission.PermissionId
+                                });
+                            }
+                        }
+                    }
+
+                    _context.Entry(existing).CurrentValues.SetValues(updated);
                     _context.SaveChanges();
                     LogOperation(user, "Update", nameof(Role), existing.RoleId, oldValues, updated);
                 }
@@ -1732,6 +1762,10 @@ namespace HumanResourcesApp.DBClasses
                         context.TimeOffBalances.RemoveRange(existing.TimeOffBalances);
                         context.TimeOffRequests.RemoveRange(existing.TimeOffRequestEmployees);
                         context.Attendances.RemoveRange(existing.Attendances);
+                        foreach (var payroll in existing.EmployeePayrolls)
+                        {
+                            context.PayrollDetails.RemoveRange(payroll.PayrollDetails);
+                        }
                         context.EmployeePayrolls.RemoveRange(existing.EmployeePayrolls);
                         context.PerformanceReviews.RemoveRange(existing.PerformanceReviewEmployees);
 

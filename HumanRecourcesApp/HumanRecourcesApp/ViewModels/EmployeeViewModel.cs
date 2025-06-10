@@ -120,6 +120,11 @@ namespace HumanResourcesApp.ViewModels
 
                 if (result == MessageBoxResult.Yes)
                 {
+                    if (!_context.CanDeleteEmployee(employee.EmployeeId))
+                    {
+                        MessageBox.Show("This employee cannot be deleted because they have associated records.\nTry deactivating the employee instead.", "Error", MessageBoxButton.OK, MessageBoxImage.Information);
+                        return;
+                    }
                     _context.DeleteEmployee(user, employee);
                     Employees.Remove(employee);
                 }
