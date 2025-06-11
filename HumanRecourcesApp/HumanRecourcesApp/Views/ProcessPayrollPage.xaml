@@ -227,10 +227,36 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <TextBlock Grid.Row="0" Text="Select Pay Period" Margin="0,0,0,5" FontWeight="SemiBold"/>
-                        <ComboBox Grid.Row="1" ItemsSource="{Binding PayPeriods}" 
-                          DisplayMemberPath="Description"
-                          SelectedValue="{Binding SelectedPayPeriod}"
-                          Style="{StaticResource FormComboBox}"/>
+                        <ComboBox Grid.Row="1"
+                            ItemsSource="{Binding PayPeriods}"
+                            SelectedItem="{Binding SelectedPayPeriod}"
+                            Style="{StaticResource FormComboBox}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Description}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="Black"/>
+                                                <Setter Property="FontWeight" Value="Normal"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Active">
+                                                        <Setter Property="Foreground" Value="#2E86DE"/>
+                                                        <Setter Property="FontWeight" Value="Bold"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Draft">
+                                                        <Setter Property="Foreground" Value="#6C7A7B"/>
+                                                        <Setter Property="FontStyle" Value="Italic"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Completed">
+                                                        <Setter Property="Foreground" Value="#27AE60"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </Grid>
                 </StackPanel>
 

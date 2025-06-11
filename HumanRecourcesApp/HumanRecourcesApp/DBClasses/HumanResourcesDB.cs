@@ -245,7 +245,7 @@ namespace HumanResourcesApp.DBClasses
         // User Read Operations
         public List<User> GetAllUsers()
         {
-            return _context.Users.AsNoTracking().ToList();
+            return _context.Users.AsNoTracking().OrderByDescending(s => s.UserId).ToList();
         }
 
         public User? GetUserByLogin(string username, string password)
@@ -291,7 +291,7 @@ namespace HumanResourcesApp.DBClasses
         // Department Read Operations
         public List<Department> GetAllDepartments()
         {
-            return _context.Departments.AsNoTracking().ToList();
+            return _context.Departments.AsNoTracking().OrderByDescending(s => s.DepartmentId).ToList();
         }
 
         public Department? GetDepartmentById(int id)
@@ -318,7 +318,7 @@ namespace HumanResourcesApp.DBClasses
         // Employee Read Operations
         public List<Employee> GetAllEmplyees()
         {
-            return _context.Employees.AsNoTracking().ToList();
+            return _context.Employees.AsNoTracking().OrderByDescending(s => s.EmployeeId).ToList();
         }
 
         public Employee? GetEmployeeById(int id)
@@ -328,22 +328,22 @@ namespace HumanResourcesApp.DBClasses
 
         public List<Employee> GetAllEmplyeesByPosition(Position position)
         {
-            return _context.Employees.AsNoTracking().Where(s => s.Position == position).ToList();
+            return _context.Employees.AsNoTracking().Where(s => s.Position == position).OrderByDescending(s => s.EmployeeId).ToList();
         }
 
         public List<Employee> GetAllFreeEmplyeesByPosition(Position position)
         {
-            return _context.Employees.AsNoTracking().Where(s => s.Position == position && s.Departments.Count() == 0).ToList();
+            return _context.Employees.AsNoTracking().Where(s => s.Position == position && s.Departments.Count() == 0).OrderByDescending(s => s.EmployeeId).ToList();
         }
 
         public List<Employee> GetEmployeesByDepartment(Department department)
         {
-            return _context.Employees.AsNoTracking().Where(s => s.Department == department).ToList();
+            return _context.Employees.AsNoTracking().Where(s => s.Department == department).OrderByDescending(s => s.EmployeeId).ToList();
         }
 
         public List<Employee> GetAllActiveEmployees()
         {
-            return _context.Employees.AsNoTracking().Where(s => s.IsActive == true).ToList();
+            return _context.Employees.AsNoTracking().Where(s => s.IsActive == true).OrderByDescending(s => s.EmployeeId).ToList();
         }
 
         public bool CanDeleteEmployee(int employeeId)
@@ -370,7 +370,7 @@ namespace HumanResourcesApp.DBClasses
         // Position Read Operations
         public List<Position> GetAllPositions()
         {
-            return _context.Positions.AsNoTracking().ToList();
+            return _context.Positions.AsNoTracking().OrderByDescending(s => s.PositionId).ToList();
         }
 
         public Position? GetPositionById(int id)
@@ -402,7 +402,7 @@ namespace HumanResourcesApp.DBClasses
         // Attendance Read Operations
         public List<Attendance> GetAllAttendances()
         {
-            return _context.Attendances.AsNoTracking().ToList();
+            return _context.Attendances.AsNoTracking().OrderByDescending(s => s.AttendanceId).ToList();
         }
 
         public Attendance? GetAttendanceById(int id)
@@ -412,7 +412,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<Attendance> GetAttendancesByEmployeeId(int employeeId)
         {
-            return _context.Attendances.AsNoTracking().Where(s => s.EmployeeId == employeeId).ToList();
+            return _context.Attendances.AsNoTracking().Where(s => s.EmployeeId == employeeId).OrderByDescending(s => s.AttendanceId).ToList();
         }
 
         public bool IsAttendanceTimeValid(Attendance attendance)
@@ -445,7 +445,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<TimeOffType> GetAllTimeOffTypes()
         {
-            return _context.TimeOffTypes.AsNoTracking().ToList();
+            return _context.TimeOffTypes.AsNoTracking().OrderByDescending(s => s.TimeOffTypeId).ToList();
         }
 
         public TimeOffType? GetTimeOffTypeById(int id)
@@ -476,13 +476,13 @@ namespace HumanResourcesApp.DBClasses
 
         public List<TimeOffType> GetAllActiveTimeOffTypes()
         {
-            return _context.TimeOffTypes.AsNoTracking().Where(t => t.IsActive == true).ToList();
+            return _context.TimeOffTypes.AsNoTracking().Where(t => t.IsActive == true).OrderByDescending(s => s.TimeOffTypeId).ToList();
         }
 
         // TimeOffRequests Read Operations
         public List<TimeOffRequest> GetAllTimeOffRequests()
         {
-            return _context.TimeOffRequests.AsNoTracking().ToList();
+            return _context.TimeOffRequests.AsNoTracking().OrderByDescending(s => s.TimeOffRequestId).ToList();
         }
 
         public TimeOffRequest? GetTimeOffRequestById(int id)
@@ -494,7 +494,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<TimeOffBalance> GetAllTimeOffBalances()
         {
-            return _context.TimeOffBalances.AsNoTracking().ToList();
+            return _context.TimeOffBalances.AsNoTracking().OrderByDescending(s => s.TimeOffBalanceId).ToList();
         }
 
         public TimeOffBalance? GetTimeOffBalance(int employeeId, int timeOffTypeId)
@@ -521,17 +521,17 @@ namespace HumanResourcesApp.DBClasses
 
         public List<Role> GetAllRolesByUserId(int userId)
         {
-            return _context.Roles.AsNoTracking().Where(r => r.Users.Any(u => u.UserId == userId)).ToList();
+            return _context.Roles.AsNoTracking().Where(r => r.Users.Any(u => u.UserId == userId)).OrderByDescending(s => s.RoleId).ToList();
         }
 
         public List<Role> GetAllRolesByEmployeeId(int employeeId)
         {
-            return _context.Roles.AsNoTracking().Where(r => r.Users.Any(u => u.Employee != null && u.Employee.EmployeeId == employeeId)).ToList();
+            return _context.Roles.AsNoTracking().Where(r => r.Users.Any(u => u.Employee != null && u.Employee.EmployeeId == employeeId)).OrderByDescending(s => s.RoleId).ToList();
         }
 
         public List<Role> GetAllRoles()
         {
-            return _context.Roles.AsNoTracking().ToList();
+            return _context.Roles.AsNoTracking().OrderByDescending(s => s.RolePermissions.Count).ToList();
         }
 
         public bool IsUniqueRoleName(Role role)
@@ -558,13 +558,13 @@ namespace HumanResourcesApp.DBClasses
         // Permission Read Operations
         public List<Permission> GetAllPermissions()
         {
-            return _context.Permissions.AsNoTracking().ToList();
+            return _context.Permissions.AsNoTracking().OrderByDescending(s => s.PermissionId).ToList();
         }
 
         // PayPeriod Read Operations
         public List<PayPeriod> GetAllPayPeriods()
         {
-            return _context.PayPeriods.AsNoTracking().ToList();
+            return _context.PayPeriods.AsNoTracking().OrderByDescending(s => s.PayPeriodId).ToList();
         }
 
         public PayPeriod? GetPayPeriodById(int id)
@@ -597,7 +597,7 @@ namespace HumanResourcesApp.DBClasses
         // SystemLog Read Operations
         public List<SystemLog> GetAllSystemLogs()
         {
-            return _context.SystemLogs.AsNoTracking().ToList();
+            return _context.SystemLogs.AsNoTracking().OrderByDescending(s => s.LogId).ToList();
         }
 
         public bool CanDeletePayPeriod(PayPeriod payPeriod)
@@ -610,7 +610,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<PerformanceCriterion> GetAllPerformanceCriterias()
         {
-            return _context.PerformanceCriteria.AsNoTracking().ToList();
+            return _context.PerformanceCriteria.AsNoTracking().OrderByDescending(s => s.CriteriaId).ToList();
         }
 
         public bool IsUniquePerformanceCriterionName(PerformanceCriterion performanceCriterion)
@@ -636,14 +636,14 @@ namespace HumanResourcesApp.DBClasses
 
         public List<PerformanceCriterion> GetAllActiveCriteria()
         {
-            return _context.PerformanceCriteria.AsNoTracking().Where(c => c.IsActive == true).ToList();
+            return _context.PerformanceCriteria.AsNoTracking().Where(c => c.IsActive == true).OrderByDescending(s => s.CriteriaId).ToList();
         }
 
         // PerformanceReview Read Operations
 
         public List<PerformanceReview> GetAllPerformanceReviews()
         {
-            return _context.PerformanceReviews.AsNoTracking().ToList();
+            return _context.PerformanceReviews.AsNoTracking().OrderByDescending(s => s.ReviewId).ToList();
         }
 
         public PerformanceReview? GetPerformanceReviewById(int id)
@@ -655,7 +655,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<PerformanceScore> GetAllPerformanceScores()
         {
-            return _context.PerformanceScores.AsNoTracking().ToList();
+            return _context.PerformanceScores.AsNoTracking().OrderByDescending(s => s.ScoreId).ToList();
         }
 
         public PerformanceScore? GetPerformanceScoreById(int id)
@@ -667,7 +667,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<PayrollItem> GetAllPayrollItems()
         {
-            return _context.PayrollItems.AsNoTracking().ToList();
+            return _context.PayrollItems.AsNoTracking().OrderByDescending(s => s.PayrollItemId).ToList();
         }
 
         public bool IsUniquePayrollItemName(PayrollItem payrollItem)
@@ -700,7 +700,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<EmployeePayroll> GetAllEmployeePayrolls()
         {
-            return _context.EmployeePayrolls.AsNoTracking().ToList();
+            return _context.EmployeePayrolls.AsNoTracking().OrderByDescending(s => s.PayrollId).ToList();
         }
 
         public EmployeePayroll? GetEmployeePayrollById(int id)
@@ -712,7 +712,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<EmployeePayroll> GetEmployeePayrollsByEmployeeId(int employeeId)
         {
-            return _context.EmployeePayrolls.AsNoTracking().Where(s => s.EmployeeId == employeeId).ToList();
+            return _context.EmployeePayrolls.AsNoTracking().Where(s => s.EmployeeId == employeeId).OrderByDescending(s => s.PayrollId).ToList();
         }
 
         public EmployeePayroll? GetEmployeePayrollByEmployeeAndPayPeriodId(int payPeriodId, int employeeId)
@@ -724,7 +724,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<PayrollDetail> GetAllPayrollDetails()
         {
-            return _context.PayrollDetails.AsNoTracking().ToList();
+            return _context.PayrollDetails.AsNoTracking().OrderByDescending(s => s.PayrollDetailId).ToList();
         }
 
         public PayrollDetail? GetPayrollDetailById(int id)
@@ -734,7 +734,7 @@ namespace HumanResourcesApp.DBClasses
 
         public List<PayrollDetail> GetPayrollDetailsByPayrollId(int payrollId)
         {
-            return _context.PayrollDetails.AsNoTracking().Where(s => s.PayrollId == payrollId).ToList();
+            return _context.PayrollDetails.AsNoTracking().Where(s => s.PayrollId == payrollId).OrderByDescending(s => s.PayrollDetailId).ToList();
         }
 
 

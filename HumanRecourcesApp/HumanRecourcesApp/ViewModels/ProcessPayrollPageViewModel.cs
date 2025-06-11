@@ -171,7 +171,7 @@ namespace HumanResourcesApp.ViewModels
                     employeeViewModel.PayrollDetails = new ObservableCollection<PayrollDetail>(
                         _context.GetAllPayrollDetails().Where(pd => pd.PayrollId == payrollRecord.PayrollId));
                 }
-                else
+                else if(SelectedPayPeriod.Status == "Draft" || SelectedPayPeriod.Status == "Active")
                 {
                     // No existing payroll record, set defaults
                     employeeViewModel.BaseSalary = employee.Salary;
@@ -181,7 +181,10 @@ namespace HumanResourcesApp.ViewModels
                     employeeViewModel.PayrollStatus = "Pending";
                     employeeViewModel.PayrollDetails = new ObservableCollection<PayrollDetail>();
                 }
-
+                else
+                {
+                    continue;
+                }
                 PayrollEmployees.Add(employeeViewModel);
             }
 
